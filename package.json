@@ -1,0 +1,26 @@
+{
+  "name": "prosemirror-url-inspector",
+  "version": "0.1.0",
+  "description": "Use url-inspector to manage resources in prosemirror",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kapouer/prosemirror-url-inspector.git"
+  },
+  "keywords": [
+    "editor",
+    "inspector",
+    "cms",
+    "content",
+    "asset"
+  ],
+  "author": "Jérémy Lal <kapouer@melix.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kapouer/prosemirror-url-inspector/issues"
+  },
+  "homepage": "https://github.com/kapouer/prosemirror-url-inspector#readme"
+}
