@@ -4,6 +4,7 @@
   "description": "Use url-inspector to manage resources in prosemirror",
   "main": "index.js",
   "scripts": {
+    "prepublish": "mkdir -p dist; browserify $PWD/index.js --outfile $PWD/dist/prosemirror-url-inspector.js --standalone ProsemirrorUrlInspector",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,5 +23,12 @@
   "bugs": {
     "url": "https://github.com/kapouer/prosemirror-url-inspector/issues"
   },
-  "homepage": "https://github.com/kapouer/prosemirror-url-inspector#readme"
+  "homepage": "https://github.com/kapouer/prosemirror-url-inspector#readme",
+  "dependencies": {
+    "prosemirror": "^0.9.1",
+    "url-regex": "^3.2.0"
+  },
+  "devDependencies": {
+    "browserify": "^13.1.0"
+  }
 }
