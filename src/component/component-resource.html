@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Component Resource Custom Element</title>
+<script src="agent.js"></script>
+<script src="domt.js"></script>
+<link href="component-font.css" rel="stylesheet" />
+<style>
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(359deg);
+	}
+}
+
+.icon-spin {
+	animation: spin 2s infinite linear;
+	display: inline-block;
+}
+
+component-resource {
+	display:inline-block;
+	white-space: normal;
+	position:relative;
+	border-right:2px solid black;
+	border-radius:0.5em;
+	border:1px solid silver;
+	padding-right:0.5em;
+}
+component-resource [hidden] {
+	display:none !important;
+}
+
+.ProseMirror-content {
+	outline:none;
+}
+
+component-resource.ProseMirror-selectednode {
+	outline: none;
+}
+component-widget.ProseMirror-selectednode {
+	outline: none;
+}
+
+component-resource.ProseMirror-selectednode component-widget .type,
+component-widget.ProseMirror-selectednode .type {
+	box-shadow: 0 0 6px black;
+}
+
+component-widget {
+	display:block;
+	height:2.4em;
+	padding-right:0.2em;
+	cursor:move;
+}
+
+component-widget img {
+	cursor:move !important;
+}
+
+component-widget > .type {
+	float:left;
+	height:100%;
+	color:white;
+	background-color:black;
+	line-height:2.4em;
+	border-top-left-radius:0.5em;
+	border-bottom-left-radius:0.5em;
+}
+
+component-widget > .type {
+	float:left;
+	height:100%;
+	color:white;
+	background-color:black;
+	line-height:2.4em;
+	cursor:move;
+	border-top-left-radius:0.5em;
+	border-bottom-left-radius:0.5em;
+}
+
+component-widget > .type > * {
+	vertical-align:baseline;
+}
+
+component-widget > .thumbnail {
+	float:left;
+	height:100%;
+}
+
+component-widget > .content {
+	overflow:hidden;
+	max-height:100%;
+	padding-left:0.4em;
+}
+
+component-widget > .favicon {
+	vertical-align:middle;
+	max-height:1.02em;
+}
+</style>
+
+<script type="text/template" id="component-widget">
+	<div class="type">
+		<i bind-class="icon-[attr.type|icon]"></i>
+	</div>
+	<img class="thumbnail" bind-src="attr.thumbnail|hide" />
+	<div class="content">
+		<img class="favicon" bind-src="attr.icon|hide">
+		<a bind-href="attr.href" class="title" bind-text>[attr.title|href]</a><br>
+		<span class="description" bind-text>[attr.description|hide]</span>
+	</div>
+</div>
+</script>
+
+<script>(function() {
+
+var inspectorBase = "http://inspector.eda.sarl";
+
+var ownDoc = (document._currentScript || document.currentScript).ownerDocument;
+var widgetTemplate = Domt.template(ownDoc.getElementById('component-widget'));
+
+var widgetProto = Object.create(HTMLElement.prototype);
+var resourceProto = Object.create(HTMLElement.prototype);
+
+function merge(me, attrs) {
+	Domt(me).merge({
+		attr: attrs
+	}, {
+		hide: function(val, context) {
+			if (!val) context.node.setAttribute("hidden", "");
+			else context.node.removeAttribute("hidden");
+			return val;
+		},
+		icon: function iconFilter(val) {
+			if (!val || val == "none") return "spin";
+			return val;
+		},
+		href: function(val, context) {
+			if (!val) val = context.scope.attr.href;
+			return val;
+		}
+	});
+}
+
+function describe(obj) {
+	return obj.description || '';
+}
+
+widgetProto.attachedCallback = function() {
+	var me = this;
+	if (!me.childNodes.length) {
+		me.appendChild(widgetTemplate.clone().merge().import());
+	}
+	if (this.parentNode) this.parentNode.attributeChangedCallback();
+};
+
+
+document.registerElement('component-widget', {
+	prototype: widgetProto
+});
+
+resourceProto.props = function(obj) {
+	var me = this;
+	var atts = me.attributes;
+	var att, i;
+	if (obj) {
+		for (i = 0; i < atts.length; i++) {
+			me.removeAttributeNode(atts[i]);
+		}
+		Object.keys(obj).forEach(function(name) {
+			me.setAttribute(name, obj[name]);
+		});
+	} else {
+		obj = {};
+		for (i = 0; i < atts.length; i++) {
+			att = atts[i];
+			obj[att.name] = att.value;
+		}
+	}
+	return obj;
+};
+
+resourceProto.attachedCallback = function() {
+	var me = this;
+	var attrs = me.props();
+	if (!attrs.title) attrs.title = attrs.href;
+	if (!attrs.description) attrs.description = null;
+
+	merge(this, attrs);
+
+	if (attrs.type != "none" || !attrs.href) return;
+
+	GET(inspectorBase + "/inspector", {
+		url: attrs.href
+	}).then(function(obj) {
+		return new Promise(function(resolve) {
+			setTimeout(function() {
+				console.log("artificial timeout, remove me");
+				resolve(obj);
+			}, 50);
+		});
+	}).then(function(obj) {
+		var editor = me.closest('.ProseMirror');
+		if (!editor) return;
+		var pm = editor.ProseMirror;
+		if (!pm) return;
+		var nsel = pm.getNodeSelection(me);
+		pm.tr.replaceWith(nsel.from, nsel.to, nsel.node.type.createAndFill({
+			type: obj.type,
+			title: obj.title,
+			href: obj.href,
+			icon: obj.icon,
+			thumbnail: inspectorBase + obj.thumbnail,
+			description: describe(obj)
+		})).apply();
+	}).catch(function(err) {
+		console.error(err);
+	});
+};
+
+resourceProto.attributeChangedCallback = function(name) {
+	merge(this, this.props());
+};
+
+document.registerElement('component-resource', {
+	prototype: resourceProto
+});
+
+})();</script>
+</head>
+</html>

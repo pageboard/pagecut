@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sample editor</title>
+<!--	<script src="../dist/component-resource.js"></script>-->
+	<script src="../dist/pm-editor.bundle.js"></script>
+	<style>
+#editor {
+	margin:1em;
+	border:1px solid silver;
+}
+.ProseMirror-content {
+	margin:0.1em;
+	padding:0.1em;
+}
+	</style>
+	<script>
+window.onload = function() {
+	var opts = {
+		content: document.querySelector("#content"),
+		place: document.querySelector("#editor")
+	};
+	var pm = PmEditor.init(opts);
+	opts.content.remove();
+};
+	</script>
+</head>
+<body>
+
+<div id="editor"></div>
+<div id="content">
+<p>a</p>
+<p>b</p>
+<p>c</p>
+</div>
+</body>
+</html>
