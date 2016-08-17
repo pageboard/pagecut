@@ -6,5 +6,5 @@ all: dist/pm-editor.js src/component/*
 	$(BUNDLEDOM) --concatenate src/index.html > dist/pm-editor.bundle.js
 
 dist/pm-editor.js: src/editor/*.js $(PROSEMIRROR)/**/*.js
-	$(BROWSERIFY) --standalone PmEditor --outfile $@ -t [ babelify --presets [ es2015 ] ] $<
+	$(BROWSERIFY) --standalone PmEditor --outfile $@ -t [ babelify --presets [ es2015 ] ] src/editor/index.js
 
