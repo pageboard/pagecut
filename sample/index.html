@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="utf-8" />
 	<title>Sample editor</title>
-<!--	<script src="../dist/component-resource.js"></script>-->
 	<script src="../dist/pm-editor.bundle.js"></script>
 	<style>
 #editor {
@@ -31,6 +31,15 @@ window.onload = function() {
 <div id="content">
 <p>a</p>
 <p>b</p>
+<component-resource
+	type="embed"
+	icon="https://abs.twimg.com/favicons/favicon.ico"
+	thumbnail="http://inspector.eda.sarl/images?url=https%3A%2F%2Fpbs.twimg.com%2Fmedia%2FCqKeszCUEAABqZ1.jpg%3Alarge"
+>
+	<component-widget></component-widget>
+	<component-field name="title">Node.js on Twitter</component-field>
+	<component-field name="description">“How #nodejs helps NASA keep astronauts safe and data accessible: https://t.co/X7uK697Tqd”</component-field>
+</component-resource>
 <p>c</p>
 </div>
 </body>

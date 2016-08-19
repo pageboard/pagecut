@@ -39,9 +39,14 @@ Object.defineProperty(ComponentResource.prototype, "toDOM", { get: function() {
 }});
 
 Object.defineProperty(ComponentResource.prototype, "matchDOMTag", { get: function() {
-	return function(node) {
-		return {"component-resource": null};
-	};
+	return { "component-resource": function matchComponentResource(dom) {
+		return {
+			href: dom.getAttribute('href'),
+			type: dom.getAttribute('type'),
+			icon: dom.getAttribute('icon'),
+			thumbnail: dom.getAttribute('thumbnail')
+		};
+	}};
 }});
 
 
@@ -59,11 +64,8 @@ Object.defineProperty(ComponentWidget.prototype, "toDOM", { get: function() {
 }});
 
 Object.defineProperty(ComponentWidget.prototype, "matchDOMTag", { get: function() {
-	return function(node) {
-		return {"component-widget": null};
-	};
+	return { "component-widget": null };
 }});
-
 
 function ComponentField(name, schema) {
 	model.Block.call(this, name, schema);
@@ -72,7 +74,8 @@ inherits(ComponentField, model.Block);
 
 Object.defineProperty(ComponentField.prototype, "attrs", { get: function() {
 	return {
-		"name": new model.Attribute({ default: "" })
+		"name": new model.Attribute({ default: "" }),
+		"label": new model.Attribute({ default: "" })
 	};
 }});
 
@@ -83,7 +86,9 @@ Object.defineProperty(ComponentField.prototype, "toDOM", { get: function() {
 }});
 
 Object.defineProperty(ComponentField.prototype, "matchDOMTag", { get: function() {
-	return function(node) {
-		return {"component-field": null};
-	};
+	return { "component-field": function matchComponentField(dom) {
+		return {
+			name: dom.getAttribute('name')
+		};
+	}};
 }});
