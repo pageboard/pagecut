@@ -99,11 +99,20 @@ component-field {
 	padding-left: 0.4em;
 }
 
-component-field[name="legend"]:before {
-	content: 'Légende: ';
+component-field[name]:before {
 	position: relative;
-	font-weight:bold;
-	color:#AAA;
+	color:grey;
+	font-family:sans-serif;
+	letter-spacing:-1px;
+	font-size:0.8em;
+
+}
+
+component-field[name="title"]:before {
+	content: 'Title: ';
+}
+component-field[name="description"]:before {
+	content: 'Description: ';
 }
 </style>
 
