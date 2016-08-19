@@ -89,10 +89,15 @@ component-resource.focused > component-widget > .thumbnail > img {
 	height:auto;
 }
 
+component-resource.focused > component-field {
+	white-space: pre-wrap;
+}
 component-field {
 	display: block;
 	margin-left: 1.3em;
-	white-space: pre-wrap;
+	white-space: nowrap;
+	overflow:hidden;
+	text-overflow:ellipsis;
 	position: relative;
 	line-height:1.4em;
 	margin-right: 0.2em;
