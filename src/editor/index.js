@@ -29,10 +29,7 @@ exports.defaults = {
 		UrlPlugin.config({
 			action: function(pm, url, child) {
 				var types = pm.schema.nodes;
-				return types.component_resource.create(
-					{ href: url	},
-					types.component_widget.create()
-				);
+				return types.component_resource.create({ href: url	});
 			}
 		}),
 		componentPlugin

@@ -25,13 +25,16 @@ component-resource {
 	display:inline-block;
 	white-space: normal;
 	position:relative;
-	border-right:2px solid black;
+	border:1px solid black;
 	border-radius:0.5em;
-	border:1px solid silver;
-	padding-right:0.5em;
+	overflow:hidden;
+	max-height:2.6em;
 }
 component-resource [hidden] {
 	display:none !important;
+}
+component-resource.focused {
+	max-height:none;
 }
 
 .ProseMirror-content {
@@ -39,21 +42,14 @@ component-resource [hidden] {
 }
 
 component-resource.ProseMirror-selectednode {
-	outline: none;
+	outline: 1px solid red;
 }
 component-widget.ProseMirror-selectednode {
-	outline: none;
-}
-
-component-resource.ProseMirror-selectednode component-widget .type,
-component-widget.ProseMirror-selectednode .type {
-	box-shadow: 0 0 6px black;
+	outline: 1px solid green;
 }
 
 component-widget {
 	display:block;
-	height:2.4em;
-	padding-right:0.2em;
 	cursor:move;
 }
 
@@ -62,56 +58,60 @@ component-widget img {
 }
 
 component-widget > .type {
-	float:left;
+	position:absolute;
+	text-align:center;
 	height:100%;
 	color:white;
 	background-color:black;
-	line-height:2.4em;
-	border-top-left-radius:0.5em;
-	border-bottom-left-radius:0.5em;
-}
-
-component-widget > .type {
-	float:left;
-	height:100%;
-	color:white;
-	background-color:black;
-	line-height:2.4em;
+	line-height:1.4em;
 	cursor:move;
-	border-top-left-radius:0.5em;
-	border-bottom-left-radius:0.5em;
 }
 
-component-widget > .type > * {
-	vertical-align:baseline;
+component-widget > .type > .favicon {
+	max-width:1.2em;
 }
 
 component-widget > .thumbnail {
+	float:right;
+	z-index:1;
+	position:relative;
+}
+
+component-widget > .thumbnail > img {
 	float:left;
-	height:100%;
+	max-width:6em;
+	height:2.6em;
 }
 
-component-widget > .content {
-	overflow:hidden;
-	max-height:100%;
-	padding-left:0.4em;
+component-resource.focused > component-widget > .thumbnail > img {
+	height:auto;
 }
 
-component-widget > .favicon {
-	vertical-align:middle;
-	max-height:1.02em;
+component-field {
+	display: block;
+	margin-left: 1.4em;
+	white-space: pre-wrap;
+	position: relative;
+	line-height:1.4em;
+	margin-right: 0.2em;
+	padding-left: 0.4em;
+}
+
+component-field[name="legend"]:before {
+	content: 'Légende: ';
+	position: relative;
+	font-weight:bold;
+	color:#AAA;
 }
 </style>
 
 <script type="text/template" id="component-widget">
 	<div class="type">
-		<i bind-class="icon-[attr.type|icon]"></i>
-	</div>
-	<img class="thumbnail" bind-src="attr.thumbnail|hide" />
-	<div class="content">
+		<i bind-class="icon-[attr.type|icon]"></i><br>
 		<img class="favicon" bind-src="attr.icon|hide">
-		<a bind-href="attr.href" class="title" bind-text>[attr.title|href]</a><br>
-		<span class="description" bind-text>[attr.description|hide]</span>
+	</div>
+	<div class="thumbnail">
+		<img bind-src="attr.thumbnail|hide" />
 	</div>
 </div>
 </script>
@@ -144,10 +144,6 @@ function merge(me, attrs) {
 			return val;
 		}
 	});
-}
-
-function describe(obj) {
-	return obj.description || '';
 }
 
 widgetProto.attachedCallback = function() {
@@ -201,7 +197,7 @@ resourceProto.attachedCallback = function() {
 			setTimeout(function() {
 				console.log("artificial timeout, remove me");
 				resolve(obj);
-			}, 50);
+			}, 500);
 		});
 	}).then(function(obj) {
 		var editor = me.closest('.ProseMirror');
@@ -209,14 +205,21 @@ resourceProto.attachedCallback = function() {
 		var pm = editor.ProseMirror;
 		if (!pm) return;
 		var nsel = pm.getNodeSelection(me);
-		pm.tr.replaceWith(nsel.from, nsel.to, nsel.node.type.createAndFill({
+
+		var types = pm.schema.nodes;
+		var titleField = types.component_field.create({
+			name: "title"
+		}, pm.schema.text(obj.title || obj.href));
+		var descriptionField = types.component_field.create({
+			name: "description"
+		}, pm.schema.text(obj.description || ""));
+
+		pm.tr.replaceWith(nsel.from, nsel.to, types.component_resource.createAndFill({
 			type: obj.type,
-			title: obj.title,
 			href: obj.href,
 			icon: obj.icon,
-			thumbnail: inspectorBase + obj.thumbnail,
-			description: describe(obj)
-		})).apply();
+			thumbnail: obj.thumbnail ? (inspectorBase + obj.thumbnail) : null
+		}, [titleField, descriptionField])).apply();
 	}).catch(function(err) {
 		console.error(err);
 	});

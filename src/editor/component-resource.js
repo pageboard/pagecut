@@ -5,6 +5,7 @@ var inherits = require('./inherits');
 
 exports.ComponentResource = ComponentResource;
 exports.ComponentWidget = ComponentWidget;
+exports.ComponentField = ComponentField;
 
 function ComponentResource(name, schema) {
 	model.Block.call(this, name, schema);
@@ -15,15 +16,25 @@ Object.defineProperty(ComponentResource.prototype, "attrs", { get: function() {
 	return {
 		"href": new model.Attribute({ default: "" }),
 		"type":  new model.Attribute({ default: "none" }),
-		"title": new model.Attribute({ default: "" }),
-		"thumbnail": new model.Attribute({ default: "" }),
-		"description": new model.Attribute({ default: "" })
+		"icon": new model.Attribute({ default: "" }),
+		"thumbnail": new model.Attribute({ default: "" })
 	};
 }});
 
 Object.defineProperty(ComponentResource.prototype, "toDOM", { get: function() {
 	return function(node) {
-		return ["component-resource", node.attrs, 0];
+		var attrs = node.attrs;
+		var output = ["component-resource", attrs];
+		if (attrs.href && attrs.type == "none") {
+			output.push(["component-widget"], [
+				"component-field",
+				{ name: "title" },
+				attrs.href
+			]);
+		} else {
+			output.push(0);
+		}
+		return output;
 	};
 }});
 
@@ -36,9 +47,9 @@ Object.defineProperty(ComponentResource.prototype, "matchDOMTag", { get: functio
 
 
 function ComponentWidget(name, schema) {
-	model.Inline.call(this, name, schema);
+	model.Block.call(this, name, schema);
 }
-inherits(ComponentWidget, model.Inline);
+inherits(ComponentWidget, model.Block);
 
 
 Object.defineProperty(ComponentWidget.prototype, "toDOM", { get: function() {
@@ -53,3 +64,26 @@ Object.defineProperty(ComponentWidget.prototype, "matchDOMTag", { get: function(
 	};
 }});
 
+
+function ComponentField(name, schema) {
+	model.Block.call(this, name, schema);
+}
+inherits(ComponentField, model.Block);
+
+Object.defineProperty(ComponentField.prototype, "attrs", { get: function() {
+	return {
+		"name": new model.Attribute({ default: "" })
+	};
+}});
+
+Object.defineProperty(ComponentField.prototype, "toDOM", { get: function() {
+	return function(node) {
+		return ["component-field", node.attrs, 0];
+	};
+}});
+
+Object.defineProperty(ComponentField.prototype, "matchDOMTag", { get: function() {
+	return function(node) {
+		return {"component-field": null};
+	};
+}});

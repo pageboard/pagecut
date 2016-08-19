@@ -1,6 +1,6 @@
 const {Plugin, NodeSelection} = require("prosemirror/dist/edit");
 const {posFromDOM} = require("prosemirror/dist/edit/dompos");
-const {ComponentResource, ComponentWidget} = require('./component-resource');
+const {ComponentResource, ComponentWidget, ComponentField} = require('./component-resource');
 
 function ComponentPlugin(pm, options) {
 	this.pm = pm;
@@ -23,21 +23,47 @@ function ComponentPlugin(pm, options) {
 
 	this.fixDrag = this.fixDrag.bind(this);
 	this.fixDrop = this.fixDrop.bind(this);
+	this.select = this.select.bind(this);
 
-	pm.content.addEventListener("mousedown", this.fixDrag);
+	pm.content.addEventListener("mousedown", this.fixDrag, true);
+	pm.content.addEventListener("click", this.select, true);
 	document.addEventListener("dragend", this.fixDrop);
 	document.addEventListener("mouseup", this.fixDrop);
 	document.addEventListener("drop", this.fixDrop);
 }
 
+ComponentPlugin.prototype.detach = function(pm) {
+	document.removeEventListener("dragend", this.fixDrop);
+	document.removeEventListener("mouseup", this.fixDrop);
+	document.removeEventListener("drop", this.fixDrop);
+	if (pm.content) {
+		pm.content.removeEventListener("mousedown", this.fixDrag, true);
+		pm.content.removeEventListener("click", this.select, true);
+	}
+};
+
+ComponentPlugin.prototype.select = function(e) {
+	if (this.focused) {
+		this.focused.classList.toggle("focused", false);
+		delete this.focused;
+	}
+	var node = e.target;
+	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
+	var parent = node.closest('component-resource');
+	if (!parent) return;
+	this.focused = parent;
+	parent.classList.toggle("focused", true);
+};
+
 ComponentPlugin.prototype.fixDrag = function(e) {
 	this.dragging = false;
 	var node = e.target;
 	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
-	node = node.closest('component-resource');
-	if (!node) return;
+	var parent = node.closest('component-resource');
+	if (!parent) return;
+	if (node.closest('component-field')) return;
 	this.dragging = true;
-	this.pm.selectNode(node);
+	this.pm.selectNode(parent);
 };
 
 ComponentPlugin.prototype.fixDrop = function(e) {
@@ -53,13 +79,17 @@ ComponentPlugin.prototype.fixDrop = function(e) {
 module.exports = new Plugin(ComponentPlugin);
 
 module.exports.config = function(schema) {
+	schema.nodes.component_field = {
+		type: ComponentField,
+		content: "inline<_>*"
+	};
 	schema.nodes.component_widget = {
 		type: ComponentWidget
 	};
 	schema.nodes.component_resource = {
 		type: ComponentResource,
 		group: "block",
-		content: "component_widget"
+		content: 'component_widget component_field*'
 	};
 	return Plugin.prototype.config.call(module.exports);
 };
