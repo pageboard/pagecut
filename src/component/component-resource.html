@@ -212,7 +212,7 @@ resourceProto.attachedCallback = function() {
 		}, pm.schema.text(obj.title || obj.href));
 		var descriptionField = types.component_field.create({
 			name: "description"
-		}, pm.schema.text(obj.description || ""));
+		}, obj.description ? pm.schema.text(obj.description) : null);
 
 		pm.tr.replaceWith(nsel.from, nsel.to, types.component_resource.createAndFill({
 			type: obj.type,
