@@ -2,7 +2,7 @@ const {ProseMirror} = require("prosemirror/dist/edit");
 const {Schema} = require("prosemirror/dist/model");
 const basicSchema = require("prosemirror/dist/schema-basic");
 const {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup");
-const {tooltipMenu, menuBar} = require("prosemirror/dist/menu");
+const {tooltipMenu, menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
 
 const UrlPlugin = require("./url-plugin");
 const ComponentPlugin = require("./component-plugin");
@@ -51,7 +51,17 @@ exports.init = function(config) {
 
 	let pm = new ProseMirror(opts);
 	let menu = buildMenuItems(pm.schema);
-	menuBar.config({float: true, content: menu.fullMenu}).attach(pm);
+	// keep full menu but remove selectParentNodeItem menu
+	var fullMenu = menu.fullMenu.map(function(arr) {
+		return arr.filter(function(item) {
+			return item != selectParentNodeItem;
+		});
+	});
+
+	menuBar.config({
+		float: true,
+		content: fullMenu
+	}).attach(pm);
 	return pm;
 };
 
