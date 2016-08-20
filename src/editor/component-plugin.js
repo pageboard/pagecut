@@ -89,7 +89,7 @@ module.exports.config = function(schema) {
 	schema.nodes.component_resource = {
 		type: ComponentResource,
 		group: "block",
-		content: 'component_widget component_field*'
+		content: 'component_widget component_field[name="title"] component_field[name="description"]'
 	};
 	return Plugin.prototype.config.call(module.exports);
 };
