@@ -53,6 +53,7 @@ component-widget.ProseMirror-selectednode {
 component-widget {
 	display:block;
 	cursor:move;
+	min-width:20em; /* prevent collapse */
 }
 
 component-widget img {
@@ -76,7 +77,7 @@ component-widget > .type > .favicon {
 component-widget > .thumbnail {
 	float:right;
 	z-index:1;
-	position:relative;
+	position:relative; /* needed by z-index */
 }
 
 component-widget > .thumbnail > img {
