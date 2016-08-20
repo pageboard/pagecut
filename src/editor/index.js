@@ -6,6 +6,7 @@ const {tooltipMenu, menuBar} = require("prosemirror/dist/menu");
 
 const UrlPlugin = require("./url-plugin");
 const ComponentPlugin = require("./component-plugin");
+const BreaksPlugin = require("./breaks-plugin");
 
 let schemaSpec = {
 	nodes: {
@@ -25,6 +26,7 @@ let componentPlugin = ComponentPlugin.config(schemaSpec);
 exports.defaults = {
 	spec: schemaSpec,
 	plugins: [
+		BreaksPlugin.config(),
 		exampleSetup.config({menuBar: false, tooltipMenu: false}),
 		UrlPlugin.config({
 			action: function(pm, url, child) {
