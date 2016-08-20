@@ -14,6 +14,22 @@
 	padding:0.1em;
 }
 	</style>
+	<style>
+.ProseMirror-content > p {
+	position:relative;
+	margin: 0.5em 0;
+}
+.ProseMirror-content > p:before {
+	display: block;
+	position: absolute;
+	font-size: .8em;
+	color: black;
+	left: -.9em;
+	content: '\00b6';
+	opacity: .5;
+	top: .1em;
+}
+	</style>
 	<script>
 window.onload = function() {
 	var opts = {

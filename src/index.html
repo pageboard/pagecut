@@ -2,6 +2,18 @@
 <html><head>
 <link href="component/component-resource.html" rel="import">
 <script src="../dist/pm-editor.js"></script>
+<style>
+.ProseMirror-content > p:before {
+	display: block;
+	position: absolute;
+	font-size: .8em;
+	color: black;
+	left: -.9em;
+	content: '\00b6';
+	opacity: .5;
+	top: .1em;
+}
+</style>
 </head>
 <body>
 This file is only used by bundledom for bundling the html import.
