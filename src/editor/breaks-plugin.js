@@ -7,7 +7,7 @@ function BreaksPlugin(pm, options) {
 		Enter: this.command
 	}, {
 		name: "BreaksPlugin"
-	}, 0));
+	}, 0), -1);
 }
 
 BreaksPlugin.prototype.command = function(pm) {
