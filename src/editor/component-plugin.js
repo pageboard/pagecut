@@ -1,5 +1,5 @@
 const {Plugin, NodeSelection} = require("prosemirror/dist/edit");
-const {posFromDOM} = require("prosemirror/dist/edit/dompos");
+const {posFromDOM, DOMAfterPos, DOMBeforePos} = require("prosemirror/dist/edit/dompos");
 const {ComponentResource, ComponentWidget, ComponentField} = require('./component-resource');
 
 function ComponentPlugin(pm, options) {
@@ -22,27 +22,40 @@ function ComponentPlugin(pm, options) {
 	}.bind(pm);
 
 	this.fixDrag = this.fixDrag.bind(this);
-	this.fixDrop = this.fixDrop.bind(this);
-	this.select = this.select.bind(this);
+	this.trackFocus = this.trackFocus.bind(this);
+	this.fixChange = this.fixChange.bind(this);
 
-	pm.content.addEventListener("mousedown", this.fixDrag, true);
-	pm.content.addEventListener("click", this.select, true);
-	document.addEventListener("dragend", this.fixDrop);
-	document.addEventListener("mouseup", this.fixDrop);
-	document.addEventListener("drop", this.fixDrop);
+	pm.on.selectionChange.add(this.fixChange);
+
+	pm.content.addEventListener("mousedown", this.fixDrag);
+	pm.content.addEventListener("click", this.trackFocus);
 }
 
 ComponentPlugin.prototype.detach = function(pm) {
-	document.removeEventListener("dragend", this.fixDrop);
-	document.removeEventListener("mouseup", this.fixDrop);
-	document.removeEventListener("drop", this.fixDrop);
 	if (pm.content) {
-		pm.content.removeEventListener("mousedown", this.fixDrag, true);
-		pm.content.removeEventListener("click", this.select, true);
+		pm.content.removeEventListener("mousedown", this.fixDrag);
+		pm.content.removeEventListener("click", this.trackFocus);
+	}
+	pm.on.selectionChange.remove(this.fixChange);
+};
+
+ComponentPlugin.prototype.fixChange = function() {
+	var rpos = this.pm.selection.$from;
+	var from = rpos.pos;
+	if (rpos.nodeAfter && rpos.nodeAfter.type.name == "text") {
+		from = from - rpos.parentOffset;
+	}
+	try {
+		var node = DOMAfterPos(this.pm, from);
+		if (!node) node = DOMBeforePos(this.pm, from);
+		if (!node || !node.nodeName) return;
+		if (node.nodeName.toLowerCase() == "component-widget") this.pm.selectNode(node.parentNode);
+		this.trackFocus({target: node});
+	} catch(ex) {
 	}
 };
 
-ComponentPlugin.prototype.select = function(e) {
+ComponentPlugin.prototype.trackFocus = function(e) {
 	if (this.focused) {
 		this.focused.classList.toggle("focused", false);
 		delete this.focused;
@@ -64,16 +77,6 @@ ComponentPlugin.prototype.fixDrag = function(e) {
 	if (node.closest('component-field')) return;
 	this.dragging = true;
 	this.pm.selectNode(parent);
-};
-
-ComponentPlugin.prototype.fixDrop = function(e) {
-	if (!this.dragging) return;
-	this.dragging = false;
-	var sel = this.pm.selection;
-	if (!sel.$from) return;
-	sel = sel.$from;
-	if (!sel.nodeAfter || sel.nodeAfter.type.name == "component_widget") return;
-	this.pm.setNodeSelection(sel.pos + 1);
 };
 
 module.exports = new Plugin(ComponentPlugin);

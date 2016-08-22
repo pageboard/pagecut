@@ -37,10 +37,10 @@ component-resource.focused {
 }
 
 component-resource.ProseMirror-selectednode {
-	outline: 1px solid red;
+	outline: none;
 }
 component-widget.ProseMirror-selectednode {
-	outline: 1px solid green;
+	outline: 1px solid red; /* should never happen */
 }
 
 component-widget {
