@@ -1,0 +1,46 @@
+{
+  "glyphs": [
+    {
+      "src": "fontawesome",
+      "code": 61710,
+      "css": "quote-right",
+      "uid": "d745d7c05b94e609decabade2cae12cb"
+    },
+    {
+      "src": "fontawesome",
+      "code": 59392,
+      "css": "video",
+      "uid": "872d9516df93eb6b776cc4d94bd97dac"
+    },
+    {
+      "src": "fontawesome",
+      "code": 59393,
+      "css": "link",
+      "uid": "0ddd3e8201ccc7d41f7b7c9d27eca6c1"
+    },
+    {
+      "src": "fontawesome",
+      "code": 59394,
+      "css": "picture",
+      "uid": "381da2c2f7fd51f8de877c044d7f439d"
+    },
+    {
+      "src": "fontelico",
+      "code": 59442,
+      "css": "spin3",
+      "uid": "2a6740fc2f9d0edea54205963f662594"
+    },
+    {
+      "src": "entypo",
+      "code": 59395,
+      "css": "note-beamed",
+      "uid": "fda731b5a4026685e1a9c7e64228e2b2"
+    }
+  ],
+  "ascent": 850,
+  "units_per_em": 1000,
+  "hinting": true,
+  "css_use_suffix": false,
+  "css_prefix_text": "icon-",
+  "name": "component-font"
+}
