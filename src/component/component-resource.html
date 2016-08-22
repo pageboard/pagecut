@@ -95,13 +95,6 @@ resourceProto.attachedCallback = function() {
 	GET(inspectorBase + "/inspector", {
 		url: attrs.href
 	}).then(function(obj) {
-		return new Promise(function(resolve) {
-			setTimeout(function() {
-				console.log("artificial timeout, remove me");
-				resolve(obj);
-			}, 500);
-		});
-	}).then(function(obj) {
 		var editor = me.closest('.ProseMirror');
 		if (!editor) return;
 		var pm = editor.ProseMirror;
