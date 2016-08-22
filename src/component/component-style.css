@@ -75,7 +75,7 @@ component-widget > .thumbnail {
 
 component-widget > .thumbnail > img {
 	float:left;
-	max-width:6em;
+	max-width:6.2em;
 	height:2.75em;
 }
 
