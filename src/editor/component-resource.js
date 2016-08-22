@@ -74,8 +74,7 @@ inherits(ComponentField, model.Block);
 
 Object.defineProperty(ComponentField.prototype, "attrs", { get: function() {
 	return {
-		"name": new model.Attribute({ default: "" }),
-		"label": new model.Attribute({ default: "" })
+		"name": new model.Attribute({ default: "" })
 	};
 }});
 
