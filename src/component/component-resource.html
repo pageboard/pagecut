@@ -8,10 +8,10 @@
 <link href="component-style.css" rel="stylesheet" />
 
 <script type="text/template" id="component-widget">
-	<div class="type">
+	<a class="type" bind-href="attr.href">
 		<i bind-class="icon-[attr.type|icon]"></i><br>
 		<img class="favicon" bind-src="attr.icon|hide">
-	</div>
+	</a>
 	<div class="thumbnail">
 		<img bind-src="attr.thumbnail|hide" />
 	</div>
@@ -118,7 +118,7 @@ resourceProto.attachedCallback = function() {
 
 		pm.tr.replaceWith(nsel.from, nsel.to, types.component_resource.createAndFill({
 			type: obj.type,
-			href: obj.href,
+			href: obj.url,
 			icon: obj.icon,
 			thumbnail: obj.thumbnail ? (inspectorBase + obj.thumbnail) : null
 		}, [titleField, descriptionField])).apply();
