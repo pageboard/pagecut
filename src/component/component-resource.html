@@ -20,8 +20,6 @@
 
 <script>(function() {
 
-var inspectorBase = "http://inspector.eda.sarl";
-
 var ownDoc = (document._currentScript || document.currentScript).ownerDocument;
 var widgetTemplate = Domt.template(ownDoc.getElementById('component-widget'));
 
@@ -89,35 +87,6 @@ resourceProto.attachedCallback = function() {
 	if (!attrs.description) attrs.description = null;
 
 	merge(this, attrs);
-
-	if (attrs.type != "none" || !attrs.href) return;
-
-	GET(inspectorBase + "/inspector", {
-		url: attrs.href
-	}).then(function(obj) {
-		var editor = me.closest('.ProseMirror');
-		if (!editor) return;
-		var pm = editor.ProseMirror;
-		if (!pm) return;
-		var nsel = pm.getNodeSelection(me);
-
-		var types = pm.schema.nodes;
-		var titleField = types.component_field.create({
-			name: "title"
-		}, pm.schema.text(obj.title || obj.href));
-		var descriptionField = types.component_field.create({
-			name: "description"
-		}, obj.description ? pm.schema.text(obj.description) : null);
-
-		pm.tr.replaceWith(nsel.from, nsel.to, types.component_resource.createAndFill({
-			type: obj.type,
-			href: obj.url,
-			icon: obj.icon,
-			thumbnail: obj.thumbnail ? (inspectorBase + obj.thumbnail) : null
-		}, [titleField, descriptionField])).apply();
-	}).catch(function(err) {
-		console.error(err);
-	});
 };
 
 resourceProto.attributeChangedCallback = function(name) {

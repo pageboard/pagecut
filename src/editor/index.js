@@ -46,11 +46,57 @@ exports.defaults = {
 		UrlPlugin.config({
 			action: function(pm, url, child) {
 				var types = pm.schema.nodes;
-				return types.component_resource.create({ href: url	});
+				var loadingId = 'id' + Math.round(Math.random() * 1e9);
+				var loadingNode = types.component_resource.create({
+					href: url,
+					id: loadingId
+				});
+				pm.inspector(url, function(err, obj) {
+					// find node
+					var node = document.getElementById(loadingId);
+					if (!node) {
+						console.error('problem no node with id', loadingId);
+					}
+					var pos = pm.posFromDOM(node);
+					var begin = pos.pos;
+					var $pos = pm.doc.resolve(begin);
+					var end = begin + $pos.nodeAfter.nodeSize;
+
+					if (err) {
+						console.error(err);
+						pm.tr.delete(begin, end).apply();
+						return;
+					}
+
+					var titleField = types.component_field.create({
+						name: "title"
+					}, pm.schema.text(obj.title || obj.href));
+
+					var descriptionField = types.component_field.create({
+						name: "description"
+					}, obj.description ? pm.schema.text(obj.description) : null);
+
+					pm.tr.replaceWith(begin, end, types.component_resource.createAndFill({
+						type: obj.type,
+						href: obj.url,
+						icon: obj.icon,
+						thumbnail: obj.thumbnail
+					}, [titleField, descriptionField])).apply();
+				});
+				return loadingNode;
 			}
 		}),
 		componentPlugin
-	]
+	],
+	inspector: function(url, cb) {
+		setTimeout(function() {
+			cb(null, {
+				type: 'link',
+				title: url,
+				url: url
+			});
+		});
+	}
 };
 
 exports.init = function(config) {
@@ -65,6 +111,7 @@ exports.init = function(config) {
 	}
 
 	let pm = new ProseMirror(opts);
+	pm.inspector = opts.inspector;
 
 	let menu = buildMenuItems(pm.schema);
 	// keep full menu but remove selectParentNodeItem menu

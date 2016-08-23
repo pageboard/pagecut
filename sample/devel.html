@@ -33,9 +33,18 @@
 </style>
 	<script>
 window.onload = function() {
+	var inspectorBase = "http://inspector.eda.sarl";
+
 	var opts = {
 		content: document.querySelector("#content"),
-		place: document.querySelector("#editor")
+		place: document.querySelector("#editor"),
+		inspector: function(url, cb) {
+			GET(inspectorBase + "/inspector", {url: url}, function(err, obj) {
+				if (err) return cb(err);
+				if (obj.thumbnail) obj.thumbnail = inspectorBase + obj.thumbnail;
+				cb(err, obj);
+			});
+		}
 	};
 	var pm = PmEditor.init(opts);
 	opts.content.remove();

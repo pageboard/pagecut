@@ -14,10 +14,11 @@ inherits(ComponentResource, model.Block);
 
 Object.defineProperty(ComponentResource.prototype, "attrs", { get: function() {
 	return {
-		"href": new model.Attribute({ default: "" }),
-		"type":  new model.Attribute({ default: "none" }),
-		"icon": new model.Attribute({ default: "" }),
-		"thumbnail": new model.Attribute({ default: "" })
+		id: new model.Attribute({ default: "" }),
+		href: new model.Attribute({ default: "" }),
+		type:  new model.Attribute({ default: "none" }),
+		icon: new model.Attribute({ default: "" }),
+		thumbnail: new model.Attribute({ default: "" })
 	};
 }});
 
@@ -41,6 +42,7 @@ Object.defineProperty(ComponentResource.prototype, "toDOM", { get: function() {
 Object.defineProperty(ComponentResource.prototype, "matchDOMTag", { get: function() {
 	return { "component-resource": function matchComponentResource(dom) {
 		return {
+			id: dom.getAttribute('id'),
 			href: dom.getAttribute('href'),
 			type: dom.getAttribute('type'),
 			icon: dom.getAttribute('icon'),
