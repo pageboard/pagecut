@@ -47,9 +47,5 @@ UrlPlugin.prototype.transform = function(fragment) {
 	return Fragment.fromArray(linkified);
 };
 
-function genRule(action) {
-	return new InputRule(new RegExp('(' + UrlRegex + ')$', 'i'), null, action);
-}
-
 module.exports = new Plugin(UrlPlugin);
 
