@@ -32,7 +32,7 @@
 }
 </style>
 	<script>
-window.onload = function() {
+document.addEventListener('DOMContentLoaded', function() {
 	var inspectorBase = "http://inspector.eda.sarl";
 
 	var opts = {
@@ -48,7 +48,7 @@ window.onload = function() {
 	};
 	var pm = PmEditor.init(opts);
 	opts.content.remove();
-};
+});
 	</script>
 </head>
 <body>
