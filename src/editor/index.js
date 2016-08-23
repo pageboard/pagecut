@@ -3,8 +3,7 @@ const {Schema} = require("prosemirror/dist/model");
 const basicSchema = require("prosemirror/dist/schema-basic");
 const tableSchema = require("prosemirror/dist/schema-table");
 const {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup");
-const {tooltipMenu, menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
-const {posFromDOM} = require("prosemirror/dist/edit/dompos");
+const {menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
 
 const UrlPlugin = require("./url-plugin");
 const ComponentPlugin = require("./component-plugin");
@@ -37,71 +36,22 @@ let schemaSpec = {
 	}
 };
 
-let componentPlugin = ComponentPlugin.config(schemaSpec);
-
 exports.defaults = {
 	spec: schemaSpec,
 	plugins: [
 		BreaksPlugin.config(),
-		exampleSetup.config({menuBar: false, tooltipMenu: false}),
-		UrlPlugin.config({
-			action: function(pm, url, child) {
-				var types = pm.schema.nodes;
-				var loadingId = 'id' + Math.round(Math.random() * 1e9);
-				var loadingNode = types.component_resource.create({
-					href: url,
-					id: loadingId
-				});
-				pm.inspector(url, function(err, obj) {
-					// find node
-					var node = document.getElementById(loadingId);
-					if (!node) {
-						console.error('problem no node with id', loadingId);
-					}
-					var pos = posFromDOM(node);
-					var begin = pos.pos;
-					var $pos = pm.doc.resolve(begin);
-					var end = begin + $pos.nodeAfter.nodeSize;
-
-					if (err) {
-						console.error(err);
-						pm.tr.delete(begin, end).apply();
-						return;
-					}
-
-					var titleField = types.component_field.create({
-						name: "title"
-					}, pm.schema.text(obj.title || obj.href));
-
-					var descriptionField = types.component_field.create({
-						name: "description"
-					}, obj.description ? pm.schema.text(obj.description) : null);
-
-					pm.tr.replaceWith(begin, end, types.component_resource.createAndFill({
-						type: obj.type,
-						href: obj.url,
-						icon: obj.icon,
-						thumbnail: obj.thumbnail
-					}, [titleField, descriptionField])).apply();
-				});
-				return loadingNode;
-			}
-		}),
-		componentPlugin
-	],
-	inspector: function(url, cb) {
-		setTimeout(function() {
-			cb(null, {
-				type: 'link',
-				title: url,
-				url: url
-			});
-		});
-	}
+		exampleSetup.config({menuBar: false, tooltipMenu: false})
+	]
 };
 
 exports.init = function(config) {
 	var opts = Object.assign({}, exports.defaults, config);
+
+	let componentPlugin = ComponentPlugin.config({
+		schema: opts.spec,
+		inspector: opts.inspector
+	});
+
 	if (opts.spec) {
 		opts.schema = new Schema(opts.spec);
 		delete opts.spec;
@@ -111,8 +61,11 @@ exports.init = function(config) {
 		delete opts.content;
 	}
 
+	opts.plugins.push(UrlPlugin.config({
+		action: componentPlugin.action
+	}), componentPlugin);
+
 	let pm = new ProseMirror(opts);
-	pm.inspector = opts.inspector;
 
 	let menu = buildMenuItems(pm.schema);
 	// keep full menu but remove selectParentNodeItem menu

@@ -1,5 +1,4 @@
 var model = require("prosemirror/dist/model");
-var edit = require("prosemirror/dist/edit");
 
 var inherits = require('./inherits');
 

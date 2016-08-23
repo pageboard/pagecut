@@ -1,4 +1,3 @@
-const {InputRule, inputRules} = require("prosemirror/dist/inputrules");
 const {Plugin} = require("prosemirror/dist/edit");
 const {Slice, Fragment} = require("prosemirror/dist/model");
 

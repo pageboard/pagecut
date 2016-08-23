@@ -73,7 +73,8 @@ ComponentPlugin.prototype.fixDrag = function(e) {
 
 module.exports = new Plugin(ComponentPlugin);
 
-module.exports.config = function(schema) {
+module.exports.config = function(options) {
+	let schema = options.schema;
 	schema.nodes.component_field = {
 		type: ComponentField,
 		content: "inline<_>*"
@@ -86,6 +87,61 @@ module.exports.config = function(schema) {
 		content: 'component_widget component_field[name="title"] component_field[name="description"]'
 	};
 	schema.nodes.doc.content = "(block|component_resource)+";
-	return Plugin.prototype.config.call(module.exports);
+
+	if (!options.inspector) options.inspector = function inspectorStub(url, cb) {
+		setTimeout(function() {
+			cb(null, {
+				type: 'link',
+				title: url,
+				url: url
+			});
+		});
+	};
+	let plugin = Plugin.prototype.config.call(module.exports, options);
+	plugin.action = componentUrlAction.bind(plugin);
+	return plugin;
 };
+
+
+function componentUrlAction(pm, url) {
+	var types = pm.schema.nodes;
+	var loadingId = 'id' + Math.round(Math.random() * 1e9);
+	var loadingNode = types.component_resource.create({
+		href: url,
+		id: loadingId
+	});
+	this.options.inspector(url, function(err, obj) {
+		// find node
+		var node = document.getElementById(loadingId);
+		if (!node) {
+			console.error('problem no node with id', loadingId);
+		}
+		var pos = posFromDOM(node);
+		var begin = pos.pos;
+		var $pos = pm.doc.resolve(begin);
+		var end = begin + $pos.nodeAfter.nodeSize;
+
+		if (err) {
+			console.error(err);
+			pm.tr.delete(begin, end).apply();
+			return;
+		}
+
+		var titleField = types.component_field.create({
+			name: "title"
+		}, pm.schema.text(obj.title || obj.href));
+
+		var descriptionField = types.component_field.create({
+			name: "description"
+		}, obj.description ? pm.schema.text(obj.description) : null);
+
+		pm.tr.replaceWith(begin, end, types.component_resource.createAndFill({
+			type: obj.type,
+			href: obj.url,
+			icon: obj.icon,
+			thumbnail: obj.thumbnail
+		}, [titleField, descriptionField])).apply();
+	});
+	return loadingNode;
+}
 
