@@ -5,22 +5,6 @@ const {ComponentResource, ComponentWidget, ComponentField} = require('./componen
 function ComponentPlugin(pm, options) {
 	this.pm = pm;
 
-	pm.posFromDOM = posFromDOM;
-
-	pm.getNodeSelection = function(node) {
-		var pos = posFromDOM(node);
-		var $pos = this.doc.resolve(pos.pos);
-		return new NodeSelection($pos);
-	}.bind(pm);
-
-	pm.selectNode = function(node) {
-		var pos = posFromDOM(node);
-		var $pos = this.doc.resolve(pos.pos);
-		var after = $pos.nodeAfter;
-		if (!after || !after.type.selectable) return;
-		this.setSelection(new NodeSelection($pos));
-	}.bind(pm);
-
 	this.fixDrag = this.fixDrag.bind(this);
 	this.trackFocus = this.trackFocus.bind(this);
 	this.fixChange = this.fixChange.bind(this);
@@ -29,6 +13,14 @@ function ComponentPlugin(pm, options) {
 
 	pm.content.addEventListener("mousedown", this.fixDrag);
 	pm.content.addEventListener("click", this.trackFocus);
+}
+
+function selectNode(pm, node) {
+	var pos = posFromDOM(node);
+	var $pos = pm.doc.resolve(pos.pos);
+	var after = $pos.nodeAfter;
+	if (!after || !after.type.selectable) return;
+	pm.setSelection(new NodeSelection($pos));
 }
 
 ComponentPlugin.prototype.detach = function(pm) {
@@ -49,7 +41,7 @@ ComponentPlugin.prototype.fixChange = function() {
 		var node = DOMAfterPos(this.pm, from);
 		if (!node) node = DOMBeforePos(this.pm, from);
 		if (!node || !node.nodeName) return;
-		if (node.nodeName.toLowerCase() == "component-widget") this.pm.selectNode(node.parentNode);
+		if (node.nodeName.toLowerCase() == "component-widget") selectNode(this.pm, node.parentNode);
 		this.trackFocus({target: node});
 	} catch(ex) {
 	}
@@ -76,7 +68,7 @@ ComponentPlugin.prototype.fixDrag = function(e) {
 	if (!parent) return;
 	if (node.closest('component-field')) return;
 	this.dragging = true;
-	this.pm.selectNode(parent);
+	selectNode(this.pm, parent);
 };
 
 module.exports = new Plugin(ComponentPlugin);

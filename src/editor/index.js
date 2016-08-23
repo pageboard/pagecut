@@ -4,6 +4,7 @@ const basicSchema = require("prosemirror/dist/schema-basic");
 const tableSchema = require("prosemirror/dist/schema-table");
 const {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup");
 const {tooltipMenu, menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
+const {posFromDOM} = require("prosemirror/dist/edit/dompos");
 
 const UrlPlugin = require("./url-plugin");
 const ComponentPlugin = require("./component-plugin");
@@ -57,7 +58,7 @@ exports.defaults = {
 					if (!node) {
 						console.error('problem no node with id', loadingId);
 					}
-					var pos = pm.posFromDOM(node);
+					var pos = posFromDOM(node);
 					var begin = pos.pos;
 					var $pos = pm.doc.resolve(begin);
 					var end = begin + $pos.nodeAfter.nodeSize;
