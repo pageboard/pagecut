@@ -14,20 +14,21 @@
 }
 
 component-resource {
-	display:inline-block;
-	white-space: normal;
+	display:flex;
+	white-space: nowrap;
 	position:relative;
 	border:1px solid silver;
 	border-radius:0.5em;
 	overflow:hidden;
 	max-height:2.75em;
 	max-width:100%;
+	transition: max-height 0.5s ease;
 }
 component-resource [hidden] {
 	display:none !important;
 }
 component-resource.focused {
-	max-height:none;
+	max-height:10em; /* workaround transition with unknown max-height will cause a problem */
 	border-color:black;
 	box-shadow:1px 1px 1px black;
 }
@@ -44,51 +45,54 @@ component-widget.ProseMirror-selectednode {
 }
 
 component-widget {
-	display:block;
+	display:inline-block;
 	cursor:move;
-	min-width:20em; /* prevent collapse */
-}
-
-component-widget img {
-	cursor:move !important;
+	vertical-align:top;
 }
 
 component-widget > .type {
-	position:absolute;
+	display:block;
 	text-align:center;
 	height:100%;
 	color:white;
 	background-color:black;
 	line-height:1.4em;
 	cursor:move;
+	margin:1px;
+}
+component-widget[type="begin"] {
+	background:black;
+	flex: 0 0 auto;
 }
 
-component-widget > .type > .favicon {
+component-widget[type="begin"] .favicon {
 	max-width:1.2em;
 }
 
-component-widget > .thumbnail {
-	float:right;
-	z-index:1;
-	position:relative; /* needed by z-index */
+component-widget[type="end"] {
+	background:black;
+	flex: 0 1 auto;
+	align-self:center;
 }
 
-component-widget > .thumbnail > img {
-	float:left;
-	max-width:6.2em;
-	height:2.75em;
+component-widget[type="end"] .thumbnail {
+	display:block;
+	cursor:move !important;
+	max-height:100%;
+	max-width:100%;
 }
 
-component-resource.focused > component-widget > .thumbnail > img {
-	height:auto;
-}
-
-component-resource.focused > component-field {
+component-resource.focused component-field {
 	white-space: pre-wrap;
+}
+component-resource > .component-fields {
+	display:inline-block;
+	flex: 5 1 auto;
+	position: relative;
+	overflow: hidden;
 }
 component-field {
 	display: block;
-	margin-left: 1.3em;
 	white-space: nowrap;
 	overflow:hidden;
 	text-overflow:ellipsis;

@@ -1,6 +1,11 @@
 const {Plugin, NodeSelection} = require("prosemirror/dist/edit");
 const {posFromDOM, DOMAfterPos, DOMBeforePos} = require("prosemirror/dist/edit/dompos");
-const {ComponentResource, ComponentWidget, ComponentField} = require('./component-resource');
+const {
+	ComponentResource,
+	ComponentWidget,
+	ComponentField,
+	ComponentFields
+} = require('./component-resource');
 
 function ComponentPlugin(pm, options) {
 	this.pm = pm;
@@ -79,12 +84,16 @@ module.exports.config = function(options) {
 		type: ComponentField,
 		content: "inline<_>*"
 	};
+	schema.nodes.component_fields = {
+		type: ComponentFields,
+		content: 'component_field[name="title"] component_field[name="description"]'
+	};
 	schema.nodes.component_widget = {
 		type: ComponentWidget
 	};
 	schema.nodes.component_resource = {
 		type: ComponentResource,
-		content: 'component_widget component_field[name="title"] component_field[name="description"]'
+		content: 'component_widget[type="begin"] component_fields component_widget[type="end"]'
 	};
 	schema.nodes.doc.content = "(block|component_resource)+";
 
@@ -135,12 +144,14 @@ function componentUrlAction(pm, url) {
 			name: "description"
 		}, obj.description ? pm.schema.text(obj.description) : null);
 
+		var fields = types.component_fields.create({}, [titleField, descriptionField]);
+
 		pm.tr.replaceWith(begin, end, types.component_resource.createAndFill({
 			type: obj.type,
 			href: obj.url,
 			icon: obj.icon,
 			thumbnail: obj.thumbnail
-		}, [titleField, descriptionField])).apply();
+		}, [fields])).apply();
 	});
 	return loadingNode;
 }
