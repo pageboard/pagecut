@@ -10,13 +10,15 @@ const {
 function ComponentPlugin(pm, options) {
 	this.pm = pm;
 
-	this.fixDrag = this.fixDrag.bind(this);
+	this.dragStart = this.dragStart.bind(this);
+	this.dragStop = this.dragStop.bind(this);
 	this.trackFocus = this.trackFocus.bind(this);
 	this.fixChange = this.fixChange.bind(this);
 
 	pm.on.selectionChange.add(this.fixChange);
 
-	pm.content.addEventListener("mousedown", this.fixDrag);
+	pm.content.addEventListener("mousedown", this.dragStart);
+	pm.content.addEventListener("mouseup", this.dragStop);
 	pm.content.addEventListener("click", this.trackFocus);
 }
 
@@ -30,7 +32,8 @@ function selectNode(pm, node) {
 
 ComponentPlugin.prototype.detach = function(pm) {
 	if (pm.content) {
-		pm.content.removeEventListener("mousedown", this.fixDrag);
+		pm.content.removeEventListener("mousedown", this.dragStart);
+		pm.content.removeEventListener("mouseup", this.dragStop);
 		pm.content.removeEventListener("click", this.trackFocus);
 	}
 	pm.on.selectionChange.remove(this.fixChange);
@@ -57,6 +60,7 @@ ComponentPlugin.prototype.trackFocus = function(e) {
 		this.focused.classList.toggle("focused", false);
 		delete this.focused;
 	}
+	if (this.dragging) return;
 	var node = e.target;
 	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
 	var parent = node.closest('component-resource');
@@ -65,7 +69,7 @@ ComponentPlugin.prototype.trackFocus = function(e) {
 	parent.classList.toggle("focused", true);
 };
 
-ComponentPlugin.prototype.fixDrag = function(e) {
+ComponentPlugin.prototype.dragStart = function(e) {
 	this.dragging = false;
 	var node = e.target;
 	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
@@ -75,6 +79,11 @@ ComponentPlugin.prototype.fixDrag = function(e) {
 	this.dragging = true;
 	selectNode(this.pm, parent);
 };
+
+ComponentPlugin.prototype.dragStop = function(e) {
+	this.dragging = false;
+};
+
 
 module.exports = new Plugin(ComponentPlugin);
 
