@@ -31,14 +31,22 @@
 }
 	</style>
 	<script>
-window.onload = function() {
+document.addEventListener('DOMContentLoaded', function() {
+	var inspectorBase = "http://inspector.eda.sarl";
 	var opts = {
 		content: document.querySelector("#content"),
-		place: document.querySelector("#editor")
+		place: document.querySelector("#editor"),
+		inspector: function(url, cb) {
+			GET(inspectorBase + "/inspector", {url: url}, function(err, obj) {
+				if (err) return cb(err);
+				if (obj.thumbnail) obj.thumbnail = inspectorBase + obj.thumbnail;
+				cb(err, obj);
+			});
+		}
 	};
 	var pm = PmEditor.init(opts);
 	opts.content.remove();
-};
+});
 	</script>
 </head>
 <body>
@@ -47,14 +55,13 @@ window.onload = function() {
 <div id="content">
 <p>a</p>
 <p>b</p>
-<component-resource
-	type="embed"
-	icon="https://abs.twimg.com/favicons/favicon.ico"
-	thumbnail="http://inspector.eda.sarl/images?url=https%3A%2F%2Fpbs.twimg.com%2Fmedia%2FCqKeszCUEAABqZ1.jpg%3Alarge"
->
-	<component-widget></component-widget>
+<component-resource href="https://twitter.com/nodejs/status/766349381570142208" type="embed" icon="https://abs.twimg.com/favicons/favicon.ico" thumbnail="http://inspector.eda.sarl/images?url=https%3A%2F%2Fpbs.twimg.com%2Fmedia%2FCqKeszCUEAABqZ1.jpg%3Alarge">
+	<component-widget type="begin"></component-widget>
+	<div class="component-fields">
 	<component-field name="title">Node.js on Twitter</component-field>
 	<component-field name="description">“How #nodejs helps NASA keep astronauts safe and data accessible: https://t.co/X7uK697Tqd”</component-field>
+	</div>
+	<component-widget type="end"></component-widget>
 </component-resource>
 <p>c</p>
 </div>
