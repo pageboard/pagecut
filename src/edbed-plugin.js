@@ -47,7 +47,8 @@ EdbedPlugin.prototype.fixChange = function() {
 		if (!node) node = DOMBeforePos(this.pm, from);
 		if (!node || !node.nodeName) return;
 		var name = node.nodeName.toLowerCase();
-		if (name == "edbed-link" || name == "edbed-aside") selectNode(this.pm, node.parentNode);
+		var nonsel = node.closest("edbed-link,edbed-aside");
+		if (nonsel) selectNode(this.pm, nonsel.parentNode);
 		this.trackFocus({target: node});
 	} catch(ex) {
 	}
