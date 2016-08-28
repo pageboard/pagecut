@@ -1,6 +1,10 @@
 @import 'edbed-font.css';
 
-component-resource {
+.ProseMirror-content {
+	outline:none;
+}
+
+edbed-item {
 	display:flex;
 	white-space: nowrap;
 	position:relative;
@@ -11,63 +15,49 @@ component-resource {
 	max-width:100%;
 	transition: max-height 0.5s ease;
 }
-component-resource [hidden] {
+edbed-item [hidden] {
 	display:none !important;
 }
-component-resource.focused {
+edbed-item.focused {
 	max-height:10em; /* workaround transition with unknown max-height will cause a problem */
 	border-color:black;
 	box-shadow:1px 1px 1px black;
 }
 
-.ProseMirror-content {
-	outline:none;
-}
-
-component-resource.ProseMirror-selectednode {
+edbed-item.ProseMirror-selectednode {
 	outline: none;
 }
-component-widget.ProseMirror-selectednode {
+edbed-link.ProseMirror-selectednode,
+edbed-aside.ProseMirror-selectednode {
 	outline: 1px solid red; /* should never happen */
 }
 
-component-widget {
+edbed-link, edbed-aside {
 	display:inline-block;
 	cursor:move;
 	vertical-align:top;
 }
 
-component-widget[type="begin"] {
+edbed-link {
 	background:black;
 	flex: 0 0 auto;
+	padding-left:0.15em;
+	padding-right:0.1em;
 }
 
-component-widget[type="begin"] > .type {
-	display:block;
-	text-align:center;
-	height:100%;
-	color:white;
-	background-color:black;
-	line-height:1.4em;
-	cursor:move;
-	margin:1px;
-}
-
-
-component-widget > .type > i:before {
+edbed-link:before {
 	font-family: "component-font";
 	font-style: normal;
 	font-weight: normal;
 	speak: none;
-	display: inline-block;
+	display: block;
 	text-decoration: inherit;
 	width: 1em;
-	margin-right: .2em;
-	text-align: center;
 	font-variant: normal;
 	text-transform: none;
 	line-height: 1em;
-	margin-left: .2em;
+	margin: 0.2em auto;
+	color:white;
 }
 @keyframes spin {
 	0% {
@@ -78,22 +68,25 @@ component-widget > .type > i:before {
 	}
 }
 
-component-resource[type="none"] > component-widget > .type > i:before {
+edbed-item[type="none"] > edbed-link:before {
 	content: '\e832';
 	animation: spin 2s infinite linear;
 }
-component-resource[type=""] > component-widget > .type > i:before { content: '\e832'; }
-component-resource[type="video"] > component-widget > .type > i:before { content: '\e800'; }
-component-resource[type="link"] > component-widget > .type > i:before { content: '\e801'; }
-component-resource[type="image"] > component-widget > .type > i:before { content: '\e802'; }
-component-resource[type="audio"] > component-widget > .type > i:before { content: '\e803'; }
-component-resource[type="embed"] > component-widget > .type > i:before { content: '\f10e'; }
+edbed-item[type=""] > edbed-link:before { content: '\e832'; }
+edbed-item[type="video"] > edbed-link:before { content: '\e800'; }
+edbed-item[type="link"] > edbed-link:before { content: '\e801'; }
+edbed-item[type="image"] > edbed-link:before { content: '\e802'; }
+edbed-item[type="audio"] > edbed-link:before { content: '\e803'; }
+edbed-item[type="embed"] > edbed-link:before { content: '\f10e'; }
 
-component-widget[type="begin"] .favicon {
+edbed-link > img {
 	max-width:1.2em;
+	display:block;
+	margin:0.2em auto;
+	cursor:move !important;
 }
 
-component-widget[type="end"] {
+edbed-aside {
 	background:black;
 	flex: 1 1 auto;
 	display:flex;
@@ -101,20 +94,20 @@ component-widget[type="end"] {
 	position:relative;
 }
 
-component-widget[type="end"] .thumbnail {
+edbed-aside > edbed-thumbnail {
 	flex: 1 1 auto;
 	min-height:0;
 	min-width:0;
 	display:flex;
 }
 
-component-widget[type="end"] .thumbnail img {
+edbed-aside > edbed-thumbnail > img {
 	cursor:move !important;
 	width: 100%;
 	align-self:center;
 }
 
-component-widget[type="end"] .text {
+edbed-aside > edbed-props {
 	flex: 0 0 auto;
 	color:white;
 	background-color: rgba(0, 0, 0, 0.5);
@@ -122,16 +115,16 @@ component-widget[type="end"] .text {
 	padding-left: 0.2em;
 }
 
-component-resource.focused component-field {
+edbed-item.focused edbed-field {
 	white-space: pre-wrap;
 }
-component-resource > .component-fields {
+edbed-item > edbed-fields {
 	display:inline-block;
 	flex: 5 1 auto;
 	position: relative;
 	overflow: hidden;
 }
-component-field {
+edbed-field {
 	display: block;
 	white-space: nowrap;
 	overflow:hidden;
@@ -142,16 +135,16 @@ component-field {
 	padding-left: 0.4em;
 }
 
-component-field[name]:before {
+edbed-field[name]:before {
 	color:grey;
 	font-family:sans-serif;
 	letter-spacing:-1px;
 	font-size:0.8em;
 }
 
-component-field[name="title"]:before {
+edbed-field[name="title"]:before {
 	content: 'Title: ';
 }
-component-field[name="description"]:before {
+edbed-field[name="description"]:before {
 	content: 'Description: ';
 }

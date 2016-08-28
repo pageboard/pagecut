@@ -25,7 +25,7 @@ Object.defineProperty(Item.prototype, "toDOM", { get: function() {
 }});
 
 Object.defineProperty(Item.prototype, "matchDOMTag", { get: function() {
-	return { "edbed-item": function matchItem(dom) {
+	return { "edbed-item": function(dom) {
 		return {
 			id: dom.getAttribute('id'),
 			type: dom.getAttribute('type')
@@ -41,7 +41,7 @@ exports.Link = Link;
 function Link(name, schema) {
 	model.Block.call(this, name, schema);
 }
-inherits(Item, model.Block);
+inherits(Link, model.Block);
 
 Object.defineProperty(Link.prototype, "attrs", { get: function() {
 	return {
@@ -56,7 +56,7 @@ Object.defineProperty(Link.prototype, "toDOM", { get: function() {
 }});
 
 Object.defineProperty(Link.prototype, "matchDOMTag", { get: function() {
-	return { "edbed-link": function matchItem(dom) {
+	return { "edbed-link": function(dom) {
 		return {
 			href: dom.getAttribute('href')
 		};
@@ -86,7 +86,7 @@ Object.defineProperty(Field.prototype, "toDOM", { get: function() {
 }});
 
 Object.defineProperty(Field.prototype, "matchDOMTag", { get: function() {
-	return { "edbed-field": function matchField(dom) {
+	return { "edbed-field": function(dom) {
 		return {
 			name: dom.getAttribute('name')
 		};
@@ -168,6 +168,35 @@ Object.defineProperty(Thumbnail.prototype, "matchDOMTag", { get: function() {
 
 /*****************************************/
 
+exports.Image = Image;
+
+function Image(name, schema) {
+	model.Block.call(this, name, schema);
+}
+inherits(Image, model.Block);
+
+Object.defineProperty(Image.prototype, "attrs", { get: function() {
+	return {
+		src: new model.Attribute({ default: "" })
+	};
+}});
+
+Object.defineProperty(Image.prototype, "toDOM", { get: function() {
+	return function(node) {
+		return ["img", node.attrs];
+	};
+}});
+
+Object.defineProperty(Image.prototype, "matchDOMTag", { get: function() {
+	return { "img": function(dom) {
+		return {
+			src: dom.getAttribute('src')
+		};
+	}};
+}});
+
+/*****************************************/
+
 exports.Properties = Properties;
 
 function Properties(name, schema) {
@@ -213,6 +242,11 @@ Object.defineProperty(Property.prototype, "toDOM", { get: function() {
 }});
 
 Object.defineProperty(Property.prototype, "matchDOMTag", { get: function() {
-	return { 'edbed-prop': null };
+	return { "edbed-prop": function(dom) {
+		return {
+			name: dom.getAttribute('name'),
+			value: dom.getAttribute('value')
+		};
+	}};
 }});
 

@@ -1,7 +1,7 @@
 const {Plugin, NodeSelection} = require("prosemirror/dist/edit");
 const {posFromDOM, DOMAfterPos, DOMBeforePos} = require("prosemirror/dist/edit/dompos");
 const {
-	Item, Link, Fields, Field, Aside, Thumbnail, Properties, Property
+	Item, Link, Fields, Field, Aside, Thumbnail, Image, Properties, Property
 } = require('./edbed-elements');
 
 function EdbedPlugin(pm, options) {
@@ -94,15 +94,18 @@ module.exports.config = function(options) {
 	};
 	schema.nodes.edbed_fields = {
 		type: Fields,
-		content: 'edbed_field[name="title"] edbed_field[name="description"]'
+		content: 'edbed_field*'
+	};
+	schema.nodes.edbed_image = {
+		type: Image
 	};
 	schema.nodes.edbed_link = {
 		type: Link,
-		content: 'img?'
+		content: 'edbed_image?'
 	};
 	schema.nodes.edbed_thumbnail = {
 		type: Thumbnail,
-		content: 'img?'
+		content: 'edbed_image?'
 	};
 	schema.nodes.edbed_properties = {
 		type: Properties,
@@ -142,28 +145,41 @@ function itemFromDom(pm, node) {
 	return newNode.firstChild;
 }
 
-function setProperties(node, obj) {
+function ensureImg(node) {
+	var img = node.querySelector('* > img');
+	if (!img) {
+		img = document.createElement('img');
+		node.appendChild(img);
+	}
+	return img;
+}
+
+function setProperties(me, obj) {
 	var propNames = {
 		duration: true,
 		dimensions: true,
 		size: true
 	};
 
-	var fields = node.querySelector('edbed-fields');
+	var fields = me.querySelector('edbed-fields');
 	fields.innerHTML = "";
-	var props = node.querySelector('edbed-props');
+	var props = me.querySelector('edbed-props');
 	props.innerHTML = "";
+	var link = me.querySelector('edbed-link');
+	link.innerHTML = "";
+	var thumb = me.querySelector('edbed-aside > edbed-thumbnail');
+	thumb.innerHTML = "";
 
 	Object.keys(obj).forEach(function(name) {
 		var val = obj[name];
 		if (name == "type" || name == "id") {
 			me.setAttribute(name, val);
 		} else if (name == "href") {
-			me.querySelector('edbd-link').setAttribute('href', val);
+			link.setAttribute('href', val);
 		} else if (name == "icon") {
-			me.querySelector('edbd-link > img').setAttribute('src', val);
+			ensureImg(link).setAttribute('src', val);
 		} else if (name == "thumbnail") {
-			me.querySelector('edbed-aside > edbed-thumbnail > img').setAttribute('src', val);
+			ensureImg(thumb).setAttribute('src', val);
 		} else if (propNames[name]) {
 			var propNode = document.createElement('edbed-prop');
 			propNode.setAttribute('name', name);
@@ -178,14 +194,11 @@ function setProperties(node, obj) {
 	});
 }
 
-
 function edbedAction(pm, url) {
-	var types = pm.schema.nodes;
-
-	var node = document.createElement("edbed-item");
+	var edbedItem = pm.schema.nodes.edbed_item;
 
 	var loadingId = 'id' + Math.round(Math.random() * 1e9);
-	var loadingNode = node.cloneNode();
+	var loadingNode = edbedItem.createAndFill().toDOM();
 	setProperties(loadingNode, {
 		type: "none",
 		id: loadingId,
@@ -208,6 +221,7 @@ function edbedAction(pm, url) {
 			pm.tr.delete(begin, end).apply();
 			return;
 		}
+		var node = edbedItem.createAndFill().toDOM();
 		setProperties(node, props);
 
 		// remove domt template marks
