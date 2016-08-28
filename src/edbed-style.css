@@ -39,7 +39,7 @@ edbed-link, edbed-aside {
 }
 
 edbed-link {
-	background:black;
+	background:#333;
 	flex: 0 0 auto;
 	padding-left:0.15em;
 	padding-right:0.1em;
