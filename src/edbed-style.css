@@ -59,7 +59,7 @@ edbed-link:before {
 	margin: 0.2em auto;
 	color:white;
 }
-@keyframes spin {
+@keyframes edbed-spin {
 	0% {
 		transform: rotate(0deg);
 	}
@@ -70,7 +70,7 @@ edbed-link:before {
 
 edbed-item[type="none"] > edbed-link:before {
 	content: '\e832';
-	animation: spin 2s infinite linear;
+	animation: edbed-spin 2s infinite linear;
 }
 edbed-item[type=""] > edbed-link:before { content: '\e832'; }
 edbed-item[type="video"] > edbed-link:before { content: '\e800'; }
