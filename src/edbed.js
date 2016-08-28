@@ -5,9 +5,10 @@ const tableSchema = require("prosemirror/dist/schema-table");
 const {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup");
 const {menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
 
-const UrlPlugin = require("./url-plugin");
-const ComponentPlugin = require("./component-plugin");
-const BreaksPlugin = require("./breaks-plugin");
+const UrlPlugin = require("./utils/url-plugin");
+const BreaksPlugin = require("./utils/breaks-plugin");
+
+const EdbedPlugin = require("./edbed-plugin");
 
 let schemaSpec = {
 	nodes: {
@@ -47,7 +48,7 @@ exports.defaults = {
 exports.init = function(config) {
 	var opts = Object.assign({}, exports.defaults, config);
 
-	let componentPlugin = ComponentPlugin.config({
+	let plugin = EdbedPlugin.config({
 		schema: opts.spec,
 		inspector: opts.inspector
 	});
@@ -62,8 +63,8 @@ exports.init = function(config) {
 	}
 
 	opts.plugins.push(UrlPlugin.config({
-		action: componentPlugin.action
-	}), componentPlugin);
+		action: plugin.action
+	}), plugin);
 
 	let pm = new ProseMirror(opts);
 

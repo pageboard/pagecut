@@ -1,15 +1,15 @@
 {
-  "name": "prosemirror-url-inspector",
+  "name": "edbed",
   "version": "0.1.0",
-  "description": "Use url-inspector to manage resources in prosemirror",
-  "main": "dist/pm-editor.bundle.js",
+  "description": "Text Editor with URL embedding features",
+  "main": "dist/edbed.js",
   "scripts": {
     "prepublish": "make all",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kapouer/prosemirror-url-inspector.git"
+    "url": "git+https://github.com/kapouer/edbed.git"
   },
   "keywords": [
     "editor",
@@ -21,14 +21,13 @@
   "author": "Jérémy Lal <kapouer@melix.org>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kapouer/prosemirror-url-inspector/issues"
+    "url": "https://github.com/kapouer/edbed/issues"
   },
-  "homepage": "https://github.com/kapouer/prosemirror-url-inspector#readme",
+  "homepage": "https://github.com/kapouer/edbed#readme",
   "dependencies": {
     "babel-preset-es2015": "^6.13.2",
     "bundledom": "^1.3.3",
-    "domt": "^5.2.6",
-    "prosemirror": "^0.9.1",
+    "prosemirror": "^0.10.0",
     "url-regex": "^3.2.0"
   },
   "devDependencies": {

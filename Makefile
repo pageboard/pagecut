@@ -4,11 +4,11 @@ PROSEMIRROR = $(shell node -p 'require("path").resolve(require.resolve("prosemir
 FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
-all: dist/pm-editor.js src/component/*
-	$(BUNDLEDOM) -p component/CustomElements.js src/index.html > dist/pm-editor.bundle.js
+all: dist/edbed.js src/*
+	$(BUNDLEDOM) dist/index.html --js edbed.min.js --css edbed.min.css
 
-dist/pm-editor.js: src/editor/*.js $(PROSEMIRROR)/**/*.js
-	$(BROWSERIFY) --standalone PmEditor --outfile $@ -t [ babelify --presets [ es2015 ] ] src/editor/index.js
+dist/edbed.js: src/*.js $(PROSEMIRROR)/**/*.js
+	$(BROWSERIFY) --standalone Edbed --outfile $@ -t [ babelify --presets [ es2015 ] ] src/edbed.js
 
 fontopen:
 	@if test ! `which curl` ; then \

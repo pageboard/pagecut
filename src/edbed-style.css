@@ -1,17 +1,4 @@
-
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(359deg);
-	}
-}
-
-.icon-spin {
-	animation: spin 2s infinite linear;
-	display: inline-block;
-}
+@import 'edbed-font.css';
 
 component-resource {
 	display:flex;
@@ -50,7 +37,12 @@ component-widget {
 	vertical-align:top;
 }
 
-component-widget > .type {
+component-widget[type="begin"] {
+	background:black;
+	flex: 0 0 auto;
+}
+
+component-widget[type="begin"] > .type {
 	display:block;
 	text-align:center;
 	height:100%;
@@ -60,10 +52,42 @@ component-widget > .type {
 	cursor:move;
 	margin:1px;
 }
-component-widget[type="begin"] {
-	background:black;
-	flex: 0 0 auto;
+
+
+component-widget > .type > i:before {
+	font-family: "component-font";
+	font-style: normal;
+	font-weight: normal;
+	speak: none;
+	display: inline-block;
+	text-decoration: inherit;
+	width: 1em;
+	margin-right: .2em;
+	text-align: center;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1em;
+	margin-left: .2em;
 }
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(359deg);
+	}
+}
+
+component-resource[type="none"] > component-widget > .type > i:before {
+	content: '\e832';
+	animation: spin 2s infinite linear;
+}
+component-resource[type=""] > component-widget > .type > i:before { content: '\e832'; }
+component-resource[type="video"] > component-widget > .type > i:before { content: '\e800'; }
+component-resource[type="link"] > component-widget > .type > i:before { content: '\e801'; }
+component-resource[type="image"] > component-widget > .type > i:before { content: '\e802'; }
+component-resource[type="audio"] > component-widget > .type > i:before { content: '\e803'; }
+component-resource[type="embed"] > component-widget > .type > i:before { content: '\f10e'; }
 
 component-widget[type="begin"] .favicon {
 	max-width:1.2em;
@@ -81,11 +105,13 @@ component-widget[type="end"] .thumbnail {
 	flex: 1 1 auto;
 	min-height:0;
 	min-width:0;
+	display:flex;
 }
 
 component-widget[type="end"] .thumbnail img {
 	cursor:move !important;
 	width: 100%;
+	align-self:center;
 }
 
 component-widget[type="end"] .text {
