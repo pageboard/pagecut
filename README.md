@@ -2,7 +2,7 @@ edbed -- Editable blocks editor
 ===============================
 
 This html wysiwyg editor is designed to help handling of external resources in a document,
-by displaying a "block" that represent the resource with these informations:
+by displaying a "block" that represents the resource with these informations:
 
 - type (link, image, video, embed)
 - favicon
@@ -12,8 +12,7 @@ by displaying a "block" that represent the resource with these informations:
 - dimensions
 - file size
 
-With the help of [prosemirror](https://prosemirror.net) and [url-inspector](https://github.com/kapouer/url-inspector),
-when a URL is pasted, it is replaced by an such a "block".
+With the help of [prosemirror](https://prosemirror.net) and [url-inspector](https://github.com/kapouer/url-inspector), when a URL or html code is pasted, it is replaced by an such a "block".
 
 
 Usage
@@ -61,10 +60,11 @@ Options are passed to the underlying prosemirror editor.
 `inspector` option must be specified as above, this function receives a url or
 a dom object.
 
+
 Properties
 ----------
 
-type: changes the appearance of the resource block, toggles default options
-icon, thumbnail, duration, dimensions, size: metadata about the resource
-html: the actual html code that will be displayed outside the editor
+- type: changes the appearance of the resource block, toggles default options
+- icon, thumbnail, duration, dimensions, size: metadata about the resource
+- html: the actual html code that will be displayed outside the editor
 
