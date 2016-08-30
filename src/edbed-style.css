@@ -20,8 +20,8 @@ edbed-item [hidden] {
 }
 edbed-item.focused {
 	max-height:10em; /* workaround transition with unknown max-height will cause a problem */
-	border-color:black;
-	box-shadow:1px 1px 1px black;
+	border-color:#333;
+	box-shadow:1px 1px 1px #333;
 }
 
 edbed-item.ProseMirror-selectednode {
@@ -87,7 +87,7 @@ edbed-link > img {
 }
 
 edbed-aside {
-	background:black;
+	background:#333;
 	flex: 1 1 auto;
 	display:flex;
 	flex-direction:column;
