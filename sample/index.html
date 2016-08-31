@@ -3,7 +3,9 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Sample editor</title>
-	<script src="pm-editor.bundle.js"></script>
+	<link href="edbed-style.css" rel="stylesheet" />
+	<script src="edbed.js"></script>
+	<script src="agent.js"></script>
 	<style>
 #editor {
 	margin:1em;
@@ -22,30 +24,46 @@
 .ProseMirror-content > p:before {
 	display: block;
 	position: absolute;
-	font-size: .8em;
+	font-size: 0.8em;
 	color: black;
-	left: -.9em;
+	left: -0.9em;
 	content: '\00b6';
-	opacity: .5;
-	top: .1em;
+	opacity: 0.5;
+	top: 0.1em;
 }
-	</style>
+edbed-field[name="test"]:before {
+	content: 'Test: ';
+}
+</style>
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
 	var inspectorBase = "http://inspector.eda.sarl";
+
 	var opts = {
 		content: document.querySelector("#content"),
 		place: document.querySelector("#editor"),
-		inspector: function(url, cb) {
-			GET(inspectorBase + "/inspector", {url: url}, function(err, obj) {
+		inspector: function(info, cb) {
+			var node = info.fragment && info.fragment.firstChild;
+			if (node && node.nodeName == "IFRAME") {
+				info.title = info.url = node.src;
+			} else {
+				node = null;
+			}
+			GET(inspectorBase + "/inspector", {url: info.url}, function(err, obj) {
 				if (err) return cb(err);
-				if (obj.thumbnail) obj.thumbnail = inspectorBase + obj.thumbnail;
-				cb(err, obj);
+				return cb(null, {
+					type: obj.type,
+					href: obj.url,
+					icon: obj.icon,
+					thumbnail: obj.thumbnail && (inspectorBase + obj.thumbnail) || null,
+					title: obj.title,
+					description: obj.description
+				});
 			});
 		}
 	};
-	var pm = PmEditor.init(opts);
-	opts.content.remove();
+	var pm = Edbed.init(opts);
+	opts.content.hidden = true;
 });
 	</script>
 </head>
@@ -55,14 +73,25 @@ document.addEventListener('DOMContentLoaded', function() {
 <div id="content">
 <p>a</p>
 <p>b</p>
-<component-resource href="https://twitter.com/nodejs/status/766349381570142208" type="embed" icon="https://abs.twimg.com/favicons/favicon.ico" thumbnail="http://inspector.eda.sarl/images?url=https%3A%2F%2Fpbs.twimg.com%2Fmedia%2FCqKeszCUEAABqZ1.jpg%3Alarge">
-	<component-widget type="begin"></component-widget>
-	<div class="component-fields">
-	<component-field name="title">Node.js on Twitter</component-field>
-	<component-field name="description">“How #nodejs helps NASA keep astronauts safe and data accessible: https://t.co/X7uK697Tqd”</component-field>
-	</div>
-	<component-widget type="end"></component-widget>
-</component-resource>
+<edbed-item type="embed">
+	<edbed-link href="https://twitter.com/nodejs/status/766349381570142208">
+		<img src="https://abs.twimg.com/favicons/favicon.ico" />
+	</edbed-link>
+	<edbed-fields>
+		<edbed-field name="title">Node.js on Twitter</edbed-field>
+		<edbed-field name="description">“How #nodejs helps NASA keep astronauts safe and data accessible: https://t.co/X7uK697Tqd”</edbed-field>
+	</edbed-fields>
+	<edbed-aside>
+		<edbed-thumbnail>
+			<img src="http://inspector.eda.sarl/images?url=https%3A%2F%2Fpbs.twimg.com%2Fmedia%2FCqKeszCUEAABqZ1.jpg%3Alarge" />
+		</edbed-thumbnail>
+		<edbed-props>
+			<edbed-prop name="width" value="500"></edbed-prop>
+			<edbed-prop name="height" value="400"></edbed-prop>
+			<edbed-prop name="size" value="45854"></edbed-prop>
+		</edbed-props>
+	</edbed-aside>
+</edbed-item>
 <p>c</p>
 </div>
 </body>
