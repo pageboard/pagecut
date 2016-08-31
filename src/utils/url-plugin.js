@@ -24,27 +24,74 @@ UrlPlugin.prototype.transform = function(fragment) {
 	for (var i = 0; i < fragment.childCount; i++) {
 		var child = fragment.child(i);
 		if (child.isText) {
-			var pos = 0, m;
-			while (m = urlReg.exec(child.text)) {
-				var start = m.index;
-				var end = start + m[0].length;
-				var link = child.type.schema.marks.link;
-				if (start > 0) linkified.push(child.copy(child.text.slice(pos, start)));
-				var urlText = child.text.slice(start, end);
-				var newNode = this.action(this.pm, urlText, child);
-				if (!newNode) {
-					newNode = child.type.create(null, urlText, link ? link.create({href: urlText}).addToSet(child.marks) : null);
+			var frog = asForeignFragment(child.text.trim());
+			if (hasOnlyChildElements(frog)) {
+				var newNode = this.action(this.pm, { fragment: frog });
+				if (newNode) {
+					linkified.push(newNode);
+					continue;
 				}
-				linkified.push(newNode);
-				pos = end;
+			} else {
+				var pos = 0, m;
+				while (m = urlReg.exec(child.text)) {
+					var start = m.index;
+					var end = start + m[0].length;
+					var link = child.type.schema.marks.link;
+					if (start > 0) linkified.push(child.copy(child.text.slice(pos, start)));
+					var urlText = child.text.slice(start, end);
+					var newNode = this.action(this.pm, { url: urlText });
+					if (!newNode) {
+						newNode = child.type.create(null, urlText, link ? link.create({href: urlText}).addToSet(child.marks) : null);
+					}
+					linkified.push(newNode);
+					pos = end;
+				}
+				if (pos < child.text.length) linkified.push(child.copy(child.text.slice(pos)));
 			}
-			if (pos < child.text.length) linkified.push(child.copy(child.text.slice(pos)));
 		} else {
 			linkified.push(child.copy(this.transform(child.content)));
 		}
 	}
 	return Fragment.fromArray(linkified);
 };
+
+function hasOnlyChildElements(fragment) {
+	var allElems = true;
+	var len = fragment.childNodes.length;
+	if (len == 0) return false;
+	for (var i = 0; i < len; i++) {
+		if (fragment.childNodes[i].nodeType != Node.ELEMENT_NODE) {
+			allElems = false;
+			break;
+		}
+	}
+	return allElems;
+}
+
+function asForeignFragment(str) {
+	var fragment;
+	// template content has a new registry of custom elements
+	// http://w3c.github.io/webcomponents/spec/custom/#creating-and-passing-registries
+	if (typeof HTMLTemplateElement == 'function') {
+		var template = document.createElement('template');
+		if (template.content && template.content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
+			fragment = template.content;
+		}
+	}
+	if (!fragment) {
+		var doc;
+		if (document.implementation && document.implementation.createHTMLDocument) {
+			doc = document.implementation.createHTMLDocument('');
+		} else {
+			throw new Error("Do not parse html using live document");
+		}
+		fragment = doc.createDocumentFragment();
+	}
+	var div = fragment.ownerDocument.createElement("div");
+	div.innerHTML = str;
+	while (div.firstChild) fragment.appendChild(div.firstChild);
+	return fragment;
+}
 
 module.exports = new Plugin(UrlPlugin);
 

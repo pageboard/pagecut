@@ -39,8 +39,14 @@ document.addEventListener('DOMContentLoaded', function() {
 	var opts = {
 		content: document.querySelector("#content"),
 		place: document.querySelector("#editor"),
-		inspector: function(url, cb) {
-			GET(inspectorBase + "/inspector", {url: url}, function(err, obj) {
+		inspector: function(info, cb) {
+			var node = info.fragment && info.fragment.firstChild;
+			if (node && node.nodeName == "IFRAME") {
+				info.title = info.url = node.src;
+			} else {
+				node = null;
+			}
+			GET(inspectorBase + "/inspector", {url: info.url}, function(err, obj) {
 				if (err) return cb(err);
 				return cb(null, {
 					type: obj.type,

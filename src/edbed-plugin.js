@@ -195,18 +195,15 @@ function setProperties(me, obj) {
 	});
 }
 
-function edbedAction(pm, url) {
+function edbedAction(pm, info) {
 	var edbedItem = pm.schema.nodes.edbed_item;
 
-	var loadingId = 'id' + Math.round(Math.random() * 1e9);
-	var loadingNode = edbedItem.createAndFill().toDOM();
-	setProperties(loadingNode, {
-		type: "none",
-		id: loadingId,
-		href: url
-	});
+	var loadingId = 'id-edbed-' + Date.now();
 
-	this.options.inspector(url, function(err, props) {
+	if (info.url) info.title = info.url;
+	else if (info.fragment) info.title = info.fragment.firstChild.innerText;
+
+	this.options.inspector(info, function(err, props) {
 		// find node
 		var oldnode = document.getElementById(loadingId);
 		if (!oldnode) {
@@ -232,6 +229,15 @@ function edbedAction(pm, url) {
 
 		pm.tr.replaceWith(begin, end, itemFromDom(pm, node)).apply();
 	});
+
+	var loadingNode = edbedItem.createAndFill().toDOM();
+
+	setProperties(loadingNode, {
+		type: "none",
+		id: loadingId,
+		title: info.title
+	});
+
 	return itemFromDom(pm, loadingNode);
 }
 
