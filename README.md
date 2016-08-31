@@ -27,16 +27,17 @@ document.addEventListener('DOMContentLoaded', function() {
 	var opts = {
 		content: document.querySelector("#content"),
 		place: document.querySelector("#editor"),
-		inspector: function(obj, cb) {
-			var url = obj;
-			if (obj instanceof Node) {
-				if (obj.nodeName == "IFRAME") url = obj.src;
-				else return cb(); // let editor handle this
+		inspector: function(info, cb) {
+			var node = info.fragment && info.fragment.firstChild;
+			if (node && node.nodeName == "IFRAME") {
+				info.url = node.src;
+				info.title = "Loading iframe at " + info.url;
+			} else {
+				node = null;
 			}
-			GET(inspectorBase + "/inspector", {url: url}, function(err, obj) {
+			GET(inspectorBase + "/inspector", {url: info.url}, function(err, obj) {
 				if (err) return cb(err);
 				return cb(null, {
-					html: obj.html,
 					type: obj.type,
 					href: obj.url,
 					icon: obj.icon,
@@ -57,9 +58,13 @@ Options
 
 Options are passed to the underlying prosemirror editor.
 
-`inspector` option must be specified as above, this function receives a url or
-a dom object.
+`inspector` option must be specified as above, this function receives an object
+with one of the following properties:
+- url
+- fragment (a non-empty document fragment with only Elements)
 
+Setting immediately the `title` property on that object will set the title of
+the loading block.
 
 Properties
 ----------
