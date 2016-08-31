@@ -222,11 +222,6 @@ function edbedAction(pm, info) {
 		var node = edbedItem.createAndFill().toDOM();
 		setProperties(node, props);
 
-		// remove domt template marks
-		var fields = node.querySelector('edbed-fields');
-		if (fields.firstChild.nodeType == Node.COMMENT_NODE) fields.removeChild(fields.firstChild);
-		if (fields.lastChild.nodeType == Node.COMMENT_NODE) fields.removeChild(fields.lastChild);
-
 		pm.tr.replaceWith(begin, end, itemFromDom(pm, node)).apply();
 	});
 
