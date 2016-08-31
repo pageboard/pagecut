@@ -42,7 +42,8 @@ edbed-link {
 	background:#333;
 	flex: 0 0 auto;
 	padding-left:0.15em;
-	padding-right:0.1em;
+	padding-right:0.2em;
+	text-align:center;
 }
 
 edbed-link:before {
