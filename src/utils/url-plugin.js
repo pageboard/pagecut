@@ -58,13 +58,18 @@ UrlPlugin.prototype.transform = function(fragment) {
 function hasOnlyChildElements(fragment) {
 	var allElems = true;
 	var len = fragment.childNodes.length;
-	if (len == 0) return false;
+	var node;
+	var count = 0;
 	for (var i = 0; i < len; i++) {
-		if (fragment.childNodes[i].nodeType != Node.ELEMENT_NODE) {
+		node = fragment.childNodes[i];
+		if (node.nodeType == Node.TEXT_NODE && !node.nodeValue.trim()) continue;
+		if (node.nodeType != Node.ELEMENT_NODE) {
 			allElems = false;
 			break;
 		}
+		count++;
 	}
+	if (!count) allElems = false;
 	return allElems;
 }
 
