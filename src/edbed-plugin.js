@@ -113,7 +113,8 @@ module.exports.config = function(options) {
 		content: 'edbed_property*'
 	};
 	schema.nodes.edbed_property = {
-		type: Property
+		type: Property,
+		content: 'inline<_>*'
 	};
 	schema.nodes.edbed_aside = {
 		type: Aside,
@@ -184,7 +185,7 @@ function setProperties(me, obj) {
 		} else if (propNames[name]) {
 			var propNode = document.createElement('edbed-prop');
 			propNode.setAttribute('name', name);
-			propNode.setAttribute('value', val);
+			propNode.innerHTML = val;
 			props.appendChild(propNode);
 		} else {
 			var fieldNode = document.createElement('edbed-field');

@@ -230,7 +230,6 @@ inherits(Property, model.Block);
 
 Object.defineProperty(Property.prototype, "attrs", { get: function() {
 	return {
-		value: new model.Attribute({ default: "" }),
 		name:  new model.Attribute({ default: "" })
 	};
 }});
@@ -244,8 +243,7 @@ Object.defineProperty(Property.prototype, "toDOM", { get: function() {
 Object.defineProperty(Property.prototype, "matchDOMTag", { get: function() {
 	return { "edbed-prop": function(dom) {
 		return {
-			name: dom.getAttribute('name'),
-			value: dom.getAttribute('value')
+			name: dom.getAttribute('name')
 		};
 	}};
 }});
