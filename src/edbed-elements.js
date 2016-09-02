@@ -51,12 +51,12 @@ Object.defineProperty(Link.prototype, "attrs", { get: function() {
 
 Object.defineProperty(Link.prototype, "toDOM", { get: function() {
 	return function(node) {
-		return ["edbed-link", node.attrs, 0];
+		return ["a", node.attrs, 0];
 	};
 }});
 
 Object.defineProperty(Link.prototype, "matchDOMTag", { get: function() {
-	return { "edbed-link": function(dom) {
+	return { "a": function(dom) {
 		return {
 			href: dom.getAttribute('href')
 		};

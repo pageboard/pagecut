@@ -118,7 +118,7 @@ module.exports.config = function(options) {
 	};
 	schema.nodes.edbed_aside = {
 		type: Aside,
-		content: 'edbed_thumbnail edbed_properties'
+		content: 'edbed_properties edbed_thumbnail'
 	};
 	schema.nodes.edbed_item = {
 		type: Item,
