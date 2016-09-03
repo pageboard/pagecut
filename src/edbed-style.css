@@ -8,20 +8,21 @@ edbed-item {
 	display:flex;
 	white-space: nowrap;
 	position:relative;
-	border:1px solid silver;
+	border:1px solid #333;
 	border-radius:0.5em;
 	overflow:hidden;
 	max-height:2.75em;
 	max-width:100%;
 	transition: max-height 0.5s ease;
+	margin:1px 0;
 }
 edbed-item [hidden] {
 	display:none !important;
 }
 edbed-item.focused {
 	max-height:10em; /* workaround transition with unknown max-height will cause a problem */
-	border-color:#333;
-	box-shadow:1px 1px 1px #333;
+	box-shadow:1px 1px 1px black;
+	border-color:black;
 }
 
 edbed-item.ProseMirror-selectednode {
@@ -89,8 +90,8 @@ edbed-item > a > img {
 }
 
 edbed-aside {
-	background:#333;
-	flex: 1 5 auto;
+	background-color:black;
+	flex: 0 2 auto;
 	display:flex;
 	position:relative;
 }
@@ -101,6 +102,9 @@ edbed-aside > edbed-thumbnail {
 	min-width:0;
 	display:flex;
 }
+edbed-aside > edbed-thumbnail:empty {
+	display:none;
+}
 
 edbed-aside > edbed-thumbnail > img {
 	cursor:move !important;
@@ -109,16 +113,19 @@ edbed-aside > edbed-thumbnail > img {
 }
 
 edbed-aside > edbed-props {
+	background-color:#333;
 	flex: 1 1 auto;
 	font-family: monospace;
 	white-space: normal;
 	color:white;
-	background-color: #333;
 	width: 100%;
 	text-align:justify;
 }
+edbed-aside > edbed-props:empty {
+	display:none;
+}
 edbed-item edbed-prop {
-	display:block;
+	display:inline-block;
 	padding: 0 0.3em;
 	position:relative;
 }
@@ -159,6 +166,30 @@ edbed-field[name]:before {
 edbed-field[name="title"]:before {
 	content: 'Title: ';
 }
-edbed-field[name="description"]:before {
-	content: 'Description: ';
+edbed-field[name="content"] {
+	display:none;
 }
+
+/* image type */
+
+edbed-item[type="image"] edbed-field[name="content"] {
+	display:block;
+}
+edbed-item[type="image"] edbed-field[name="content"]:before {
+	content: 'Credit: ';
+}
+
+
+/* link type */
+edbed-item:not(.focused)[type="link"] {
+	max-height:1.4em;
+}
+edbed-item[type="link"]:not(.focused) > a:before,
+edbed-item[type="link"]:not(.focused) > a > img {
+	display:inline-block;
+	vertical-align:middle;
+}
+edbed-item:not(.focused)[type="link"] > a > img {
+	margin:0;
+}
+

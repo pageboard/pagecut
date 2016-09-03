@@ -95,7 +95,7 @@ module.exports.config = function(options) {
 	};
 	schema.nodes.edbed_fields = {
 		type: Fields,
-		content: 'edbed_field*'
+		content: 'edbed_field[name="title"] edbed_field[name="content"]'
 	};
 	schema.nodes.edbed_image = {
 		type: Image
@@ -156,44 +156,75 @@ function ensureImg(node) {
 	return img;
 }
 
+function fillInside(parent, tag, props, keepEmpty) {
+	parent.innerHTML = "";
+	Object.keys(props).forEach(function(name) {
+		var val = props[name];
+		if (val === true || (!val && !keepEmpty)) return;
+		var node = document.createElement(tag);
+		node.setAttribute('name', name);
+		node.innerHTML = val;
+		parent.appendChild(node);
+	});
+}
+
+function formatDimensions(w, h) {
+	if (!w) return;
+	if (!h) return '→ ' + w + ' ←';
+	return w + 'x' + h;
+}
+function formatDuration(d) {
+	return d;
+}
+function formatSize(s) {
+	var str = "";
+	if (s) str += Math.round(s / 1000) + "KB";
+	return str;
+}
+
 function setProperties(me, obj) {
 	var propNames = {
 		duration: true,
+		size: true,
 		dimensions: true,
-		size: true
+		description: true
+	};
+	var fieldNames = {
+		title: true,
+		content: true
 	};
 
-	var fields = me.querySelector('edbed-fields');
-	fields.innerHTML = "";
-	var props = me.querySelector('edbed-props');
-	props.innerHTML = "";
-	var link = me.querySelector('edbed-link');
+	obj = Object.assign({}, obj);
+	obj.dimensions = formatDimensions(obj.width, obj.height);
+	obj.duration = formatDuration(obj.duration);
+	obj.size = formatSize(obj.size);
+
+	var link = me.querySelector('a');
 	link.innerHTML = "";
-	var thumb = me.querySelector('edbed-aside > edbed-thumbnail');
+	var thumb = me.querySelector('edbed-thumbnail');
 	thumb.innerHTML = "";
 
 	Object.keys(obj).forEach(function(name) {
 		var val = obj[name];
+		if (val == null) val = "";
 		if (name == "type" || name == "id") {
 			me.setAttribute(name, val);
 		} else if (name == "href") {
 			link.setAttribute('href', val);
 		} else if (name == "icon") {
-			ensureImg(link).setAttribute('src', val);
+			if (val) ensureImg(link).setAttribute('src', val);
 		} else if (name == "thumbnail") {
-			ensureImg(thumb).setAttribute('src', val);
+			if (val) ensureImg(thumb).setAttribute('src', val);
 		} else if (propNames[name]) {
-			var propNode = document.createElement('edbed-prop');
-			propNode.setAttribute('name', name);
-			propNode.innerHTML = val;
-			props.appendChild(propNode);
+			propNames[name] = val;
+		} else if (fieldNames[name]) {
+			fieldNames[name] = val;
 		} else {
-			var fieldNode = document.createElement('edbed-field');
-			fieldNode.setAttribute('name', name);
-			fieldNode.innerHTML = val;
-			fields.appendChild(fieldNode);
+			console.warn("Unknown edbed item property", name);
 		}
 	});
+	fillInside(me.querySelector('edbed-props'), 'edbed-prop', propNames);
+	fillInside(me.querySelector('edbed-fields'), 'edbed-field', fieldNames, true);
 }
 
 function edbedAction(pm, info) {
