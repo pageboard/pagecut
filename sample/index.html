@@ -57,13 +57,20 @@ document.addEventListener('DOMContentLoaded', function() {
 					icon: obj.icon,
 					thumbnail: obj.thumbnail && (inspectorBase + obj.thumbnail) || null,
 					title: obj.title,
-					description: obj.description
+					description: obj.description,
+					width: obj.width,
+					height: obj.height,
+					duration: obj.duration,
+					size: obj.size,
+					html: obj.html
 				});
 			});
 		}
 	};
 	var pm = Edbed.init(opts);
 	opts.content.hidden = true;
+
+
 });
 	</script>
 </head>
@@ -71,6 +78,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div id="editor"></div>
 <div id="content">
+<edbed-item type="image">
+	<a href="https://drscdn.500px.org/photo/170570123/q=80_m=1500/33ac48c9054217ee2f9d4177d54b768c"></a>
+	<edbed-fields>
+		<edbed-field name="title">stock-photo-170570123.jpg</edbed-field>
+		<edbed-field name="content">Le crédit de la <em>photo</em></edbed-field>
+	</edbed-fields>
+	<edbed-aside>
+		<edbed-props>
+			<edbed-prop name="size">217KB</edbed-prop>
+			<edbed-prop name="dimensions">1200x803</edbed-prop>
+		</edbed-props>
+		<edbed-thumbnail>
+			<img src="http://inspector.eda.sarl/images?url=https%3A%2F%2Fdrscdn.500px.org%2Fphoto%2F170570123%2Fq%3D80_m%3D1500%2F33ac48c9054217ee2f9d4177d54b768c">
+		</edbed-thumbnail>
+	</edbed-aside>
+</edbed-item>
 <p>a</p>
 <edbed-item type="video">
 	<a href="https://www.youtube.com/watch?v=qPYOh6j90c4">
@@ -109,6 +132,32 @@ document.addEventListener('DOMContentLoaded', function() {
 	</edbed-aside>
 </edbed-item>
 <p>c</p>
+<edbed-item type="embed">
+	<a href="https://twitter.com/baez72033757">
+		<img src="https://abs.twimg.com/favicons/favicon.ico">
+	</a>
+	<edbed-fields>
+		<edbed-field name="title">John Carlos Baez (@baez72033757) | Twitter</edbed-field>
+	</edbed-fields>
+</edbed-item>
+<p>d</p>
+	<edbed-item type="link">
+		<a href="http://unicode-table.com/en/sets/arrows-symbols/">
+			<img src="http://unicode-table.com/i/favicons/android-icon-192x192.png">
+		</a>
+		<edbed-fields>
+			<edbed-field name="title">Arrow symbol</edbed-field>
+		</edbed-fields>
+		<edbed-aside>
+			<edbed-props>
+				<edbed-prop name="description">: ← ↑ → ↓ ↔ ↕ ↖ ↗ ↘ ↙ ▲ ▼ ◀ ▶ ➔ ➘ ➙ ➚ ➛ ➜ ➝ ➞ ➟ ➠ ➡ ➢ ➣ ➤ ➥ ➦ ↪ ↩ ↚ ↛ ↜ ↝ ↞ ↟ ↠ ↡ ↢ ↣ ↤ ↦ ↥ ↧ ↨ ↫ ↬ ↭ ↮ ↯ ↰ ↱ ↲ ↴ ↳ ↵ ↶ ↷ ↸ ↹ ↺ ↻ ⟲ ⟳ ↼ ↽ ↾ ↿ ⇀ ⇁ ⇂ ⇃ ⇄ ⇅ ⇆ ⇇ ⇐ ⇑ ⇒ ⇓ ⇔ ⇌ ⇍ ⇏ ⇕ ⇖ ⇗ ⇘ ⇙ ⇙ ⇳ ⇚ ⇛ ⇜ ⇝ ⇞ ⇟ ⇟ ⇟ ⇠ ⇡ ⇢ ⇣ ⇤ ⇥ ⇦ ⇨ ⇩ ⇪ ⇧ ⇫ ⇬ ⇭ ⇮ ⇯ ⇰ ⇱ ⇲ ⇴ ⇵ ⇶ ⇷ ⇸ ⇹ ⇺ ⇺ ⇻ ⇼ ⇽ ⇾ ⇿ ⟰ ⟱ ⟴ ⟵ ⟶ ⟷ ⟸ ⟹ ⟽ ⟾ ⟺ ⟻ ⟼ ⟿ ⤀ ⤁ ⤅ ⤂ ⤃ ⤄ ⤆ ⤇ ⤈ ⤉ ⤊ ⤋ ⤌ ⤍ ⤎ ⤏ ⤐ ⤑ ⤒ ⤓ ⤔ ⤕ ⤖ ⤗ ⤘ ⤙ ⤙ ⤚ ⤛ ⤜ ⤝ ⤞ ⤡ ⤢ ⤣ ⤤ ⤥ ⤦ ⤧ ⤨ ⤩ ⤪ ⤭ ⤮ ⤯ ⤰ ⤱ ⤲ ⤳ ⤻ ⤸ ⤾ ⤿ ⤺ ⤼ ⤽ ⤴ ⤵ ⤶ ⤷ ⤹ ⥀ ⥁ ⥂ ⥃ ⥄ ⥅ ⥆ ⥇ ⥈ ⥉ ⥒ ⥓ ⥔ ⥕ ⥖ ⥗ ⥘ ⥙ ⥚ ⥛ ⥜ ⥝ ⥞ ⥟ ⥠ ⥡ ⥢ ⥣ ⥤ ⥥ ⥦ ⥧ ⥨ ⥩ ⥪ ⥫ ⥬ ⥭ ⥮ ⥯ ⥰ ⥱ ⥲ ⥳ ⥴ ⥵ ⥶ ⥷ ⥸ ⥹ ⥺ ⥻ ➧ ➨ ➩ ➪ ➫ ➬ ➭ ➮ ➯ ➱ ➲ ➳ ➴ ➵ ➶ ➷ ➸ ➹ ➺ ➻ ➼ ➽ ➾ ⬅ ⬆ ⬇ ⏎ ⬎ ⬏ ⬐ ⬑ ☈ ☇ ⍃ ⍄ ⍇ ⍈ ⍐ ⍗ ⍌ ⍓ ⍍ ⍔ ⍏ ⍖ ⍅ ⍆ ⬈ ⬉ ⬊ ⬋ ⬌ ⬍ ⬀ ⬁ ⬂ ⬃ ⬄</edbed-prop>
+			</edbed-props>
+			<edbed-thumbnail>
+				<img src="http://inspector.eda.sarl/images?url=http%3A%2F%2Funicode-table.com%2Fi%2Ffavicons%2Ffavicon.ico">
+			</edbed-thumbnail>
+		</edbed-aside>
+	</edbed-item>
+<p>e</p>
 </div>
 </body>
 </html>
