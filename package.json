@@ -26,7 +26,7 @@
   "homepage": "https://github.com/kapouer/edbed#readme",
   "dependencies": {
     "babel-preset-es2015": "^6.13.2",
-    "bundledom": "^1.3.3",
+    "bundledom": "^1.4.0",
     "prosemirror": "^0.10.0",
     "url-regex": "^3.2.0"
   },
