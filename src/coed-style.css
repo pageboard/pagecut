@@ -1,4 +1,4 @@
-@import 'edbed-font.css';
+@import url('edbed-font.css');
 
 .ProseMirror-content {
 	outline:none;
@@ -182,7 +182,7 @@ edbed-item[type="image"] edbed-field[name="content"]:before {
 
 /* link type */
 edbed-item:not(.focused)[type="link"] {
-	max-height:1.4em;
+	height:1.4em;
 }
 edbed-item[type="link"]:not(.focused) > a:before,
 edbed-item[type="link"]:not(.focused) > a > img {
@@ -192,4 +192,9 @@ edbed-item[type="link"]:not(.focused) > a > img {
 edbed-item:not(.focused)[type="link"] > a > img {
 	margin:0;
 }
-
+edbed-item[type="link"] edbed-field[name="content"] {
+	display:block;
+}
+edbed-item[type="link"] edbed-field[name="content"]:before {
+	content: 'Content: ';
+}

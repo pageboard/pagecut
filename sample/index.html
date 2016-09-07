@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Sample editor</title>
-	<link href="edbed-style.css" rel="stylesheet" />
-	<script src="edbed.js"></script>
+	<link href="coed-style.css" rel="stylesheet" />
+	<script src="coed.js"></script>
 	<script src="agent.js"></script>
 	<style>
 #editor {
@@ -31,7 +31,7 @@
 	opacity: 0.5;
 	top: 0.1em;
 }
-edbed-field[name="test"]:before {
+coed-field[name="test"]:before {
 	content: 'Test: ';
 }
 </style>
@@ -49,25 +49,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			} else {
 				node = null;
 			}
-			GET(inspectorBase + "/inspector", {url: info.url}, function(err, obj) {
-				if (err) return cb(err);
-				return cb(null, {
-					type: obj.type,
-					href: obj.url,
-					icon: obj.icon,
-					thumbnail: obj.thumbnail && (inspectorBase + obj.thumbnail) || null,
-					title: obj.title,
-					description: obj.description,
-					width: obj.width,
-					height: obj.height,
-					duration: obj.duration,
-					size: obj.size,
-					html: obj.html
-				});
-			});
+			// url-inspector-daemon@1.5.0 has right properties names
+			GET(inspectorBase + "/inspector", {url: info.url}, cb);
 		}
 	};
-	var pm = Edbed.init(opts);
+	var pm = Coed.init(opts);
 	opts.content.hidden = true;
 
 
@@ -78,6 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div id="editor"></div>
 <div id="content">
+
 <edbed-item type="image">
 	<a href="https://drscdn.500px.org/photo/170570123/q=80_m=1500/33ac48c9054217ee2f9d4177d54b768c"></a>
 	<edbed-fields>

@@ -1,5 +1,6 @@
 const {Plugin, NodeSelection} = require("prosemirror/dist/edit");
 const {posFromDOM, DOMAfterPos, DOMBeforePos} = require("prosemirror/dist/edit/dompos");
+const UrlPlugin = require("./utils/url-plugin");
 const {
 	Item, Link, Fields, Field, Aside, Thumbnail, Image, Properties, Property
 } = require('./edbed-elements');
@@ -47,10 +48,15 @@ EdbedPlugin.prototype.fixChange = function() {
 		if (!node) node = DOMBeforePos(this.pm, from);
 		if (!node || !node.nodeName) return;
 		var name = node.nodeName.toLowerCase();
-		var nonsel = node.closest("edbed-link,edbed-aside");
-		if (nonsel) selectNode(this.pm, nonsel.parentNode);
+		var parent = node.closest("edbed-item");
+		if (parent) {
+			if (!node.closest("edbed-content")) {
+				selectNode(this.pm, nonsel.parentNode);
+			}
+		}
 		this.trackFocus({target: node});
 	} catch(ex) {
+		console.info(ex);
 	}
 };
 
@@ -74,7 +80,7 @@ EdbedPlugin.prototype.dragStart = function(e) {
 	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
 	var parent = node.closest('edbed-item');
 	if (!parent) return;
-	if (node.closest('edbed-field')) return;
+	if (node.closest('edbed-content')) return;
 	this.dragging = true;
 	selectNode(this.pm, parent);
 };
@@ -87,40 +93,40 @@ EdbedPlugin.prototype.dragStop = function(e) {
 module.exports = new Plugin(EdbedPlugin);
 
 module.exports.config = function(options) {
-	let schema = options.schema;
+	let spec = options.spec;
 	// Item, Link, Fields, Field, Aside, Thumbnail, Params, Param
-	schema.nodes.edbed_field = {
+	spec.nodes.edbed_field = {
 		type: Field,
 		content: "inline<_>*"
 	};
-	schema.nodes.edbed_fields = {
+	spec.nodes.edbed_fields = {
 		type: Fields,
 		content: 'edbed_field[name="title"] edbed_field[name="content"]'
 	};
-	schema.nodes.edbed_image = {
+	spec.nodes.edbed_image = {
 		type: Image
 	};
-	schema.nodes.edbed_link = {
+	spec.nodes.edbed_link = {
 		type: Link,
 		content: 'edbed_image?'
 	};
-	schema.nodes.edbed_thumbnail = {
+	spec.nodes.edbed_thumbnail = {
 		type: Thumbnail,
 		content: 'edbed_image?'
 	};
-	schema.nodes.edbed_properties = {
+	spec.nodes.edbed_properties = {
 		type: Properties,
 		content: 'edbed_property*'
 	};
-	schema.nodes.edbed_property = {
+	spec.nodes.edbed_property = {
 		type: Property,
 		content: 'inline<_>*'
 	};
-	schema.nodes.edbed_aside = {
+	spec.nodes.edbed_aside = {
 		type: Aside,
 		content: 'edbed_properties edbed_thumbnail'
 	};
-	schema.nodes.edbed_item = {
+	spec.nodes.edbed_item = {
 		type: Item,
 		content: 'edbed_link edbed_fields edbed_aside',
 		group: 'block'
@@ -130,13 +136,19 @@ module.exports.config = function(options) {
 		setTimeout(function() {
 			cb(null, {
 				type: 'link',
-				href: url,
+				url: url,
 				title: url
 			});
 		});
 	};
+
+
 	let plugin = Plugin.prototype.config.call(module.exports, options);
-	plugin.action = edbedAction.bind(plugin);
+
+	options.plugins.push(UrlPlugin.config({
+		action: edbedAction.bind(plugin)
+	}));
+
 	return plugin;
 };
 
@@ -209,7 +221,7 @@ function setProperties(me, obj) {
 		if (val == null) val = "";
 		if (name == "type" || name == "id") {
 			me.setAttribute(name, val);
-		} else if (name == "href") {
+		} else if (name == "url") {
 			link.setAttribute('href', val);
 		} else if (name == "icon") {
 			if (val) ensureImg(link).setAttribute('src', val);

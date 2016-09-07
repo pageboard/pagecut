@@ -4,11 +4,11 @@ PROSEMIRROR = $(shell node -p 'require("path").resolve(require.resolve("prosemir
 FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
-all: dist/edbed.js src/*
-	$(BUNDLEDOM) dist/index.html --js edbed.min.js --css edbed.min.css
+all: dist/coed.js src/*
+	$(BUNDLEDOM) dist/index.html --js coed.min.js --css coed.min.css
 
-dist/edbed.js: src/*.js $(PROSEMIRROR)/**/*.js
-	$(BROWSERIFY) --standalone Edbed --outfile $@ -t [ babelify --presets [ es2015 ] ] src/edbed.js
+dist/coed.js: src/*.js $(PROSEMIRROR)/**/*.js
+	$(BROWSERIFY) --standalone Coed --outfile $@ -t [ babelify --presets [ es2015 ] ] src/coed.js
 
 fontopen:
 	@if test ! `which curl` ; then \
@@ -37,4 +37,3 @@ fontsave:
 	rm -rf ${FONT_DIR}
 	mv `find ./.fontello.src -maxdepth 1 -name 'fontello-*'` ${FONT_DIR}
 	rm -rf .fontello.src .fontello.zip
-

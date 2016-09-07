@@ -1,1 +1,0 @@
-../dist/edbed.js
