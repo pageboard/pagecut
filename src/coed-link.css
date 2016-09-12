@@ -33,7 +33,8 @@ co-link > aside.ProseMirror-selectednode {
 	outline: 1px solid red; /* should never happen */
 }
 
-co-link > a, co-link > aside {
+co-link > a,
+co-link > aside {
 	display:inline-block;
 	cursor:move;
 	vertical-align:top;
