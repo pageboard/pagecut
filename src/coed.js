@@ -107,8 +107,10 @@ function initType(spec, opts) {
 
 	spec.nodes[specTag] = {
 		type: getType(opts),
-		content: contentNames.join(' ')
+		content: contentNames.join(' '),
+		group: "block"
 	};
+
 }
 
 function getType(opts) {
