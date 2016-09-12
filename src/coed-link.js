@@ -66,22 +66,29 @@ CoLink.prototype.ensure = function(parent, tag, atts) {
 	return node;
 };
 
-CoLink.prototype.fill = function(parent, tag, props) {
+CoLink.prototype.fill = function(parent, props) {
 	parent.innerHTML = "";
 	Object.keys(props).forEach(function(name) {
 		var val = props[name];
-		if (typeof val != "string") return;
-		var node = document.createElement(tag);
-		node.setAttribute('name', name);
-		node.innerHTML = val;
-		parent.appendChild(node);
+		parent.appendChild(val);
 	});
 };
 
 CoLink.prototype.formatDimensions = function(w, h) {
 	if (!w) return;
-	if (!h) return '→ ' + w + ' ←';
+	if (!h) return w + 'px';
 	return w + 'x' + h;
+};
+
+CoLink.prototype.parseDimensions = function(obj, dim) {
+	if (!dim) return;
+	if (/px$/.test(dim)) {
+		obj.width = parseInt(dim);
+	} else if (/^\d+x\d+$/.test(dim)) {
+		dim = dim.split('x');
+		obj.width = parseInt(dim[0]);
+		obj.height = parseInt(dim[1]);
+	}
 };
 
 CoLink.prototype.formatDuration = function(d) {
@@ -89,38 +96,47 @@ CoLink.prototype.formatDuration = function(d) {
 };
 
 CoLink.prototype.formatSize = function(s) {
-	var str = "";
-	if (s) str += Math.round(s / 1000) + "KB";
-	return str;
+	if (!s) return;
+	return Math.round(s / 1000) + "KB";
+};
+
+CoLink.prototype.parseSize = function(obj, s) {
+	if (!s) return;
+	if (/^\d+KB$/.test(s)) obj.size = parseInt(s) * 1000;
 };
 
 CoLink.prototype.to = function(attrs, contents) {
 	var me = this;
 	var node = document.createElement(me.tag);
+	node.innerHTML = '<a></a><div></div><aside><div></div><figure></figure></aside>';
+	var link = node.querySelector('a');
 
-	var link = me.ensure(node, 'a');
-	link.innerHTML = "";
-	var thumb = node.querySelector('aside > figure');
-	thumb.innerHTML = "";
 	if (attrs.type) node.setAttribute("type", attrs.type);
 	if (attrs.id) node.setAttribute("type", attrs.id);
 	if (attrs.url) link.setAttribute("href", attrs.url);
 	if (attrs.icon) me.ensure(link, 'img', { src: attrs.icon });
-	if (attrs.thumbnail) me.ensure(thumb, 'img', { src: attrs.thumbnail });
+	if (attrs.thumbnail) me.ensure(node.querySelector('figure'), 'img', { src: attrs.thumbnail });
 
 	var obj = {
-		description: attrs.description,
 		dimensions: me.formatDimensions(attrs.width, attrs.height),
 		duration: me.formatDuration(attrs.duration),
-		size: me.formatSize(attrs.size)
+		size: me.formatSize(attrs.size),
+		description: attrs.description
 	};
+	Object.keys(obj).forEach(function(key) {
+		var span = document.createElement('span');
+		span.setAttribute('title', key);
+		span.innerHTML = obj[key];
+		obj[key] = span;
+	});
 
-	me.fill(node.querySelector('aside > div'), 'span', obj);
-	me.fill(node.querySelector('div'), 'div', contents);
+	me.fill(node.querySelector('aside > div'), obj);
+	me.fill(node.querySelector('div'), contents);
 	return node;
 };
 
 CoLink.prototype.from = function(node) {
+	var me = this;
 	var attrs = {};
 	var contents = {};
 	attrs.type = node.getAttribute('type') || 'none';
@@ -138,10 +154,14 @@ CoLink.prototype.from = function(node) {
 	}
 	var i;
 	var asides = node.querySelectorAll('aside > div > span');
-	var aside;
+	var aside, title, val;
 	for (i=0; i < asides.length; i++) {
 		aside = asides.item(i);
-		attrs[aside.getAttribute('title')] = aside.innerHTML; // TODO innerText ?
+		title = aside.getAttribute('title');
+		val = aside.innerHTML;
+		if (title == 'size') me.parseSize(attrs, val);
+		else if (title == 'dimensions') me.parseDimensions(attrs, val);
+		else attrs[title] = val;
 	}
 
 	var divs = node.querySelectorAll('div > div');
