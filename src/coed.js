@@ -132,15 +132,17 @@ function getType(opts) {
 		return typeAttrs;
 	}});
 
-	CoType.prototype.toDOM = function(node) {
-		var contents = {};
-		node.forEach(function(node) {
-			var name = node.attrs.name;
-			if (!name) return;
-			contents[name] = node.content.toDOM();
-		});
-		return opts.to(node.attrs, contents);
-	};
+	Object.defineProperty(CoType.prototype, "toDOM", { get: function() {
+		return function(node) {
+			var contents = {};
+			node.forEach(function(node) {
+				var name = node.attrs.name;
+				if (!name) return;
+				contents[name] = node.toDOM();
+			});
+			return opts.to(node.attrs, contents);
+		};
+	}});
 
 	Object.defineProperty(CoType.prototype, "matchDOMTag", { get: function() {
 		var ret = {};
@@ -178,9 +180,11 @@ function getCoType(name, opts) {
 		};
 	}});
 
-	CoCoType.prototype.toDOM = function(node) {
-		return ["div", node.attrs, 0];
-	};
+	Object.defineProperty(CoCoType.prototype, "toDOM", { get: function() {
+		return function(node) {
+			return ["div", node.attrs, 0];
+		};
+	}});
 
 	Object.defineProperty(CoCoType.prototype, "matchDOMTag", { get: function() {
 		return {
