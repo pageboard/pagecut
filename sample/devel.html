@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Sample editor</title>
+	<link href="coed-link.css" rel="stylesheet" />
+	<script src="coed.js"></script>
+	<script src="agent.js"></script>
+	<style>
+#editor {
+	margin:1em;
+	border:1px solid silver;
+}
+.ProseMirror-content {
+	margin:0.1em;
+	padding:0.1em;
+}
+	</style>
+	<style>
+.ProseMirror-content > p {
+	position:relative;
+	margin: 0.5em 0;
+}
+.ProseMirror-content > p:before {
+	display: block;
+	position: absolute;
+	font-size: 0.8em;
+	color: black;
+	left: -0.9em;
+	content: '\00b6';
+	opacity: 0.5;
+	top: 0.1em;
+}
+
+</style>
+	<script>
+document.addEventListener('DOMContentLoaded', function() {
+	var inspectorBase = "http://inspector.eda.sarl";
+
+	var opts = {
+		content: document.querySelector("#content"),
+		place: document.querySelector("#editor"),
+		inspector: function(info, cb) {
+			var node = info.fragment && info.fragment.firstChild;
+			if (node && node.nodeName == "IFRAME") {
+				info.title = info.url = node.src;
+			} else {
+				node = null;
+			}
+			// url-inspector-daemon@1.5.0 has right properties names
+			GET(inspectorBase + "/inspector", {url: info.url}, cb);
+		}
+	};
+	var pm = Coed.init(opts);
+	opts.content.hidden = true;
+
+
+});
+	</script>
+</head>
+<body>
+
+<div id="editor"></div>
+
+<!--
+Some explanations regarding the choice of markup:
+- it is expected generic tags are not very much styled directly (div, a, span, aside)
+- no classes to avoid any collision
+- the root tag is specific to avoid being targeted by any pre-existing selector
+- simplicity over complexity: do not declare lots of custom tags without cause
+
+<co-link attributes...>
+	<co-link-content name="..">html...</co-link-content>
+	<co-link-content name="..">html...</co-link-content>
+</co-link>
+-->
+
+<div id="content">
+<p>a</p>
+<co-link type="image">
+	<script type="text/html">
+		<img src="https://drscdn.500px.org/photo/168419471/q=80_m=1500/aa9b735cd1e6df5297ee7efc9eacca97" alt="stock-photo-168419471.jpg" />
+	</script>
+	<a href="https://drscdn.500px.org/photo/168419471/q%3D80_m%3D1500/aa9b735cd1e6df5297ee7efc9eacca97">
+		<img src="https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico">
+	</a>
+	<div>
+		<div name="title">stock-photo-170570123.jpg</div>
+		<div name="content">Le crédit de la <em>photo</em></div>
+	</div>
+	<aside>
+		<div>
+			<span title="size">217KB</span>
+			<span title="dimensions">1200x803</span>
+			<span title="description">Image description here</span>
+		</div>
+		<figure>
+			<img src="https://drscdn.500px.org/photo/168419471/q%3D80_h%3D300/d70ae586a19e45b96f2effac915f6155">
+		</figure>
+	</aside>
+</co-link>
+
+<p>a</p>
+<p>e</p>
+</div>
+</body>
+</html>

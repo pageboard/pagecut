@@ -1,5 +1,6 @@
 const {ProseMirror} = require("prosemirror/dist/edit");
-const {Schema} = require("prosemirror/dist/model");
+const {Schema, Block, Attribute} = require("prosemirror/dist/model");
+const inherits = require('./utils/inherits');
 const basicSchema = require("prosemirror/dist/schema-basic");
 const tableSchema = require("prosemirror/dist/schema-table");
 const {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup");
@@ -7,7 +8,15 @@ const {menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
 
 const BreaksPlugin = require("./utils/breaks-plugin");
 
-const EdbedPlugin = require("./edbed-plugin");
+const CoedPlugin = require("./plugin");
+const CoLink = require("./coed-link");
+
+ProseMirror.prototype.parseDomNode = function(node) {
+	var div = document.createElement("div");
+	div.appendChild(node);
+	var newNode = this.schema.parseDOM(div);
+	return newNode.firstChild;
+};
 
 let schemaSpec = {
 	nodes: {
@@ -47,7 +56,16 @@ exports.defaults = {
 exports.init = function(config) {
 	var opts = Object.assign({}, exports.defaults, config);
 
-	opts.plugins.push(EdbedPlugin.config(opts));
+	opts.plugins.push(CoedPlugin.config(opts));
+
+	if (!opts.components) opts.components = [
+		new CoLink(opts)
+	];
+
+	opts.components.forEach(function(def) {
+		initType(opts.spec, def);
+	});
+
 
 	if (opts.spec) {
 		opts.schema = new Schema(opts.spec);
@@ -75,3 +93,103 @@ exports.init = function(config) {
 	return pm;
 };
 
+
+function initType(spec, opts) {
+	var specTag = opts.tag.replace(/-/g, '_');
+	var contentNames = Object.keys(opts.contents).map(function(name) {
+		var contentTagName = specTag + '_' + name;
+		spec.nodes[contentTagName] = {
+			type: getCoType(name, opts),
+			content: opts.contents[name]
+		};
+		return contentTagName;
+	});
+
+	spec.nodes[specTag] = {
+		type: getType(opts),
+		content: contentNames.join(' ')
+	};
+}
+
+function getType(opts) {
+	function CoType(name, schema) {
+		Block.call(this, name, schema);
+	};
+	inherits(CoType, Block);
+
+	Object.defineProperty(CoType.prototype, "attrs", { get: function() {
+		var typeAttrs = {};
+		var attrs = opts.attrs;
+		Object.keys(attrs).forEach(function(key) {
+			var defaultVal = attrs[key];
+			if (typeof defaultVal != "string") defaultVal = "";
+			typeAttrs[key] = new Attribute({
+				"default": defaultVal
+			});
+		});
+		return typeAttrs;
+	}});
+
+	CoType.prototype.toDOM = function(node) {
+		var contents = {};
+		node.forEach(function(node) {
+			var name = node.attrs.name;
+			if (!name) return;
+			contents[name] = node.content.toDOM();
+		});
+		return opts.to(node.attrs, contents);
+	};
+
+	Object.defineProperty(CoType.prototype, "matchDOMTag", { get: function() {
+		var ret = {};
+		ret[opts.tag] = function(node) {
+			if (node.getAttribute('name')) return false;
+			var obj = opts.from(node);
+			var parent = document.createElement('div');
+			Object.keys(obj.contents).forEach(function(name) {
+				var contNode = document.createElement('div');
+				contNode.setAttribute('name', name);
+				var cont = obj.contents[name];
+				while (cont.firstChild) {
+					contNode.appendChild(cont.firstChild);
+				}
+				parent.appendChild(contNode);
+			});
+			return [obj.attrs, {content: parent}];
+		};
+		return ret;
+	}});
+	return CoType;
+}
+
+function getCoType(name, opts) {
+	function CoCoType(name, schema) {
+		Block.call(this, name, schema);
+	};
+	inherits(CoCoType, Block);
+
+	Object.defineProperty(CoCoType.prototype, "attrs", { get: function() {
+		return {
+			name: new Attribute({
+				"default": name
+			})
+		};
+	}});
+
+	CoCoType.prototype.toDOM = function(node) {
+		return ["div", node.attrs, 0];
+	};
+
+	Object.defineProperty(CoCoType.prototype, "matchDOMTag", { get: function() {
+		return {
+			'div[name]': function(node) {
+				var attrs = {
+					name: node.getAttribute('name')
+				};
+				if (!attrs.name) return false;
+				return attrs;
+			}
+		};
+	}});
+	return CoCoType;
+}

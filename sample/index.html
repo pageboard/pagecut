@@ -63,24 +63,40 @@ document.addEventListener('DOMContentLoaded', function() {
 <body>
 
 <div id="editor"></div>
+
+<!--
+Some explanations regarding the choice of markup:
+- it is expected generic tags are not very much styled directly (div, a, span, aside)
+- no classes to avoid any collision
+- the root tag is specific to avoid being targeted by any pre-existing selector
+- simplicity over complexity: do not declare lots of custom tags without cause
+-->
+
 <div id="content">
 
-<edbed-item type="image">
-	<a href="https://drscdn.500px.org/photo/170570123/q=80_m=1500/33ac48c9054217ee2f9d4177d54b768c"></a>
-	<edbed-fields>
-		<edbed-field name="title">stock-photo-170570123.jpg</edbed-field>
-		<edbed-field name="content">Le crédit de la <em>photo</em></edbed-field>
-	</edbed-fields>
-	<edbed-aside>
-		<edbed-props>
-			<edbed-prop name="size">217KB</edbed-prop>
-			<edbed-prop name="dimensions">1200x803</edbed-prop>
-		</edbed-props>
-		<edbed-thumbnail>
-			<img src="http://inspector.eda.sarl/images?url=https%3A%2F%2Fdrscdn.500px.org%2Fphoto%2F170570123%2Fq%3D80_m%3D1500%2F33ac48c9054217ee2f9d4177d54b768c">
-		</edbed-thumbnail>
-	</edbed-aside>
-</edbed-item>
+<co-link type="image">
+	<script type="text/html">
+		<img src="https://drscdn.500px.org/photo/168419471/q=80_m=1500/aa9b735cd1e6df5297ee7efc9eacca97" alt="stock-photo-168419471.jpg" />
+	</script>
+	<a href="https://drscdn.500px.org/photo/168419471/q%3D80_m%3D1500/aa9b735cd1e6df5297ee7efc9eacca97">
+		<img src="https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico">
+	</a>
+	<div>
+		<div coed="title">stock-photo-170570123.jpg</div>
+		<div coed="content">Le crédit de la <em>photo</em></div>
+	</div>
+	<aside>
+		<div>
+			<span title="size">217KB</span>
+			<span title="dimensions">1200x803</span>
+			<span title="description">Image description here</span>
+		</div>
+		<figure>
+			<img src="https://drscdn.500px.org/photo/168419471/q%3D80_h%3D300/d70ae586a19e45b96f2effac915f6155">
+		</figure>
+	</aside>
+</co-link>
+
 <p>a</p>
 <edbed-item type="video">
 	<a href="https://www.youtube.com/watch?v=qPYOh6j90c4">
