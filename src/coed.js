@@ -94,32 +94,51 @@ exports.init = function(config) {
 };
 
 
-function initType(spec, opts) {
-	var specTag = opts.tag.replace(/-/g, '_');
-	var contentNames = Object.keys(opts.contents).map(function(name) {
-		var contentTagName = specTag + '_' + name;
+function initType(spec, def) {
+	var defName = def.name;
+	var groupName = 'group_' + defName;
+
+	// named content
+	var contentNames = Object.keys(def.contents).map(function(name) {
+		var contentTagName = 'content_' + defName + '_' + name;
 		spec.nodes[contentTagName] = {
-			type: getCoType(name, opts),
-			content: opts.contents[name]
+			type: getContentType(name, def),
+			content: def.contents[name],
+			group: groupName
 		};
 		return contentTagName;
 	});
 
-	spec.nodes[specTag] = {
-		type: getType(opts),
-		content: contentNames.join(' '),
-		group: "block"
+	// holder
+	spec.nodes['hold_' + defName] = {
+		type: getHoldType(def),
+		group: groupName
+	};
+
+	// wrapper
+	spec.nodes['wrap_' + defName] = {
+		type: getWrapType(def),
+		content: groupName + '+',
+		group: groupName
+	};
+
+
+	// root
+	spec.nodes[defName] = {
+		type: getRootType(def),
+		content: groupName + '+',
+		group: def.group || "block"
 	};
 
 }
 
-function getType(opts) {
-	function CoType(name, schema) {
+function getRootType(opts) {
+	function RootType(name, schema) {
 		Block.call(this, name, schema);
 	};
-	inherits(CoType, Block);
+	inherits(RootType, Block);
 
-	Object.defineProperty(CoType.prototype, "attrs", { get: function() {
+	Object.defineProperty(RootType.prototype, "attrs", { get: function() {
 		var typeAttrs = {};
 		var attrs = opts.attrs;
 		Object.keys(attrs).forEach(function(key) {
@@ -132,70 +151,169 @@ function getType(opts) {
 		return typeAttrs;
 	}});
 
-	Object.defineProperty(CoType.prototype, "toDOM", { get: function() {
+	Object.defineProperty(RootType.prototype, "toDOM", { get: function() {
 		return function(node) {
-			var contents = {};
-			node.forEach(function(node) {
-				var name = node.attrs.name;
-				if (!name) return;
-				contents[name] = node.toDOM();
-			});
-			return opts.to(node.attrs, contents);
+			var domNode = opts.to(node.attrs);
+			domNode.setAttribute('coed', 'root');
+			prepareDom(domNode, node);
+			return [domNode.nodeName, nodeAttrs(domNode), 0];
 		};
 	}});
 
-	Object.defineProperty(CoType.prototype, "matchDOMTag", { get: function() {
+	Object.defineProperty(RootType.prototype, "matchDOMTag", { get: function() {
 		var ret = {};
 		ret[opts.tag] = function(node) {
-			if (node.getAttribute('name')) return false;
-			var obj = opts.from(node);
-			var parent = document.createElement('div');
-			Object.keys(obj.contents).forEach(function(name) {
-				var contNode = document.createElement('div');
-				contNode.setAttribute('name', name);
-				var cont = obj.contents[name];
-				while (cont.firstChild) {
-					contNode.appendChild(cont.firstChild);
-				}
-				parent.appendChild(contNode);
-			});
-			return [obj.attrs, {content: parent}];
+			var attrs = opts.from(node);
+			prepareDom(node);
+			return attrs;
 		};
 		return ret;
 	}});
-	return CoType;
+
+	function prepareDom(dom, node) {
+		var domChild, child, type, typeName, coedName;
+		var pos = 0;
+		for (var i=0; i < dom.childNodes.length; i++) {
+			domChild = dom.childNodes.item(i);
+			if (domChild.nodeType != Node.ELEMENT_NODE) continue;
+
+			coedName = domChild.getAttribute('coed-name');
+			if (coedName) {
+				type = 'content';
+			} else if (domChild.querySelector('[coed-name]')) {
+				type = 'wrap';
+				domChild.setAttribute('coed', 'wrap');
+			} else {
+				type = 'hold';
+				domChild.setAttribute('contenteditable', 'false');
+			}
+			if (node) {
+				if (pos < node.childCount) {
+					child = node.maybeChild(pos++);
+					typeName = type + '_' + opts.name;
+					if (coedName) typeName += '_' + coedName;
+					if (child && child.type.name == typeName) {
+						child.codom = domChild.cloneNode(true);
+					} else {
+						console.info("No matching pm node for dom node at index", pos, domChild, node);
+						i--;
+						continue;
+					}
+				} else {
+					console.warn("Uncomparable node", domChild);
+				}
+			}
+
+			if (type == 'wrap') {
+				prepareDom(domChild, child);
+			}
+		}
+	}
+	return RootType;
 }
 
-function getCoType(name, opts) {
-	function CoCoType(name, schema) {
+function getWrapType(opts) {
+	function WrapType(name, schema) {
 		Block.call(this, name, schema);
 	};
-	inherits(CoCoType, Block);
+	inherits(WrapType, Block);
 
-	Object.defineProperty(CoCoType.prototype, "attrs", { get: function() {
+	Object.defineProperty(WrapType.prototype, "toDOM", { get: function() {
+		return function(node) {
+			if (!node.codom) {
+				console.warn("No dom for wrap node");
+				return ["div", node.attrs, 0];
+			}
+			return [node.codom.nodeName, nodeAttrs(node.codom), 0];
+		};
+	}});
+
+	Object.defineProperty(WrapType.prototype, "matchDOMTag", { get: function() {
+		return {
+			'[coed="wrap"]': function(node) {
+				return {};
+			}
+		};
+	}});
+	return WrapType;
+}
+
+
+function getContentType(coedName, opts) {
+	function ContentType(name, schema) {
+		Block.call(this, name, schema);
+	};
+	inherits(ContentType, Block);
+
+	Object.defineProperty(ContentType.prototype, "attrs", { get: function() {
 		return {
 			name: new Attribute({
-				"default": name
+				"default": coedName
 			})
 		};
 	}});
 
-	Object.defineProperty(CoCoType.prototype, "toDOM", { get: function() {
+	Object.defineProperty(ContentType.prototype, "toDOM", { get: function() {
 		return function(node) {
-			return ["div", node.attrs, 0];
+			if (!node.codom) {
+				console.warn("No dom for content node");
+				return ["div", node.attrs, 0];
+			}
+			return [node.codom.nodeName, nodeAttrs(node.codom), 0];
 		};
 	}});
 
-	Object.defineProperty(CoCoType.prototype, "matchDOMTag", { get: function() {
+	Object.defineProperty(ContentType.prototype, "matchDOMTag", { get: function() {
 		return {
-			'div[name]': function(node) {
-				var attrs = {
-					name: node.getAttribute('name')
+			'[coed-name]': function(node) {
+				var name = node.getAttribute('coed-name');
+				if (name != coedName) {
+					// selects the ContentType with the right schema
+					return false;
+				}
+				return {
+					name: coedName
 				};
-				if (!attrs.name) return false;
-				return attrs;
 			}
 		};
 	}});
-	return CoCoType;
+	return ContentType;
+}
+
+
+function getHoldType(opts) {
+	function HoldType(name, schema) {
+		Block.call(this, name, schema);
+	};
+	inherits(HoldType, Block);
+
+	Object.defineProperty(HoldType.prototype, "toDOM", { get: function() {
+		return function(node) {
+			if (!node.codom) {
+				throw new Error("No dom for hold node");
+			}
+			return node.codom.cloneNode(true);
+		};
+	}});
+
+	Object.defineProperty(HoldType.prototype, "matchDOMTag", { get: function() {
+		return {
+			'[contenteditable="false"]': function(node) {
+				return {};
+			}
+		};
+	}});
+	return HoldType;
+}
+
+
+function nodeAttrs(node) {
+	var obj = {};
+	var atts = node.attributes;
+	var att;
+	for (var i=0; i < atts.length; i++) {
+		att = atts[i];
+		obj[att.name] = att.value;
+	}
+	return obj;
 }

@@ -19,7 +19,7 @@ co-link {
 co-link [hidden] {
 	display:none !important;
 }
-co-link.focused {
+co-link[coed-focused] {
 	max-height:10em; /* workaround transition with unknown max-height will cause a problem */
 	box-shadow:1px 1px 1px black;
 	border-color:black;
@@ -144,7 +144,7 @@ co-link > div {
 	flex: 1 1 auto;
 	width:66%;
 }
-co-link > div > div[name] {
+co-link > div > div[coed-name] {
 	display: block;
 	overflow:hidden;
 	text-overflow:ellipsis;
@@ -153,49 +153,49 @@ co-link > div > div[name] {
 	margin-right: 0.2em;
 	padding-left: 0.4em;
 }
-co-link.focused > div > div[name] {
+co-link[coed-focused] > div > div[coed-name] {
 	white-space: pre-wrap;
 }
 
-co-link > div > div[name]:before {
+co-link > div > div[coed-name]:before {
 	color:grey;
 	font-family:sans-serif;
 	letter-spacing:-1px;
 	font-size:0.8em;
 }
 
-co-link > div > div[name="title"]:before {
+co-link > div > div[coed-name="title"]:before {
 	content: 'Title: ';
 }
-co-link > div > div[name="content"] {
+co-link > div > div[coed-name="content"] {
 	display:none;
 }
 
 /* image type */
 
-co-link[type="image"] > div > div[name="content"] {
+co-link[type="image"] > div > div[coed-name="content"] {
 	display:block;
 }
-co-link[type="image"] > div > div[name="content"]:before {
+co-link[type="image"] > div > div[coed-name="content"]:before {
 	content: 'Credit: ';
 }
 
 
 /* link type */
-co-link:not(.focused)[type="link"] {
+co-link:not([coed-focused])[type="link"] {
 	height:1.4em;
 }
-co-link[type="link"]:not(.focused) > a:before,
-co-link[type="link"]:not(.focused) > a > img {
+co-link[type="link"]:not([coed-focused]) > a:before,
+co-link[type="link"]:not([coed-focused]) > a > img {
 	display:inline-block;
 	vertical-align:middle;
 }
-co-link:not(.focused)[type="link"] > a > img {
+co-link:not([coed-focused])[type="link"] > a > img {
 	margin:0;
 }
-co-link[type="link"] > div > div[name="content"] {
+co-link[type="link"] > div > div[coed-name="content"] {
 	display:block;
 }
-co-link[type="link"] > div > div[name="content"]:before {
+co-link[type="link"] > div > div[coed-name="content"]:before {
 	content: 'Content: ';
 }

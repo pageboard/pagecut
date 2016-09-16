@@ -13,7 +13,8 @@ module.exports = CoLink;
 
 
 function CoLink(options) {
-	this.tag = 'co-link';
+	this.tag = "co-link";
+	this.name = "link";
 	this.attrs = {
 		id: "",
 		type:  "none",
@@ -24,7 +25,8 @@ function CoLink(options) {
 		size: "",
 		width: "",
 		height: "",
-		duration: ""
+		duration: "",
+		html: ""
 	};
 	this.contents = {
 		title: "inline<_>*",
@@ -105,10 +107,12 @@ CoLink.prototype.parseSize = function(obj, s) {
 	if (/^\d+KB$/.test(s)) obj.size = parseInt(s) * 1000;
 };
 
-CoLink.prototype.to = function(attrs, contents) {
+CoLink.prototype.to = function(attrs) {
 	var me = this;
 	var node = document.createElement(me.tag);
-	node.innerHTML = '<a></a><div></div><aside><div></div><figure></figure></aside>';
+	node.innerHTML = '<a></a><div>\
+<div coed-name="title"></div><div coed-name="content"></div>\
+</div><aside><div></div><figure></figure></aside><script type="text/html"></script>';
 	var link = node.querySelector('a');
 
 	if (attrs.type) node.setAttribute("type", attrs.type);
@@ -116,6 +120,7 @@ CoLink.prototype.to = function(attrs, contents) {
 	if (attrs.url) link.setAttribute("href", attrs.url);
 	if (attrs.icon) me.ensure(link, 'img', { src: attrs.icon });
 	if (attrs.thumbnail) me.ensure(node.querySelector('figure'), 'img', { src: attrs.thumbnail });
+	if (attrs.html) me.ensure(node, 'script', {type: 'text/html'}).textContent = attrs.html || '';
 
 	var obj = {
 		dimensions: me.formatDimensions(attrs.width, attrs.height),
@@ -131,14 +136,12 @@ CoLink.prototype.to = function(attrs, contents) {
 	});
 
 	me.fill(node.querySelector('aside > div'), obj);
-	me.fill(node.querySelector('div'), contents);
 	return node;
 };
 
 CoLink.prototype.from = function(node) {
 	var me = this;
 	var attrs = {};
-	var contents = {};
 	attrs.type = node.getAttribute('type') || 'none';
 	attrs.id = node.getAttribute('id') || undefined;
 
@@ -148,6 +151,8 @@ CoLink.prototype.from = function(node) {
 		var icon = link.querySelector("img");
 		if (icon) attrs.icon = icon.getAttribute('src');
 	}
+	var html = node.querySelector('script[type="text/html"]');
+	if (html) attrs.html = html.textContent;
 	var thumb = node.querySelector('aside > figure > img');
 	if (thumb) {
 		attrs.thumbnail = thumb.getAttribute('src');
@@ -163,17 +168,7 @@ CoLink.prototype.from = function(node) {
 		else if (title == 'dimensions') me.parseDimensions(attrs, val);
 		else attrs[title] = val;
 	}
-
-	var divs = node.querySelectorAll('div > div');
-	var div;
-	for (i=0; i < divs.length; i++) {
-		div = divs.item(i);
-		contents[div.getAttribute('name')] = div;
-	}
-	return {
-		attrs: attrs,
-		contents: contents
-	};
+	return attrs;
 };
 
 CoLink.prototype.handle = function(pm, info) {

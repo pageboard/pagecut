@@ -1,5 +1,5 @@
 const {Plugin, NodeSelection} = require("prosemirror/dist/edit");
-const {posFromDOM, DOMAfterPos, DOMBeforePos} = require("prosemirror/dist/edit/dompos");
+const {posFromDOM, DOMFromPos} = require("prosemirror/dist/edit/dompos");
 
 function CoedPlugin(pm, options) {
 	this.pm = pm;
@@ -39,21 +39,27 @@ CoedPlugin.prototype.fixChange = function() {
 	if (rpos.nodeAfter && rpos.nodeAfter.type.name == "text") {
 		from = from - rpos.parentOffset;
 	}
+	var node;
 	try {
-		var node = DOMAfterPos(this.pm, from);
-		if (!node) node = DOMBeforePos(this.pm, from);
-		if (!node || !node.nodeName) return;
-		var name = node.nodeName.toLowerCase();
-		var parent = node.closest('[coed="root"]');
-		if (parent) {
-			if (!node.closest('[coed="content"]')) {
-				selectNode(this.pm, parent);
-			}
+		var fromPos = DOMFromPos(this.pm, from);
+		node = fromPos.node;
+		var offset = fromPos.offset;
+		if (node.nodeType == 1 && offset < node.childNodes.length) {
+			node = node.childNodes[offset];
 		}
-		this.trackFocus({target: node});
 	} catch(ex) {
-		console.info(ex);
+		// ignore errors
 	}
+
+	if (!node || !node.nodeName) return;
+	var name = node.nodeName.toLowerCase();
+	var parent = node.closest('[coed="root"]');
+	if (parent) {
+		if (!node.closest('[coed="content"]')) {
+			selectNode(this.pm, parent);
+		} // else ok it's a content node
+	}
+	this.trackFocus({target: node});
 };
 
 CoedPlugin.prototype.trackFocus = function(e) {
@@ -63,17 +69,18 @@ CoedPlugin.prototype.trackFocus = function(e) {
 	}
 	if (this.dragging) return;
 	var node = e.target;
+	if (!node) return;
 	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
 	var parent = node.closest('[coed="root"]');
 	if (!parent) return;
 	this.focused = parent;
 	parent.setAttribute("coed-focused", "1");
-	parent.classList.toggle("focused", true);
 };
 
 CoedPlugin.prototype.dragStart = function(e) {
 	this.dragging = false;
 	var node = e.target;
+	if (!node) return;
 	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
 	var parent = node.closest('[coed="root"]');
 	if (!parent) return;
