@@ -7,6 +7,8 @@ FONTELLO_HOST ?= http://fontello.com
 all: dist/coed.js src/*
 	$(BUNDLEDOM) dist/index.html --js coed.min.js --css coed.min.css
 
+dev: dist/coed.js
+
 dist/coed.js: src/*.js $(PROSEMIRROR)/**/*.js
 	$(BROWSERIFY) --standalone Coed --outfile $@ -t [ babelify --presets [ es2015 ] ] src/coed.js
 
