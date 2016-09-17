@@ -11,6 +11,7 @@ dev: dist/coed.js
 
 dist/coed.js: src/*.js $(PROSEMIRROR)/**/*.js
 	$(BROWSERIFY) --standalone Coed --outfile $@ -t [ babelify --presets [ es2015 ] ] src/coed.js
+	sed -i -e 's/if (dom.contentEditable == "false") dom = elt("div", null, dom);//' $@
 
 fontopen:
 	@if test ! `which curl` ; then \

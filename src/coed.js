@@ -287,11 +287,6 @@ function getHoldType(opts) {
 	};
 	inherits(HoldType, Block);
 
-	Object.defineProperty(HoldType.prototype, "isBlock", { get: function() {
-		// or else pm wraps nodes contentEditable == false in a div
-		return false;
-	}});
-
 	Object.defineProperty(HoldType.prototype, "attrs", { get: function() {
 		return {
 			html: new Attribute({
