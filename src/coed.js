@@ -170,9 +170,8 @@ function getRootType(opts) {
 		return ret;
 	}});
 
-	function prepareDom(dom, node) {
-		var domChild, child, type, typeName, coedName;
-		var pos = 0;
+	function prepareDom(dom) {
+		var domChild, type, coedName;
 		for (var i=0; i < dom.childNodes.length; i++) {
 			domChild = dom.childNodes.item(i);
 			if (domChild.nodeType != Node.ELEMENT_NODE) continue;
@@ -187,25 +186,9 @@ function getRootType(opts) {
 				type = 'hold';
 				domChild.setAttribute('contenteditable', 'false');
 			}
-			if (node) {
-				if (pos < node.childCount) {
-					child = node.maybeChild(pos++);
-					typeName = type + '_' + opts.name;
-					if (coedName) typeName += '_' + coedName;
-					if (child && child.type.name == typeName) {
-						child.codom = domChild.cloneNode(true);
-					} else {
-						console.info("No matching pm node for dom node at index", pos, domChild, node);
-						i--;
-						continue;
-					}
-				} else {
-					console.warn("Uncomparable node", domChild);
-				}
-			}
 
 			if (type == 'wrap') {
-				prepareDom(domChild, child);
+				prepareDom(domChild);
 			}
 		}
 	}
@@ -218,13 +201,24 @@ function getWrapType(opts) {
 	};
 	inherits(WrapType, Block);
 
+	Object.defineProperty(WrapType.prototype, "attrs", { get: function() {
+		return {
+			"class": new Attribute({
+				"default": ""
+			}),
+			"tag": new Attribute({
+				"default": "div"
+			})
+		};
+	}});
+
 	Object.defineProperty(WrapType.prototype, "toDOM", { get: function() {
 		return function(node) {
-			if (!node.codom) {
-				console.warn("No dom for wrap node");
-				return ["div", node.attrs, 0];
-			}
-			return [node.codom.nodeName, nodeAttrs(node.codom), 0];
+			var attrs = node.attrs;
+			return [attrs.tag, {
+				'class': attrs['class'],
+				coed: 'wrap'
+			}, 0];
 		};
 	}});
 
@@ -249,17 +243,23 @@ function getContentType(coedName, opts) {
 		return {
 			name: new Attribute({
 				"default": coedName
+			}),
+			"class": new Attribute({
+				"default": ""
+			}),
+			"tag": new Attribute({
+				"default": "div"
 			})
 		};
 	}});
 
 	Object.defineProperty(ContentType.prototype, "toDOM", { get: function() {
 		return function(node) {
-			if (!node.codom) {
-				console.warn("No dom for content node");
-				return ["div", node.attrs, 0];
-			}
-			return [node.codom.nodeName, nodeAttrs(node.codom), 0];
+			var attrs = node.attrs;
+			return [attrs.tag, {
+				'class': attrs['class'],
+				'coed-name': attrs.name
+			}, 0];
 		};
 	}});
 
@@ -287,19 +287,32 @@ function getHoldType(opts) {
 	};
 	inherits(HoldType, Block);
 
+	Object.defineProperty(HoldType.prototype, "isBlock", { get: function() {
+		// or else pm wraps nodes contentEditable == false in a div
+		return false;
+	}});
+
+	Object.defineProperty(HoldType.prototype, "attrs", { get: function() {
+		return {
+			html: new Attribute({
+				"default": ""
+			})
+		};
+	}});
+
 	Object.defineProperty(HoldType.prototype, "toDOM", { get: function() {
 		return function(node) {
-			if (!node.codom) {
-				throw new Error("No dom for hold node");
-			}
-			return node.codom.cloneNode(true);
+			var div = document.createElement("div");
+			div.innerHTML = node.attrs.html;
+			var elem = div.firstChild;
+			return elem;
 		};
 	}});
 
 	Object.defineProperty(HoldType.prototype, "matchDOMTag", { get: function() {
 		return {
 			'[contenteditable="false"]': function(node) {
-				return {};
+				return {html: node.outerHTML};
 			}
 		};
 	}});

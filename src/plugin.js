@@ -51,11 +51,12 @@ CoedPlugin.prototype.fixChange = function() {
 		// ignore errors
 	}
 
-	if (!node || !node.nodeName) return;
+	if (!node) return;
+	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
 	var name = node.nodeName.toLowerCase();
 	var parent = node.closest('[coed="root"]');
 	if (parent) {
-		if (!node.closest('[coed="content"]')) {
+		if (!node.closest('[coed-name]')) {
 			selectNode(this.pm, parent);
 		} // else ok it's a content node
 	}
@@ -84,7 +85,7 @@ CoedPlugin.prototype.dragStart = function(e) {
 	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
 	var parent = node.closest('[coed="root"]');
 	if (!parent) return;
-	if (node.closest('[coed="content"]')) return;
+	if (node.closest('[coed-name]')) return;
 	this.dragging = true;
 	selectNode(this.pm, parent);
 };
