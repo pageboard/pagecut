@@ -129,7 +129,7 @@ CoLink.prototype.to = function(attrs) {
 	Object.keys(obj).forEach(function(key) {
 		var span = document.createElement('span');
 		span.setAttribute('title', key);
-		span.innerHTML = obj[key];
+		span.innerHTML = obj[key] || "";
 		obj[key] = span;
 	});
 
