@@ -13,6 +13,7 @@ function CoedPlugin(pm, options) {
 
 	pm.content.addEventListener("mousedown", this.dragStart);
 	pm.content.addEventListener("mouseup", this.dragStop);
+	pm.content.addEventListener("click", this.fixChange);
 }
 
 function selectNode(pm, node) {
@@ -27,6 +28,7 @@ CoedPlugin.prototype.detach = function(pm) {
 	if (pm.content) {
 		pm.content.removeEventListener("mousedown", this.dragStart);
 		pm.content.removeEventListener("mouseup", this.dragStop);
+		pm.content.removeEventListener("click", this.fixChange);
 	}
 	pm.on.selectionChange.remove(this.fixChange);
 };
@@ -97,6 +99,7 @@ function isParentOf(parent, node) {
 }
 
 CoedPlugin.prototype.dragStart = function(e) {
+	this.dragging = true;
 	var dom = e.target;
 	if (!dom) return;
 	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
@@ -121,7 +124,6 @@ CoedPlugin.prototype.dragStart = function(e) {
 		level--;
 	}
 	if (!inRoot) return;
-	this.dragging = true;
 };
 
 CoedPlugin.prototype.dragStop = function(e) {
