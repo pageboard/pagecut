@@ -1,0 +1,30 @@
+.ProseMirror-content {
+	outline:none;
+}
+
+.ProseMirror-selectednode {
+	outline: none;
+}
+
+co-no {
+	display:block;
+	height:0px;
+	width:100%;
+}
+
+.ProseMirror-content > p {
+	position:relative;
+	margin: 0.5em 0;
+}
+
+.ProseMirror-content > p:before {
+	display: block;
+	position: absolute;
+	font-size: 0.8em;
+	color: black;
+	left: -0.9em;
+	content: '\00b6';
+	opacity: 0.5;
+	top: 0.1em;
+}
+

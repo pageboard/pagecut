@@ -1,9 +1,5 @@
 @import url('./coed-link-font.css');
 
-.ProseMirror-content {
-	outline:none;
-}
-
 co-link {
 	display:flex;
 	white-space: nowrap;
@@ -25,12 +21,9 @@ co-link[coed-focused] {
 	border-color:black;
 }
 
-co-link.ProseMirror-selectednode {
-	outline: none;
-}
 co-link > a.ProseMirror-selectednode,
 co-link > aside.ProseMirror-selectednode {
-	outline: 1px solid red; /* should never happen */
+	outline: 1px solid red; /* debugging purpose - should never happen */
 }
 
 co-link > a,
