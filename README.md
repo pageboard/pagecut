@@ -1,19 +1,15 @@
 coed -- Editor with Components
 ==============================
 
-This html wysiwyg editor is designed to help handling of external resources in a document,
-by displaying a "block" that represents the resource with these informations:
+Helps setting up editable components in [ProseMirror](https://prosemirror.net),
+with non-editable parts and named content with configurable schema.
 
-- url
-- type (link, image, video, embed)
-- favicon
-- thumbnail
-- duration
-- dimensions (width, height)
-- file size
-- and some content like title, credit, ...
+Use `coed` to augment the editor with stylable DOM components and customizable
+form inputs.
 
-With the help of [prosemirror](https://prosemirror.net) and [url-inspector](https://github.com/kapouer/url-inspector), when a URL or html code is pasted, it is replaced by such a "block".
+It comes pre-bundled with a "link" component that makes use of
+[url-inspector](https://github.com/kapouer/url-inspector) for
+insertion as resource, embed, or anchors.
 
 
 Usage
@@ -52,40 +48,32 @@ document.addEventListener('DOMContentLoaded', function() {
 Components
 ----------
 
-An Coed Component defines:
-- a prosemirror plugin
-- a custom tag
-- a schema as a ProseMirror node
-- how to render it as a DOM node
-- how to parse it from a DOM node to a ProseMirror Node.
+A component is an object that must implement this interface:
 
-Typically, attributes of the root tag are used to render tags that are not part
-of the prosemirror schema specification. Any attempt at selecting those tags
-will result in selecting the root node.
+### Properties
+
+- tag: the component tag name. Preferably custom, but does not need web components to work.
+- name: the component name as seen by ProseMirror
+- attrs: an object mapping attributes with default values, tells ProseMirror what must be stored on the component.
+  Attributes are typically merged in the DOM instance of the component.
+- contents: an object mapping content node names to ProseMirror schemaSpec
+
+### Methods
+
+- from(dom): returns attributes from a given DOM component node
+- to(attrs): returns a DOM component instance given a set of attributes
+  Nodes with editable content must have a unique `coed-name` attribute.
+
+Content nodes are entirely handled by ProseMirror - those two methods do not deal
+with them at all.
 
 A selected component gets a "focused" class.
 
 
-Coed links
------------
+Link Component
+--------------
 
-An Coed Component representing a resource of any kind (url or fragment).
-
-Tag: ed-link
-
-Schema:
-ed-link[type, icon, thumbnail, duration, width, height, size, description, html]
-	ed-link-content
-		ed-link-section[name="title"]
-		ed-link-section[name="content"]
-		
-Rendered:
-ed-link
-	ed-link-header
-	ed-link-content
-		ed-link-section[name="title"]
-		ed-link-section[name="content"]
-	ed-link-aside
+A component representing a resource of any kind (url or fragment).
 
 Plugin options:
 An `inspector` async function that receives an object with either url or fragment,
