@@ -114,7 +114,7 @@ CoLink.prototype.to = function(attrs) {
 	var link = node.querySelector('a');
 
 	if (attrs.type) node.setAttribute("type", attrs.type);
-	if (attrs.id) node.setAttribute("type", attrs.id);
+	if (attrs.id) node.setAttribute("id", attrs.id);
 	if (attrs.url) link.setAttribute("href", attrs.url);
 	if (attrs.icon) me.ensure(link, 'img', { src: attrs.icon });
 	if (attrs.thumbnail) me.ensure(node.querySelector('figure'), 'img', { src: attrs.thumbnail });
