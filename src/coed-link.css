@@ -9,14 +9,13 @@ co-link {
 	overflow:hidden;
 	max-height:2.75em;
 	max-width:100%;
-	transition: max-height 0.5s ease;
 	margin:1px 0;
 }
 co-link [hidden] {
 	display:none !important;
 }
 co-link[coed-focused] {
-	max-height:10em; /* workaround transition with unknown max-height will cause a problem */
+	max-height:none;
 	box-shadow:1px 1px 1px black;
 	border-color:black;
 }
