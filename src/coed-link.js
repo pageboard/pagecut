@@ -179,12 +179,19 @@ CoLink.prototype.handler = function(pm, info) {
 		else if (info.fragment) info.title = info.fragment.firstChild.innerText;
 	}
 
+	function parseDom(node) {
+		var div = document.createElement("div");
+		div.appendChild(node);
+		var newNode = pm.schema.parseDOM(div);
+		return newNode.firstChild;
+	}
+
 	me.inspector(info, function(err, props) {
 		var oldnode = document.getElementById(loadingId);
 		if (!oldnode) {
 			return;
 		}
-		var pos = posFromDOM(oldnode);
+		var pos = pm.posFromDOM(oldnode);
 		var begin = pos.pos;
 		var $pos = pm.doc.resolve(begin);
 		var end = begin + $pos.nodeAfter.nodeSize;
@@ -194,11 +201,10 @@ CoLink.prototype.handler = function(pm, info) {
 			pm.tr.delete(begin, end).apply();
 			return;
 		}
-		var node = me.to(props, {
-			title: props.title
-		});
+		var dom = me.to(props);
+		dom.querySelector('[coed-name="title"]').innerHTML = props.title;
 
-		pm.tr.replaceWith(begin, end, pm.parseDomNode(node)).apply();
+		pm.tr.replaceWith(begin, end, parseDom(dom)).apply();
 	});
 
 	var loadingNode = me.to({
@@ -208,6 +214,6 @@ CoLink.prototype.handler = function(pm, info) {
 		title: info.title
 	});
 
-	return pm.parseDomNode(loadingNode);
+	return parseDom(loadingNode);
 }
 

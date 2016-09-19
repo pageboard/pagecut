@@ -11,13 +11,6 @@ const UrlPlugin = require("./utils/url-plugin");
 
 const CoedPlugin = require("./plugin");
 
-ProseMirror.prototype.parseDomNode = function(node) {
-	var div = document.createElement("div");
-	div.appendChild(node);
-	var newNode = this.schema.parseDOM(div);
-	return newNode.firstChild;
-};
-
 let schemaSpec = {
 	nodes: {
 		doc: {type: basicSchema.Doc, content: "block+"},
@@ -162,6 +155,7 @@ function getRootType(opts) {
 	Object.defineProperty(RootType.prototype, "attrs", { get: function() {
 		var typeAttrs = {};
 		var attrs = opts.attrs;
+		attrs.id = "";
 		Object.keys(attrs).forEach(function(key) {
 			var defaultVal = attrs[key];
 			if (typeof defaultVal != "string") defaultVal = "";
@@ -211,6 +205,7 @@ function getRootType(opts) {
 function getWrapType(opts) {
 	function WrapType(name, schema) {
 		Block.call(this, name, schema);
+		this.coedType = 'wrap'; // used by plugin to detect node types
 	};
 	inherits(WrapType, Block);
 

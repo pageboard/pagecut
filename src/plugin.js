@@ -3,6 +3,7 @@ const {posFromDOM, DOMFromPos} = require("prosemirror/dist/edit/dompos");
 
 function CoedPlugin(pm, options) {
 	this.pm = pm;
+	pm.posFromDOM = posFromDOM;
 
 	this.dragStart = this.dragStart.bind(this);
 	this.dragStop = this.dragStop.bind(this);
@@ -43,7 +44,7 @@ CoedPlugin.prototype.fixChange = function() {
 			break;
 		}
 		coedType = node.type && node.type.coedType;
-		if (coedType == "content") {
+		if (coedType == "content" || coedType == "wrap") {
 			inContent = true;
 		} else if (coedType == "root") {
 			// select root
@@ -108,7 +109,7 @@ CoedPlugin.prototype.dragStart = function(e) {
 		node = rpos.node(level);
 		dom = dom.parentNode;
 		coedType = node.type && node.type.coedType;
-		if (coedType == "content") {
+		if (coedType == "content" || coedType == "wrap") {
 			return;
 		} else if (coedType == "root") {
 			inRoot = true;
