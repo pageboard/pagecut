@@ -29,11 +29,11 @@ co-link > aside.ProseMirror-selectednode {
 co-link > a,
 co-link > aside {
 	display:inline-block;
-	cursor:move;
 	vertical-align:top;
 }
 
 co-link > a {
+	cursor:move;
 	background:#333;
 	flex: 0 0 auto;
 	padding-left:0.15em;
@@ -101,7 +101,6 @@ co-link > aside > figure:empty {
 }
 
 co-link > aside > figure > img {
-	cursor:move !important;
 	width: 100%;
 	align-self:center;
 }
