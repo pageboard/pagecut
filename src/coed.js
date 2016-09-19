@@ -95,41 +95,60 @@ exports.init = function(config) {
 
 
 function initType(spec, def) {
-	var defName = def.name;
-	var groupName = 'group_' + defName;
+	var baseDom = def.to({});
+	defineSpec(def, spec.nodes, baseDom);
+}
 
-	// named content
-	var contentNames = Object.keys(def.contents).map(function(name) {
-		var contentTagName = 'content_' + defName + '_' + name;
-		spec.nodes[contentTagName] = {
-			type: getContentType(name, def),
-			content: def.contents[name],
-			group: groupName
+function defineSpec(def, specs, dom) {
+	var content = [];
+	var typeName, type;
+	var coedName = dom.getAttribute('coed-name');
+	var specName, spec, recursive = false;
+	if (!def.index) {
+		def.index = 1;
+		spec = {
+			group: def.group || "block",
+			type: getRootType(def)
 		};
-		return contentTagName;
-	});
+		specName = typeName = "root_" + def.name;
+		recursive = true;
+	} else if (coedName) {
+		spec = {
+			type: getContentType(def),
+			content: def.contents[coedName]
+		};
+		if (!spec.content) throw new Error("Missing def.contents[" + coedName + "]");
+		typeName = "content_" + def.name + def.index++;
+		specName = typeName + '[name="' + coedName + '"]';
+	} else if (dom.querySelector('[coed-name]')) {
+		specName = typeName = "wrap_" + def.name + def.index++;
+		spec = {
+			type: getWrapType(def)
+		};
+		recursive = true;
+	} else {
+		specName = typeName = "hold_" + def.name;
+		if (!specs[typeName]) {
+			spec = {
+				type: getHoldType(def)
+			};
+		}
+	}
 
-	// holder
-	spec.nodes['hold_' + defName] = {
-		type: getHoldType(def),
-		group: groupName
-	};
-
-	// wrapper
-	spec.nodes['wrap_' + defName] = {
-		type: getWrapType(def),
-		content: groupName + '+',
-		group: groupName
-	};
-
-
-	// root
-	spec.nodes[defName] = {
-		type: getRootType(def),
-		content: groupName + '+',
-		group: def.group || "block"
-	};
-
+	var content = [];
+	if (recursive) {
+		var childs = dom.childNodes;
+		for (var i=0, child; i < childs.length; i++) {
+			child = childs.item(i);
+			if (child.nodeType != Node.ELEMENT_NODE) continue;
+			content.push(defineSpec(def, specs, child));
+		}
+		if (content.length) spec.content = content.join(" ");
+	}
+	if (spec) {
+		specs[typeName] = spec;
+	}
+	return specName;
 }
 
 function getRootType(opts) {
@@ -171,24 +190,18 @@ function getRootType(opts) {
 	}});
 
 	function prepareDom(dom) {
-		var domChild, type, coedName;
-		for (var i=0; i < dom.childNodes.length; i++) {
-			domChild = dom.childNodes.item(i);
-			if (domChild.nodeType != Node.ELEMENT_NODE) continue;
-
-			coedName = domChild.getAttribute('coed-name');
-			if (coedName) {
-				type = 'content';
-			} else if (domChild.querySelector('[coed-name]')) {
-				type = 'wrap';
-				domChild.setAttribute('coed', 'wrap');
+		var name;
+		for (var i=0, child; i < dom.childNodes.length; i++) {
+			child = dom.childNodes.item(i);
+			if (child.nodeType != Node.ELEMENT_NODE) continue;
+			name = child.getAttribute('coed-name');
+			if (name) {
+				// nothing
+			} else if (child.querySelector('[coed-name]')) {
+				child.setAttribute('coed', 'wrap');
+				prepareDom(child);
 			} else {
-				type = 'hold';
-				domChild.setAttribute('contenteditable', 'false');
-			}
-
-			if (type == 'wrap') {
-				prepareDom(domChild);
+				child.setAttribute('contenteditable', 'false');
 			}
 		}
 	}
@@ -233,7 +246,7 @@ function getWrapType(opts) {
 }
 
 
-function getContentType(coedName, opts) {
+function getContentType(opts) {
 	function ContentType(name, schema) {
 		Block.call(this, name, schema);
 	};
@@ -242,7 +255,7 @@ function getContentType(coedName, opts) {
 	Object.defineProperty(ContentType.prototype, "attrs", { get: function() {
 		return {
 			name: new Attribute({
-				"default": coedName
+				"default": ""
 			}),
 			"class": new Attribute({
 				"default": ""
@@ -266,13 +279,8 @@ function getContentType(coedName, opts) {
 	Object.defineProperty(ContentType.prototype, "matchDOMTag", { get: function() {
 		return {
 			'[coed-name]': function(node) {
-				var name = node.getAttribute('coed-name');
-				if (name != coedName) {
-					// selects the ContentType with the right schema
-					return false;
-				}
 				return {
-					name: coedName
+					name: node.getAttribute('coed-name')
 				};
 			}
 		};
