@@ -6,6 +6,7 @@
 	<link href="coed.css" rel="stylesheet" />
 	<link href="coed-link.css" rel="stylesheet" />
 	<script src="coed.js"></script>
+	<script src="coed-link.js"></script>
 	<script src="agent.js"></script>
 	<style>
 #editor {
@@ -21,9 +22,7 @@
 document.addEventListener('DOMContentLoaded', function() {
 	var inspectorBase = "http://inspector.eda.sarl";
 
-	var opts = {
-		content: document.querySelector("#content"),
-		place: document.querySelector("#editor"),
+	var coLink = new Coed.Link({
 		inspector: function(info, cb) {
 			var node = info.fragment && info.fragment.firstChild;
 			if (node && node.nodeName == "IFRAME") {
@@ -34,6 +33,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			// url-inspector-daemon@1.5.0 has right properties names
 			GET(inspectorBase + "/inspector", {url: info.url}, cb);
 		}
+	});
+
+	var opts = {
+		content: document.querySelector("#content"),
+		place: document.querySelector("#editor"),
+		components: [coLink],
+		handlers: [coLink.handler] // handle url or dom paste events
 	};
 	var pm = Coed.init(opts);
 	opts.content.hidden = true;

@@ -7,9 +7,9 @@ const {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup")
 const {menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
 
 const BreaksPlugin = require("./utils/breaks-plugin");
+const UrlPlugin = require("./utils/url-plugin");
 
 const CoedPlugin = require("./plugin");
-const CoLink = require("./coed-link");
 
 ProseMirror.prototype.parseDomNode = function(node) {
 	var div = document.createElement("div");
@@ -50,17 +50,19 @@ exports.defaults = {
 	plugins: [
 		BreaksPlugin.config(),
 		exampleSetup.config({menuBar: false, tooltipMenu: false})
-	]
+	],
+	handlers: [],
+	components: []
 };
 
 exports.init = function(config) {
 	var opts = Object.assign({}, exports.defaults, config);
 
-	opts.plugins.push(CoedPlugin.config(opts));
+	if (!opts.components) opts.components = [];
+	if (!opts.handlers) opts.handlers = [];
 
-	if (!opts.components) opts.components = [
-		new CoLink(opts)
-	];
+	opts.plugins.push(UrlPlugin.config(opts));
+	opts.plugins.push(CoedPlugin.config(opts));
 
 	opts.components.forEach(function(def) {
 		initType(opts.spec, def);

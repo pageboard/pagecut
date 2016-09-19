@@ -4,7 +4,7 @@ const {Slice, Fragment} = require("prosemirror/dist/model");
 const UrlRegex = require('url-regex');
 
 function UrlPlugin(pm, options) {
-	this.action = options.action;
+	this.handlers = options.handlers;
 	this.pm = pm;
 	this.filter = this.filter.bind(this);
 	pm.on.transformPasted.add(this.filter);
@@ -23,10 +23,14 @@ UrlPlugin.prototype.transform = function(fragment) {
 	var urlReg = UrlRegex();
 	for (var i = 0; i < fragment.childCount; i++) {
 		var child = fragment.child(i);
+		var newNode = null;
 		if (child.isText) {
 			var frog = asForeignFragment(child.text.trim());
 			if (hasOnlyChildElements(frog)) {
-				var newNode = this.action(this.pm, { fragment: frog });
+				for (var j = 0; j < this.handlers.length; j++) {
+					newNode = this.handlers[j](this.pm, { fragment: frog });
+					if (newNode) break;
+				}
 				if (newNode) {
 					linkified.push(newNode);
 					continue;
@@ -39,7 +43,10 @@ UrlPlugin.prototype.transform = function(fragment) {
 					var link = child.type.schema.marks.link;
 					if (start > 0) linkified.push(child.copy(child.text.slice(pos, start)));
 					var urlText = child.text.slice(start, end);
-					var newNode = this.action(this.pm, { url: urlText });
+					for (var j = 0; j < this.handlers.length; j++) {
+						newNode = this.handlers[j](this.pm, { url: urlText });
+						if (newNode) break;
+					}
 					if (!newNode) {
 						newNode = child.type.create(null, urlText, link ? link.create({href: urlText}).addToSet(child.marks) : null);
 					}

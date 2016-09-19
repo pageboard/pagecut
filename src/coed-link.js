@@ -1,4 +1,4 @@
-const UrlPlugin = require("./utils/url-plugin");
+
 
 module.exports = CoLink;
 
@@ -32,11 +32,9 @@ function CoLink(options) {
 		title: "inline<_>*",
 		content: "inline<_>*"
 	};
+	this.handler = this.handler.bind(this);
 
 	if (options.inspector) this.inspector = options.inspector;
-	options.plugins.push(UrlPlugin.config({
-		action: this.handle.bind(this)
-	}));
 }
 
 CoLink.prototype.inspector = function(info, cb) {
@@ -171,7 +169,7 @@ CoLink.prototype.from = function(node) {
 	return attrs;
 };
 
-CoLink.prototype.handle = function(pm, info) {
+CoLink.prototype.handler = function(pm, info) {
 	var me = this;
 
 	var loadingId = 'id-colink-' + Date.now();
