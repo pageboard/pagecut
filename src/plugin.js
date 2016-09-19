@@ -71,7 +71,15 @@ CoedPlugin.prototype.fixChange = function() {
 		}
 	}
 	if (this.focused && this.focused != dom) {
-		this.focused.removeAttribute("coed-focused");
+		var fparent = this.focused;
+		while (fparent && fparent.nodeType == Node.ELEMENT_NODE) {
+			if (dom && isParentOf(fparent, dom)) {
+				// do not remove attribute
+			} else {
+				fparent.removeAttribute('coed-focused');
+			}
+			fparent = fparent.parentNode;
+		}
 		delete this.focused;
 	}
 	if (dom) {
@@ -79,6 +87,13 @@ CoedPlugin.prototype.fixChange = function() {
 		this.focused = dom;
 	}
 };
+
+function isParentOf(parent, node) {
+	while (node = node.parentNode) {
+		if (parent == node) return true;
+	}
+	return false;
+}
 
 CoedPlugin.prototype.dragStart = function(e) {
 	var dom = e.target;
