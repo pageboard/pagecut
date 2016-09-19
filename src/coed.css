@@ -6,12 +6,12 @@
 	outline: none;
 }
 
-.ProseMirror-content > p {
+.ProseMirror-content p[pm-container] {
 	position:relative;
 	margin: 0.5em 0;
 }
 
-.ProseMirror-content > p:before {
+.ProseMirror-content p[pm-container]:before {
 	display: block;
 	position: absolute;
 	font-size: 0.8em;
