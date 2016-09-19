@@ -20,8 +20,7 @@ ProseMirror.prototype.parseDomNode = function(node) {
 
 let schemaSpec = {
 	nodes: {
-		doc: {type: basicSchema.Doc, content: "noman block+ noman"},
-		noman: {type: getNomanType()},
+		doc: {type: basicSchema.Doc, content: "block+"},
 
 		paragraph: { type: basicSchema.Paragraph, content: "inline<_>*", group: "block" },
 		blockquote: { type: basicSchema.BlockQuote, content: "block+", group: "block" },
@@ -74,8 +73,6 @@ exports.init = function(config) {
 		delete opts.spec;
 	}
 	if (opts.content) {
-		opts.content.insertBefore(document.createElement("co-no"), opts.content.firstChild);
-		opts.content.appendChild(document.createElement("co-no"));
 		opts.doc = opts.schema.parseDOM(opts.content);
 		delete opts.content;
 	}
@@ -333,33 +330,6 @@ function getHoldType(opts) {
 	}});
 	return HoldType;
 }
-
-function getNomanType(opts) {
-	function NomanType(name, schema) {
-		Block.call(this, name, schema);
-	};
-	inherits(NomanType, Block);
-
-	Object.defineProperty(NomanType.prototype, "selectable", { get: function() {
-		return false;
-	}});
-
-	Object.defineProperty(NomanType.prototype, "toDOM", { get: function() {
-		return function(node) {
-			return ['co-no', ['br']];
-		};
-	}});
-
-	Object.defineProperty(NomanType.prototype, "matchDOMTag", { get: function() {
-		return {
-			'co-no': function(node) {
-				return {};
-			}
-		};
-	}});
-	return NomanType;
-}
-
 
 function nodeAttrs(node) {
 	var obj = {};

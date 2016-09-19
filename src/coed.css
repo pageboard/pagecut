@@ -6,12 +6,6 @@
 	outline: none;
 }
 
-co-no {
-	display:block;
-	height:0px;
-	width:100%;
-}
-
 .ProseMirror-content > p {
 	position:relative;
 	margin: 0.5em 0;
