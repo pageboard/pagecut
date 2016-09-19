@@ -68,7 +68,6 @@ exports.init = function(config) {
 		initType(opts.spec, def);
 	});
 
-
 	if (opts.spec) {
 		opts.schema = new Schema(opts.spec);
 		delete opts.spec;
@@ -156,6 +155,7 @@ function defineSpec(def, specs, dom) {
 function getRootType(opts) {
 	function RootType(name, schema) {
 		Block.call(this, name, schema);
+		this.coedType = 'root'; // used by plugin to detect node types
 	};
 	inherits(RootType, Block);
 
@@ -175,7 +175,6 @@ function getRootType(opts) {
 	Object.defineProperty(RootType.prototype, "toDOM", { get: function() {
 		return function(node) {
 			var domNode = opts.to(node.attrs);
-			domNode.setAttribute('coed', 'root');
 			prepareDom(domNode, node);
 			return [domNode.nodeName, nodeAttrs(domNode), 0];
 		};
@@ -200,7 +199,6 @@ function getRootType(opts) {
 			if (name) {
 				// nothing
 			} else if (child.querySelector('[coed-name]')) {
-				child.setAttribute('coed', 'wrap');
 				prepareDom(child);
 			} else {
 				child.setAttribute('contenteditable', 'false');
@@ -231,16 +229,20 @@ function getWrapType(opts) {
 		return function(node) {
 			var attrs = node.attrs;
 			return [attrs.tag, {
-				'class': attrs['class'],
-				coed: 'wrap'
+				'class': attrs['class']
 			}, 0];
 		};
 	}});
 
 	Object.defineProperty(WrapType.prototype, "matchDOMTag", { get: function() {
 		return {
-			'[coed="wrap"]': function(node) {
-				return {};
+			'*': function(node) {
+				var tagName = node.nodeName.toLowerCase();
+				if (tagName == opts.tag || !node.querySelector('[coed-name]')) return false;
+				return {
+					tag: tagName,
+					"class": node.getAttribute("class")
+				};
 			}
 		};
 	}});
@@ -251,6 +253,7 @@ function getWrapType(opts) {
 function getContentType(opts) {
 	function ContentType(name, schema) {
 		Block.call(this, name, schema);
+		this.coedType = 'content'; // used by plugin to detect node types
 	};
 	inherits(ContentType, Block);
 
@@ -296,6 +299,10 @@ function getHoldType(opts) {
 		Block.call(this, name, schema);
 	};
 	inherits(HoldType, Block);
+
+	Object.defineProperty(HoldType.prototype, "selectable", { get: function() {
+		return false;
+	}});
 
 	Object.defineProperty(HoldType.prototype, "attrs", { get: function() {
 		return {

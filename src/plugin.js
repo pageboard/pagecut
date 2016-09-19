@@ -6,14 +6,12 @@ function CoedPlugin(pm, options) {
 
 	this.dragStart = this.dragStart.bind(this);
 	this.dragStop = this.dragStop.bind(this);
-	this.trackFocus = this.trackFocus.bind(this);
 	this.fixChange = this.fixChange.bind(this);
 
 	pm.on.selectionChange.add(this.fixChange);
 
 	pm.content.addEventListener("mousedown", this.dragStart);
 	pm.content.addEventListener("mouseup", this.dragStop);
-	pm.content.addEventListener("click", this.trackFocus);
 }
 
 function selectNode(pm, node) {
@@ -28,66 +26,86 @@ CoedPlugin.prototype.detach = function(pm) {
 	if (pm.content) {
 		pm.content.removeEventListener("mousedown", this.dragStart);
 		pm.content.removeEventListener("mouseup", this.dragStop);
-		pm.content.removeEventListener("click", this.trackFocus);
 	}
 	pm.on.selectionChange.remove(this.fixChange);
 };
 
 CoedPlugin.prototype.fixChange = function() {
+	if (this.dragging) return;
 	var rpos = this.pm.selection.$from;
-	var from = rpos.pos;
-	if (rpos.nodeAfter && rpos.nodeAfter.type.name == "text") {
-		from = from - rpos.parentOffset;
-	}
+	var nodePos, fromPos, coedType, level = rpos.depth;
+	var inContent = false;
 	var node;
-	try {
-		var fromPos = DOMFromPos(this.pm, from);
-		node = fromPos.node;
-		var offset = fromPos.offset;
-		if (node.nodeType == 1 && offset < node.childNodes.length) {
-			node = node.childNodes[offset];
+	while (level >= 0) {
+		node = rpos.node(level);
+		if (!node) {
+			console.info("no node at level", level);
+			break;
 		}
-	} catch(ex) {
-		// ignore errors
+		coedType = node.type && node.type.coedType;
+		if (coedType == "content") {
+			inContent = true;
+		} else if (coedType == "root") {
+			// select root
+			nodePos = rpos.before(level);
+			if (!inContent) {
+				this.pm.setNodeSelection(nodePos);
+			}
+			try {
+				fromPos = DOMFromPos(this.pm, nodePos);
+			} catch(ex) {
+				// in which case it's useless to continue
+				return;
+			}
+			break;
+		}
+		level--;
 	}
 
-	if (!node) return;
-	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
-	var name = node.nodeName.toLowerCase();
-	var parent = node.closest('[coed="root"]');
-	if (parent) {
-		if (!node.closest('[coed-name]')) {
-			selectNode(this.pm, parent);
-		} // else ok it's a content node
+	var dom;
+	if (fromPos) {
+		dom = fromPos.node;
+		var offset = fromPos.offset;
+		if (dom.nodeType == 1 && offset < dom.childNodes.length) {
+			dom = dom.childNodes.item(offset);
+		}
 	}
-	this.trackFocus({target: node});
-};
-
-CoedPlugin.prototype.trackFocus = function(e) {
-	if (this.focused) {
+	if (this.focused && this.focused != dom) {
 		this.focused.removeAttribute("coed-focused");
 		delete this.focused;
 	}
-	if (this.dragging) return;
-	var node = e.target;
-	if (!node) return;
-	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
-	var parent = node.closest('[coed="root"]');
-	if (!parent) return;
-	this.focused = parent;
-	parent.setAttribute("coed-focused", "1");
+	if (dom) {
+		dom.setAttribute("coed-focused", 1);
+		this.focused = dom;
+	}
 };
 
 CoedPlugin.prototype.dragStart = function(e) {
-	this.dragging = false;
-	var node = e.target;
-	if (!node) return;
-	if (node.nodeType == Node.TEXT_NODE) node = node.parentNode;
-	var parent = node.closest('[coed="root"]');
-	if (!parent) return;
-	if (node.closest('[coed-name]')) return;
+	var dom = e.target;
+	if (!dom) return;
+	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
+	var pos;
+	try { pos = posFromDOM(dom); } catch(ex) {return;}
+	var rpos = this.pm.doc.resolve(pos.pos);
+	var level = rpos.depth;
+	var node, coedType, inContent = false, inRoot = false, nodePos;
+	while (level >= 0) {
+		node = rpos.node(level);
+		dom = dom.parentNode;
+		coedType = node.type && node.type.coedType;
+		if (coedType == "content") {
+			return;
+		} else if (coedType == "root") {
+			inRoot = true;
+			if (!inContent) {
+				this.pm.setNodeSelection(rpos.before(level));
+			}
+			break;
+		}
+		level--;
+	}
+	if (!inRoot) return;
 	this.dragging = true;
-	selectNode(this.pm, parent);
 };
 
 CoedPlugin.prototype.dragStop = function(e) {
