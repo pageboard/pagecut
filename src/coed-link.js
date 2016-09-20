@@ -133,7 +133,7 @@ CoLink.prototype.to = function(attrs) {
 		span.innerHTML = obj[key] || "";
 		obj[key] = span;
 	});
-	node.querySelector('aside > div > p').innerHTML = attrs.description;
+	node.querySelector('aside > div > p').innerHTML = attrs.description || "";
 
 	me.fill(node.querySelector('aside > div > div'), obj);
 	return node;
