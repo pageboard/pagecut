@@ -61,6 +61,8 @@ CoedPlugin.prototype.fixChange = function() {
 
 	var dom = posToNode(this.pm, nodePos);
 
+	if (dom === false) return;
+
 	if (this.focused && this.focused != dom) {
 		var fparent = this.focused;
 		while (fparent && fparent.nodeType == Node.ELEMENT_NODE) {
@@ -91,8 +93,7 @@ function posToNode(pm, pos) {
 			return dom;
 		}
 	} catch(ex) {
-		// in which case it's useless to continue
-
+		return false;
 	}
 }
 
