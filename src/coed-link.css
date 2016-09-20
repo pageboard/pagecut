@@ -33,12 +33,13 @@ co-link > aside {
 
 co-link > a {
 	cursor:move;
-	background:#333;
+	background:#33393B;
 	flex: 0 0 auto;
 	padding-left:0.15em;
 	padding-right:0.2em;
 	text-align:center;
 	text-decoration:none;
+	min-width:1.2em;
 }
 
 co-link > a:before {
@@ -83,10 +84,11 @@ co-link > a > img {
 }
 
 co-link > aside {
-	background-color:black;
+	background-color:#33393B;
 	flex: 0 2 auto;
 	display:flex;
 	position:relative;
+	max-width:33%;
 }
 
 co-link > aside > figure {
@@ -94,6 +96,7 @@ co-link > aside > figure {
 	min-height:0;
 	min-width:0;
 	display:flex;
+	margin:0;
 }
 co-link > aside > figure:empty {
 	display:none;
@@ -102,33 +105,36 @@ co-link > aside > figure:empty {
 co-link > aside > figure > img {
 	width: 100%;
 	align-self:center;
+	max-height:8em;
+	box-shadow:0px 0px 3px white;
 }
-
+co-link > aside > div > p {
+	white-space: normal;
+	color:#CBCBCB;
+	margin: 0 0.3em;
+	font-family: sans-serif;
+	font-size: 0.75em;
+	max-height:8em;
+	overflow:visible;
+	text-align:left;
+}
 co-link > aside > div {
-	background-color:#333;
 	flex: 1 1 auto;
 	font-family: monospace;
 	white-space: normal;
 	color:white;
-	width: 100%;
-	text-align:justify;
 }
 co-link > aside > div:empty {
 	display:none;
 }
-co-link > aside > div > span {
-	display:inline-block;
-	padding: 0 0.3em;
-	position:relative;
-}
-co-link > aside > div > span[title="dimensions"] {
+co-link > aside > div > div {
 	float:right;
+	margin-right:0.15em;
+	background-color:#444;
 }
-co-link > aside > div > span[title="description"] {
+co-link > aside > div > div > span {
+	float:right;
 	clear:both;
-	word-break: break-all;
-	font-size: 0.8em;
-	top:0.3em;
 }
 
 co-link > div {

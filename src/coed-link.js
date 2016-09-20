@@ -110,7 +110,7 @@ CoLink.prototype.to = function(attrs) {
 	var node = document.createElement(me.tag);
 	node.innerHTML = '<a></a><div>\
 <div coed-name="title"></div><div coed-name="content"></div>\
-</div><aside><div></div><figure></figure></aside><script type="text/html"></script>';
+</div><aside><div><div></div><p></p></div><figure></figure></aside><script type="text/html"></script>';
 	var link = node.querySelector('a');
 
 	if (attrs.type) node.setAttribute("type", attrs.type);
@@ -123,8 +123,7 @@ CoLink.prototype.to = function(attrs) {
 	var obj = {
 		dimensions: me.formatDimensions(attrs.width, attrs.height),
 		duration: me.formatDuration(attrs.duration),
-		size: me.formatSize(attrs.size),
-		description: attrs.description
+		size: me.formatSize(attrs.size)
 	};
 	Object.keys(obj).forEach(function(key) {
 		var span = document.createElement('span');
@@ -132,8 +131,9 @@ CoLink.prototype.to = function(attrs) {
 		span.innerHTML = obj[key] || "";
 		obj[key] = span;
 	});
+	node.querySelector('aside > div > p').innerHTML = attrs.description;
 
-	me.fill(node.querySelector('aside > div'), obj);
+	me.fill(node.querySelector('aside > div > div'), obj);
 	return node;
 };
 
@@ -166,6 +166,8 @@ CoLink.prototype.from = function(node) {
 		else if (title == 'dimensions') me.parseDimensions(attrs, val);
 		else attrs[title] = val;
 	}
+	var description = node.querySelector('aside > div > p');
+	if (description) attrs.description = description.innerHTML;
 	return attrs;
 };
 
