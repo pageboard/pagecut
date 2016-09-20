@@ -1,7 +1,7 @@
-@import url('./coed-link-font.css');
+@import './coed-link-font.css';
 
 co-link {
-	display:flex;
+	display:inline-flex;
 	white-space: nowrap;
 	position:relative;
 	border:1px solid #333;
@@ -25,12 +25,6 @@ co-link > aside.ProseMirror-selectednode {
 	outline: 1px solid red; /* debugging purpose - should never happen */
 }
 
-co-link > header,
-co-link > aside {
-	display:inline-block;
-	vertical-align:top;
-}
-
 co-link > header {
 	cursor:move;
 	background:#33393B;
@@ -45,13 +39,15 @@ co-link > header {
 co-link > header > [name]:after {
 	font-family: "component-font";
 	speak: none;
-	display: block;
+	display: inline-block;
+	vertical-align:middle;
 	text-decoration: inherit;
-	width: 1em;
+	width: 1.2em;
+	text-align:center;
 	font-variant: normal;
 	text-transform: none;
 	line-height: 1em;
-	margin: 0.2em auto;
+	margin: 0 auto;
 	color:white;
 }
 @keyframes co-link-spin {
@@ -78,14 +74,18 @@ co-link[coed-focused] > header > [name="preview"]:after {
 	content: '\f082';
 	position:absolute;
 	bottom:0;
+	left:0.2em;
 	width:1.2em;
 }
-
+co-link > header > [title] {
+	display:block;
+}
 co-link > header > [title] > img {
 	max-width:1.2em;
-	display:block;
-	margin:0.2em auto;
+	display:inline-block;
+	margin:0 auto;
 	cursor:move !important;
+	vertical-align:bottom;
 }
 
 co-link > aside {
@@ -140,6 +140,7 @@ co-link > aside > div > div {
 co-link > aside > div > div > span {
 	float:right;
 	clear:both;
+	padding-left:0.2em;
 }
 
 co-link > div {
@@ -187,10 +188,9 @@ co-link[type="image"] > div > div[coed-name="content"]:before {
 co-link:not([coed-focused])[type="link"] {
 	height:1.4em;
 }
-co-link[type="link"]:not([coed-focused])> header:before,
-co-link[type="link"]:not([coed-focused])> header > img {
-	display:inline-block;
-	vertical-align:middle;
+co-link[type="link"]:not([coed-focused]) > header {
+	display:flex;
+	align-items:center;
 }
 co-link:not([coed-focused])[type="link"]> header > img {
 	margin:0;
