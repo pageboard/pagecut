@@ -1,6 +1,8 @@
 coed -- Editor with Components
 ==============================
 
+[Demo](https://kapouer.github.io/coed/demo/index.html)
+
 Helps setting up editable components in [ProseMirror](https://prosemirror.net),
 with non-editable parts and named content with configurable schema.
 
