@@ -123,10 +123,12 @@ CoedPlugin.prototype.dragStart = function(e) {
 			if (!inContent) {
 				nodePos = rpos.before(level);
 				this.pm.setNodeSelection(nodePos);
-				e.target.draggable = false;
 				var dom = posToNode(this.pm, nodePos);
 				if (dom) dom = dom.querySelector('*'); // select first child element
-				if (dom) dom.draggable = true;
+				if (dom) {
+					e.target.draggable = false;
+					dom.draggable = true;
+				}
 			}
 			break;
 		}
