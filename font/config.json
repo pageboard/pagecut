@@ -41,6 +41,12 @@
       "css": "note-beamed",
       "code": 59395,
       "src": "entypo"
+    },
+    {
+      "uid": "518ed8d836b8f75393d6d239291fedb0",
+      "css": "eye",
+      "code": 61570,
+      "src": "mfglabs"
     }
   ]
 }
