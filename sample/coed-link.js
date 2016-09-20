@@ -1,1 +1,0 @@
-../dist/coed-link.js
