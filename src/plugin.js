@@ -11,7 +11,7 @@ function CoedPlugin(pm, options) {
 
 	pm.on.selectionChange.add(this.fixChange);
 
-	pm.content.addEventListener("mousedown", this.dragStart);
+	pm.content.addEventListener("mousedown", this.dragStart, true);
 	pm.content.addEventListener("mouseup", this.dragStop);
 	pm.content.addEventListener("click", this.fixChange);
 }
@@ -26,7 +26,7 @@ function selectNode(pm, node) {
 
 CoedPlugin.prototype.detach = function(pm) {
 	if (pm.content) {
-		pm.content.removeEventListener("mousedown", this.dragStart);
+		pm.content.removeEventListener("mousedown", this.dragStart, true);
 		pm.content.removeEventListener("mouseup", this.dragStop);
 		pm.content.removeEventListener("click", this.fixChange);
 	}
