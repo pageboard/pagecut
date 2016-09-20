@@ -63,6 +63,7 @@ A component is an object that must implement this interface:
 - from(dom): returns attributes from a given DOM component node
 - to(attrs): returns a DOM component instance given a set of attributes
   Nodes with editable content must have a unique `coed-name` attribute.
+- init(pm): optional method that is called after pm initialization
 
 Content nodes are entirely handled by ProseMirror - those two methods do not deal
 with them at all.

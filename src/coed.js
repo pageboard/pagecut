@@ -84,6 +84,10 @@ exports.init = function(config) {
 		float: true,
 		content: fullMenu
 	}).attach(pm);
+
+	opts.components.forEach(function(def) {
+		if (def.init) def.init(pm);
+	});
 	return pm;
 };
 
