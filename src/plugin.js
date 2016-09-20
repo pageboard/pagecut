@@ -54,25 +54,13 @@ CoedPlugin.prototype.fixChange = function() {
 			if (!inContent) {
 				this.pm.setNodeSelection(nodePos);
 			}
-			try {
-				fromPos = DOMFromPos(this.pm, nodePos);
-			} catch(ex) {
-				// in which case it's useless to continue
-				return;
-			}
 			break;
 		}
 		level--;
 	}
 
-	var dom;
-	if (fromPos) {
-		dom = fromPos.node;
-		var offset = fromPos.offset;
-		if (dom.nodeType == 1 && offset < dom.childNodes.length) {
-			dom = dom.childNodes.item(offset);
-		}
-	}
+	var dom = posToNode(this.pm, nodePos);
+
 	if (this.focused && this.focused != dom) {
 		var fparent = this.focused;
 		while (fparent && fparent.nodeType == Node.ELEMENT_NODE) {
@@ -90,6 +78,23 @@ CoedPlugin.prototype.fixChange = function() {
 		this.focused = dom;
 	}
 };
+
+function posToNode(pm, pos) {
+	try {
+		var fromPos = DOMFromPos(pm, pos);
+		if (fromPos) {
+			var dom = fromPos.node;
+			var offset = fromPos.offset;
+			if (dom.nodeType == 1 && offset < dom.childNodes.length) {
+				dom = dom.childNodes.item(offset);
+			}
+			return dom;
+		}
+	} catch(ex) {
+		// in which case it's useless to continue
+
+	}
+}
 
 function isParentOf(parent, node) {
 	while (node = node.parentNode) {
@@ -110,14 +115,18 @@ CoedPlugin.prototype.dragStart = function(e) {
 	var node, coedType, inContent = false, inRoot = false, nodePos;
 	while (level >= 0) {
 		node = rpos.node(level);
-		dom = dom.parentNode;
 		coedType = node.type && node.type.coedType;
 		if (coedType == "content" || coedType == "wrap") {
 			return;
 		} else if (coedType == "root") {
 			inRoot = true;
 			if (!inContent) {
-				this.pm.setNodeSelection(rpos.before(level));
+				nodePos = rpos.before(level);
+				this.pm.setNodeSelection(nodePos);
+				e.target.draggable = false;
+				var dom = posToNode(this.pm, nodePos);
+				if (dom) dom = dom.querySelector('*'); // select first child element
+				if (dom) dom.draggable = true;
 			}
 			break;
 		}
