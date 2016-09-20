@@ -4,10 +4,14 @@ PROSEMIRROR = $(shell node -p 'require("path").resolve(require.resolve("prosemir
 FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
-all: dev
-	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js coed.min.js --css coed.min.css --exclude agent.js
+all: clean dev
+	cp -f sample/agent.js dist/
+	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js coed.min.js --css coed.min.css --ignore agent.js
 
 dev: dist/coed.js dist/coed-link.js
+
+clean:
+	rm -f dist/*
 
 dist/coed-link.js: src/coed-link.js
 	$(BROWSERIFY) --standalone Coed.Link --outfile $@ -t [ babelify --presets [ es2015 ] ] src/coed-link.js
