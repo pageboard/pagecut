@@ -37,7 +37,7 @@ CoedPlugin.prototype.fixChange = function() {
 	if (this.dragging) return;
 	var rpos = this.pm.selection.$from;
 	var nodePos, fromPos, coedType, level = rpos.depth;
-	var inContent = false;
+	var inContent = false, inBetween = false;
 	var node;
 	while (level >= 0) {
 		node = rpos.node(level);
@@ -45,12 +45,21 @@ CoedPlugin.prototype.fixChange = function() {
 			console.info("no node at level", level);
 			break;
 		}
+
+		if (rpos.nodeAfter && rpos.nodeAfter == this.pm.selection.$to.nodeBefore) {
+			node = rpos.nodeAfter;
+			inBetween = true;
+		}
 		coedType = node.type && node.type.coedType;
 		if (coedType == "content" || coedType == "wrap") {
 			inContent = true;
 		} else if (coedType == "root") {
 			// select root
-			nodePos = rpos.before(level);
+			if (inBetween) {
+				nodePos = rpos.pos;
+			} else {
+				nodePos = rpos.before(level);
+			}
 			if (!inContent) {
 				this.pm.setNodeSelection(nodePos);
 			}
