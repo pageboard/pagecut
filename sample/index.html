@@ -3,8 +3,10 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Sample editor</title>
-	<link href="../dist/coed.min.css" rel="stylesheet" />
-	<script src="../dist/coed.min.js"></script>
+	<link href="../src/coed.css" rel="stylesheet" />
+	<link href="../src/coed-link.css" rel="stylesheet" />
+	<script src="../dist/coed.js"></script>
+	<script src="../dist/coed-link.js"></script>
 	<script src="agent.js"></script>
 	<style>
 #editor {
@@ -20,9 +22,7 @@
 document.addEventListener('DOMContentLoaded', function() {
 	var inspectorBase = "http://inspector.eda.sarl";
 
-	var opts = {
-		content: document.querySelector("#content"),
-		place: document.querySelector("#editor"),
+	var coLink = new Coed.Link({
 		inspector: function(info, cb) {
 			var node = info.fragment && info.fragment.firstChild;
 			if (node && node.nodeName == "IFRAME") {
@@ -33,6 +33,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			// url-inspector-daemon@1.5.0 has right properties names
 			GET(inspectorBase + "/inspector", {url: info.url}, cb);
 		}
+	});
+
+	var opts = {
+		content: document.querySelector("#content"),
+		place: document.querySelector("#editor"),
+		components: [coLink],
+		handlers: [coLink.handler] // handle url or dom paste events
 	};
 	var pm = Coed.init(opts);
 	opts.content.hidden = true;
@@ -45,102 +52,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div id="editor"></div>
 
-<!--
-Some explanations regarding the choice of markup:
-- it is expected generic tags are not very much styled directly (div, a, span, aside)
-- no classes to avoid any collision
-- the root tag is specific to avoid being targeted by any pre-existing selector
-- simplicity over complexity: do not declare lots of custom tags without cause
--->
-
 <div id="content">
-
+<p>a</p>
 <co-link type="image">
-	<script type="text/html">
-		<img src="https://drscdn.500px.org/photo/168419471/q=80_m=1500/aa9b735cd1e6df5297ee7efc9eacca97" alt="stock-photo-168419471.jpg" />
-	</script>
-	<a href="https://drscdn.500px.org/photo/168419471/q%3D80_m%3D1500/aa9b735cd1e6df5297ee7efc9eacca97">
-		<img src="https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico">
-	</a>
+	<header>
+		<a name="type"></a>
+		<a title="drscdn.500px.org" href="https://drscdn.500px.org/photo/168419471/q%3D80_m%3D1500/aa9b735cd1e6df5297ee7efc9eacca97" target="_blank">
+			<img src="https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico">
+		</a>
+		<a name="preview"></a>
+	</header>
 	<div>
-		<div coed="title">stock-photo-170570123.jpg</div>
-		<div coed="content">Le crédit de la <em>photo</em></div>
+		<div coed-name="title">stock-photo-170570123.jpg</div>
+		<div coed-name="content">Le crédit de la <em>photo</em></div>
 	</div>
 	<aside>
 		<div>
-			<span title="size">217KB</span>
-			<span title="dimensions">1200x803</span>
-			<span title="description">Image description here</span>
+			<div>
+				<span title="size">217KB</span>
+				<span title="dimensions">1200x803</span>
+			</div>
+			<p>Image description here Image description here Image description here Image description here </p>
 		</div>
 		<figure>
 			<img src="https://drscdn.500px.org/photo/168419471/q%3D80_h%3D300/d70ae586a19e45b96f2effac915f6155">
 		</figure>
 	</aside>
+	<script type="text/html">
+		<img src="https://drscdn.500px.org/photo/168419471/q=80_m=1500/aa9b735cd1e6df5297ee7efc9eacca97" alt="stock-photo-168419471.jpg" />
+	</script>
 </co-link>
 
-<p>a</p>
-<edbed-item type="video">
-	<a href="https://www.youtube.com/watch?v=qPYOh6j90c4">
-		<img src="https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico">
-	</a>
-	<edbed-fields>
-		<edbed-field name="title">FLINKER : Parlez-en à la bonne personne !</edbed-field>
-	</edbed-fields>
-	<edbed-aside>
-		<edbed-props>
-			<edbed-prop name="dimensions">500x458</edbed-prop>
-			<edbed-prop name="description">Visitez www.flinker.fr Flinker est le premier moteur de recherche participatif en conseiller financiers et patrimoniaux. Pour vos questions et angoisses cons..."</edbed-prop>
-		</edbed-props>
-		<edbed-thumbnail>
-			<img src="http://inspector.eda.sarl/images?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2FqPYOh6j90c4%2Fhqdefault.jpg">
-		</edbed-thumbnail>
-	</edbed-aside>
-</edbed-item>
-<p>b</p>
-<edbed-item type="embed">
-	<a href="https://twitter.com/nodejs/status/766349381570142208">
-		<img src="https://abs.twimg.com/favicons/favicon.ico" />
-	</a>
-	<edbed-fields>
-		<edbed-field name="title">Node.js on Twitter</edbed-field>
-	</edbed-fields>
-	<edbed-aside>
-		<edbed-props>
-			<edbed-prop name="dimensions">500x458</edbed-prop>
-			<edbed-prop name="size">54KB</edbed-prop>
-			<edbed-prop name="description">“How #nodejs helps NASA keep astronauts safe and data accessible: https://t.co/X7uK697Tqd”</edbed-prop>
-		</edbed-props>
-		<edbed-thumbnail>
-			<img src="http://inspector.eda.sarl/images?url=https%3A%2F%2Fpbs.twimg.com%2Fmedia%2FCqKeszCUEAABqZ1.jpg%3Alarge" />
-		</edbed-thumbnail>
-	</edbed-aside>
-</edbed-item>
-<p>c</p>
-<edbed-item type="embed">
-	<a href="https://twitter.com/baez72033757">
-		<img src="https://abs.twimg.com/favicons/favicon.ico">
-	</a>
-	<edbed-fields>
-		<edbed-field name="title">John Carlos Baez (@baez72033757) | Twitter</edbed-field>
-	</edbed-fields>
-</edbed-item>
-<p>d</p>
-	<edbed-item type="link">
-		<a href="http://unicode-table.com/en/sets/arrows-symbols/">
-			<img src="http://unicode-table.com/i/favicons/android-icon-192x192.png">
+<co-link type="image"><header contenteditable="false">
+		<a name="type"></a>
+		<a title="drscdn.500px.org" href="https://drscdn.500px.org/photo/168419471/q%3D80_m%3D1500/aa9b735cd1e6df5297ee7efc9eacca97" target="_blank">
+			<img src="https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico">
 		</a>
-		<edbed-fields>
-			<edbed-field name="title">Arrow symbol</edbed-field>
-		</edbed-fields>
-		<edbed-aside>
-			<edbed-props>
-				<edbed-prop name="description">: ← ↑ → ↓ ↔ ↕ ↖ ↗ ↘ ↙ ▲ ▼ ◀ ▶ ➔ ➘ ➙ ➚ ➛ ➜ ➝ ➞ ➟ ➠ ➡ ➢ ➣ ➤ ➥ ➦ ↪ ↩ ↚ ↛ ↜ ↝ ↞ ↟ ↠ ↡ ↢ ↣ ↤ ↦ ↥ ↧ ↨ ↫ ↬ ↭ ↮ ↯ ↰ ↱ ↲ ↴ ↳ ↵ ↶ ↷ ↸ ↹ ↺ ↻ ⟲ ⟳ ↼ ↽ ↾ ↿ ⇀ ⇁ ⇂ ⇃ ⇄ ⇅ ⇆ ⇇ ⇐ ⇑ ⇒ ⇓ ⇔ ⇌ ⇍ ⇏ ⇕ ⇖ ⇗ ⇘ ⇙ ⇙ ⇳ ⇚ ⇛ ⇜ ⇝ ⇞ ⇟ ⇟ ⇟ ⇠ ⇡ ⇢ ⇣ ⇤ ⇥ ⇦ ⇨ ⇩ ⇪ ⇧ ⇫ ⇬ ⇭ ⇮ ⇯ ⇰ ⇱ ⇲ ⇴ ⇵ ⇶ ⇷ ⇸ ⇹ ⇺ ⇺ ⇻ ⇼ ⇽ ⇾ ⇿ ⟰ ⟱ ⟴ ⟵ ⟶ ⟷ ⟸ ⟹ ⟽ ⟾ ⟺ ⟻ ⟼ ⟿ ⤀ ⤁ ⤅ ⤂ ⤃ ⤄ ⤆ ⤇ ⤈ ⤉ ⤊ ⤋ ⤌ ⤍ ⤎ ⤏ ⤐ ⤑ ⤒ ⤓ ⤔ ⤕ ⤖ ⤗ ⤘ ⤙ ⤙ ⤚ ⤛ ⤜ ⤝ ⤞ ⤡ ⤢ ⤣ ⤤ ⤥ ⤦ ⤧ ⤨ ⤩ ⤪ ⤭ ⤮ ⤯ ⤰ ⤱ ⤲ ⤳ ⤻ ⤸ ⤾ ⤿ ⤺ ⤼ ⤽ ⤴ ⤵ ⤶ ⤷ ⤹ ⥀ ⥁ ⥂ ⥃ ⥄ ⥅ ⥆ ⥇ ⥈ ⥉ ⥒ ⥓ ⥔ ⥕ ⥖ ⥗ ⥘ ⥙ ⥚ ⥛ ⥜ ⥝ ⥞ ⥟ ⥠ ⥡ ⥢ ⥣ ⥤ ⥥ ⥦ ⥧ ⥨ ⥩ ⥪ ⥫ ⥬ ⥭ ⥮ ⥯ ⥰ ⥱ ⥲ ⥳ ⥴ ⥵ ⥶ ⥷ ⥸ ⥹ ⥺ ⥻ ➧ ➨ ➩ ➪ ➫ ➬ ➭ ➮ ➯ ➱ ➲ ➳ ➴ ➵ ➶ ➷ ➸ ➹ ➺ ➻ ➼ ➽ ➾ ⬅ ⬆ ⬇ ⏎ ⬎ ⬏ ⬐ ⬑ ☈ ☇ ⍃ ⍄ ⍇ ⍈ ⍐ ⍗ ⍌ ⍓ ⍍ ⍔ ⍏ ⍖ ⍅ ⍆ ⬈ ⬉ ⬊ ⬋ ⬌ ⬍ ⬀ ⬁ ⬂ ⬃ ⬄</edbed-prop>
-			</edbed-props>
-			<edbed-thumbnail>
-				<img src="http://inspector.eda.sarl/images?url=http%3A%2F%2Funicode-table.com%2Fi%2Ffavicons%2Ffavicon.ico">
-			</edbed-thumbnail>
-		</edbed-aside>
-	</edbed-item>
+		<a name="preview"></a>
+	</header><div><div coed-name="title">stock-photo-1dqdqsd70570123.jpg</div><div coed-name="content"><co-link type="video"><header contenteditable="false"><a name="type"></a><a title="youtube" target="_blank" href="https://www.youtube.com/watch?v=qPYOh6j90c4"><img src="https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico"></a><a name="preview"></a></header><div><div coed-name="title">FLINKER : Parlez-en à la bonne personne !</div><div coed-name="content"><p></p></div></div><aside contenteditable="false"><div><div><span title="dimensions">480x270</span><span title="duration">00:00:33</span><span title="size"></span></div><p>Visitez www.flinker.fr Flinker est le premier moteur de recherche participatif en conseiller financiers et patrimoniaux. Pour vos questions et angoisses cons...</p></div><figure><img src="//inspector.eda.sarl/images?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2FqPYOh6j90c4%2Fhqdefault.jpg"></figure></aside><script type="text/html" contenteditable="false"><iframe width="480" height="270" src="https://www.youtube.com/embed/qPYOh6j90c4?feature=oembed" frameborder="0" allowfullscreen></iframe></script></co-link><p>Le crédit de la <em>pqsddqs</em></p><p><em>hoto</em></p></div></div><aside contenteditable="false">
+		<div>
+			<div>
+				<span title="size">217KB</span>
+				<span title="dimensions">1200x803</span>
+			</div>
+			<p>Image description here Image description here Image description here Image description here </p>
+		</div>
+		<figure>
+			<img src="https://drscdn.500px.org/photo/168419471/q%3D80_h%3D300/d70ae586a19e45b96f2effac915f6155">
+		</figure>
+	</aside><script type="text/html" contenteditable="false">
+		<img src="https://drscdn.500px.org/photo/168419471/q=80_m=1500/aa9b735cd1e6df5297ee7efc9eacca97" alt="stock-photo-168419471.jpg" />
+	</script></co-link>
+
+<co-link type="embed"><header contenteditable="false"><a name="type"></a><a title="twitter" target="_blank" href="https://twitter.com/nodejs/status/766349381570142208"><img src="https://abs.twimg.com/favicons/favicon.ico"></a><a name="preview"></a></header><div><div coed-name="title">Node.js on Twitter</div><div coed-name="content"><p></p></div></div><aside contenteditable="false"><div><div><span title="dimensions">550px</span><span title="duration"></span><span title="size"></span></div><p>“How #nodejs helps NASA keep astronauts safe and data accessible: https://t.co/X7uK697Tqd”</p></div><figure><img src="//inspector.eda.sarl/images?url=https%3A%2F%2Fpbs.twimg.com%2Fmedia%2FCqKeszCUEAABqZ1.jpg%3Alarge"></figure></aside><script type="text/html" contenteditable="false"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">How <a href="https://twitter.com/hashtag/nodejs?src=hash">#nodejs</a> helps NASA keep astronauts safe and data accessible: <a href="https://t.co/X7uK697Tqd">https://t.co/X7uK697Tqd</a> <a href="https://t.co/m3PVSpSJwN">pic.twitter.com/m3PVSpSJwN</a></p>&mdash; Node.js (@nodejs) <a href="https://twitter.com/nodejs/status/766349381570142208">August 18, 2016</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script></co-link>
+
+<p>a</p>
 <p>e</p>
 </div>
 </body>
