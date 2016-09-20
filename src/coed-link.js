@@ -26,6 +26,7 @@ function CoLink(options) {
 		width: "",
 		height: "",
 		duration: "",
+		site: "",
 		html: ""
 	};
 	this.contents = {
@@ -108,11 +109,12 @@ CoLink.prototype.parseSize = function(obj, s) {
 CoLink.prototype.to = function(attrs) {
 	var me = this;
 	var node = document.createElement(me.tag);
-	node.innerHTML = '<a></a><div>\
+	node.innerHTML = '<header><a name="type"></a><a title="" target="_blank"></a><a name="preview"></a></header><div>\
 <div coed-name="title"></div><div coed-name="content"></div>\
 </div><aside><div><div></div><p></p></div><figure></figure></aside><script type="text/html"></script>';
-	var link = node.querySelector('a');
+	var link = node.querySelector('header > a[title]');
 
+	link.setAttribute("title", attrs.site || "");
 	if (attrs.type) node.setAttribute("type", attrs.type);
 	if (attrs.id) node.setAttribute("id", attrs.id);
 	if (attrs.url) link.setAttribute("href", attrs.url);
@@ -143,9 +145,10 @@ CoLink.prototype.from = function(node) {
 	attrs.type = node.getAttribute('type') || 'none';
 	attrs.id = node.getAttribute('id') || undefined;
 
-	var link = node.querySelector("a");
+	var link = node.querySelector("header > a[href]");
 	if (link) {
 		attrs.url = link.getAttribute('href');
+		attrs.site = link.getAttribute('title');
 		var icon = link.querySelector("img");
 		if (icon) attrs.icon = icon.getAttribute('src');
 	}

@@ -20,18 +20,18 @@ co-link[coed-focused] {
 	border-color:black;
 }
 
-co-link > a.ProseMirror-selectednode,
+co-link > header.ProseMirror-selectednode,
 co-link > aside.ProseMirror-selectednode {
 	outline: 1px solid red; /* debugging purpose - should never happen */
 }
 
-co-link > a,
+co-link > header,
 co-link > aside {
 	display:inline-block;
 	vertical-align:top;
 }
 
-co-link > a {
+co-link > header {
 	cursor:move;
 	background:#33393B;
 	flex: 0 0 auto;
@@ -42,10 +42,8 @@ co-link > a {
 	min-width:1.2em;
 }
 
-co-link > a:before {
+co-link > header > [name]:after {
 	font-family: "component-font";
-	font-style: normal;
-	font-weight: normal;
 	speak: none;
 	display: block;
 	text-decoration: inherit;
@@ -65,18 +63,25 @@ co-link > a:before {
 	}
 }
 
-co-link[type="none"] > a:before {
+co-link[type="none"] > header > [name="type"]:after {
 	content: '\e832';
 	animation: co-link-spin 2s infinite linear;
 }
-co-link[type=""] > a:before { content: '\e832'; }
-co-link[type="video"] > a:before { content: '\e800'; }
-co-link[type="link"] > a:before { content: '\e801'; }
-co-link[type="image"] > a:before { content: '\e802'; }
-co-link[type="audio"] > a:before { content: '\e803'; }
-co-link[type="embed"] > a:before { content: '\f10e'; }
+co-link[type=""] > header > [name="type"]:after { content: '\e832'; }
+co-link[type="video"] > header > [name="type"]:after { content: '\e800'; }
+co-link[type="link"] > header > [name="type"]:after { content: '\e801'; }
+co-link[type="image"] > header > [name="type"]:after { content: '\e802'; }
+co-link[type="audio"] > header > [name="type"]:after { content: '\e803'; }
+co-link[type="embed"] > header > [name="type"]:after { content: '\f10e'; }
 
-co-link > a > img {
+co-link[coed-focused] > header > [name="preview"]:after {
+	content: '\f082';
+	position:absolute;
+	bottom:0;
+	width:1.2em;
+}
+
+co-link > header > [title] > img {
 	max-width:1.2em;
 	display:block;
 	margin:0.2em auto;
@@ -182,12 +187,12 @@ co-link[type="image"] > div > div[coed-name="content"]:before {
 co-link:not([coed-focused])[type="link"] {
 	height:1.4em;
 }
-co-link[type="link"]:not([coed-focused]) > a:before,
-co-link[type="link"]:not([coed-focused]) > a > img {
+co-link[type="link"]:not([coed-focused])> header:before,
+co-link[type="link"]:not([coed-focused])> header > img {
 	display:inline-block;
 	vertical-align:middle;
 }
-co-link:not([coed-focused])[type="link"] > a > img {
+co-link:not([coed-focused])[type="link"]> header > img {
 	margin:0;
 }
 co-link[type="link"] > div > div[coed-name="content"] {
