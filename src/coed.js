@@ -1,5 +1,5 @@
 const {ProseMirror} = require("prosemirror/dist/edit");
-const {Schema, Block, Attribute} = require("prosemirror/dist/model");
+const {Schema, Block, Inline, Attribute} = require("prosemirror/dist/model");
 const inherits = require('./utils/inherits');
 const basicSchema = require("prosemirror/dist/schema-basic");
 const tableSchema = require("prosemirror/dist/schema-table");
