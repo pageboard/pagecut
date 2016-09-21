@@ -199,7 +199,7 @@ function getRootType(opts) {
 			} else if (child.querySelector('[coed-name]')) {
 				prepareDom(child);
 			} else {
-				child.setAttribute('contenteditable', 'false');
+
 			}
 		}
 	}
@@ -303,6 +303,10 @@ function getHoldType(opts) {
 		return false;
 	}});
 
+	Object.defineProperty(HoldType.prototype, "readonly", { get: function() {
+		return true;
+	}});
+
 	Object.defineProperty(HoldType.prototype, "attrs", { get: function() {
 		return {
 			html: new Attribute({
@@ -322,7 +326,8 @@ function getHoldType(opts) {
 
 	Object.defineProperty(HoldType.prototype, "matchDOMTag", { get: function() {
 		return {
-			'[contenteditable="false"]': function(node) {
+			'*': function(node) {
+				if (node.hasAttribute('coed-name') || node.querySelector('[coed-name]')) return false;
 				return {html: node.outerHTML};
 			}
 		};

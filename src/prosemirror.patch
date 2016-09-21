@@ -1,0 +1,19 @@
+# diff -u node_modules/prosemirror/dist/edit/draw.js node_modules.new/prosemirror/dist/edit/draw.js > src/prosemirror.patch
+--- node_modules/prosemirror/dist/edit/draw.js	2016-09-12 12:04:09.000000000 +0200
++++ node_modules.new/prosemirror/dist/edit/draw.js	2016-09-21 12:42:41.561146051 +0200
+@@ -24,7 +24,7 @@
+         if (offset != null) dom.setAttribute("pm-offset", offset);
+         dom.setAttribute("pm-size", node.nodeSize);
+         if (node.isTextblock) adjustTrailingHacks(dom, node);
+-        if (dom.contentEditable == "false") dom = elt("div", null, dom);
++        if (node.type && node.type.readonly) dom.setAttribute("contenteditable", "false");
+       }
+
+       return dom;
+@@ -195,4 +195,4 @@
+     window.getComputedStyle(dom).listStyle;
+     dom.style.cssText = oldCSS;
+   }
+-}
+\ Pas de fin de ligne à la fin du fichier
++}
