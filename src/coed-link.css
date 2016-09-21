@@ -34,6 +34,8 @@ co-link > header {
 	text-align:center;
 	text-decoration:none;
 	min-width:1.2em;
+	display:flex;
+	flex-direction:column;
 }
 
 co-link > header > [name]:after {
@@ -70,12 +72,17 @@ co-link[type="image"] > header > [name="type"]:after { content: '\e802'; }
 co-link[type="audio"] > header > [name="type"]:after { content: '\e803'; }
 co-link[type="embed"] > header > [name="type"]:after { content: '\f10e'; }
 
+co-link[coed-focused] > header > [name="preview"] {
+	flex: 1 1 auto;
+	flex-direction:column;
+	justify-content:flex-end;
+	display:flex;
+}
 co-link[coed-focused] > header > [name="preview"]:after {
 	content: '\f082';
-	position:absolute;
-	bottom:0;
 	left:0.2em;
 	width:1.2em;
+	display:block;
 }
 co-link > header > [title] {
 	display:block;
@@ -85,7 +92,7 @@ co-link > header > [title] > img {
 	display:inline-block;
 	margin:0 auto;
 	cursor:move !important;
-	vertical-align:bottom;
+	vertical-align:middle;
 }
 
 co-link > aside {
