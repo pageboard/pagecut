@@ -185,6 +185,10 @@ co-link[type="image"] > div > div[coed-name="content"]:before {
 
 
 /* link type */
+co-link[type="link"] > header > [name="preview"],
+co-link:not([coed-focused])[type="link"] > header > [name="type"] {
+	display:none;
+}
 co-link:not([coed-focused])[type="link"] {
 	height:1.4em;
 }
