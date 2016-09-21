@@ -319,7 +319,8 @@ function getHoldType(opts) {
 		return function(node) {
 			var div = document.createElement("div");
 			div.innerHTML = node.attrs.html;
-			var elem = div.firstChild;
+			var elem = div.querySelector('*');
+			if (elem == null) return "";
 			return elem;
 		};
 	}});
