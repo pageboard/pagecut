@@ -19,11 +19,7 @@ function CoedPlugin(pm, options) {
 
 CoedPlugin.prototype.click = function(pos, e) {
 	var cpos = coedPos(this.pm.doc.resolve(pos));
-	if (cpos.root == null) return;
-	var dom = posToNode(this.pm, cpos.root);
-	if (dom) {
-		this.focus(dom);
-	}
+	this.focus(cpos.root);
 };
 
 CoedPlugin.prototype.detach = function(pm) {
@@ -40,14 +36,11 @@ CoedPlugin.prototype.change = function() {
 	var sel = this.pm.selection;
 	if (!sel.empty) return;
 	var cpos = coedPos(sel.$from);
-	if (cpos.root == null) return;
-	var dom = posToNode(this.pm, cpos.root);
-	if (dom) {
-		this.focus(dom);
-	}
+	this.focus(cpos.root);
 };
 
-CoedPlugin.prototype.focus = function(dom) {
+CoedPlugin.prototype.focus = function(pos) {
+	var dom = posToNode(this.pm, pos);
 	if (this.focused && this.focused != dom) {
 		var fparent = this.focused;
 		while (fparent && fparent.nodeType == Node.ELEMENT_NODE) {
@@ -114,6 +107,7 @@ function coedPos(rpos) {
 }
 
 function posToNode(pm, pos) {
+	if (!pos) return;
 	try {
 		var fromPos = DOMFromPos(pm, pos);
 		if (fromPos) {
