@@ -38,6 +38,10 @@ co-link > header {
 	flex-direction:column;
 }
 
+co-link.ProseMirror-selectednode > header {
+	background-color:#555;
+}
+
 co-link > header > [name]:after {
 	font-family: "component-font";
 	speak: none;
