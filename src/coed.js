@@ -296,6 +296,7 @@ function getContentType(opts) {
 function getHoldType(opts) {
 	function HoldType(name, schema) {
 		Block.call(this, name, schema);
+		this.coedType = 'hold';
 	};
 	inherits(HoldType, Block);
 

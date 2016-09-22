@@ -7,71 +7,46 @@ function CoedPlugin(pm, options) {
 
 	this.dragStart = this.dragStart.bind(this);
 	this.dragStop = this.dragStop.bind(this);
-	this.fixChange = this.fixChange.bind(this);
+	this.change = this.change.bind(this);
+	this.click = this.click.bind(this);
 
-	pm.on.selectionChange.add(this.fixChange);
+	pm.on.selectionChange.add(this.change);
+	pm.on.click.add(this.click);
 
 	pm.content.addEventListener("mousedown", this.dragStart, true);
 	pm.content.addEventListener("mouseup", this.dragStop);
-	pm.content.addEventListener("click", this.fixChange);
 }
 
-function selectNode(pm, node) {
-	var pos = posFromDOM(node);
-	var $pos = pm.doc.resolve(pos.pos);
-	var after = $pos.nodeAfter;
-	if (!after || !after.type.selectable) return;
-	pm.setSelection(new NodeSelection($pos));
-}
+CoedPlugin.prototype.click = function(pos, e) {
+	var cpos = coedPos(this.pm.doc.resolve(pos));
+	if (cpos.root == null) return;
+	if (cpos.content == null && cpos.wrap == null) {
+		this.pm.setNodeSelection(cpos.root);
+	}
+	var dom = posToNode(this.pm, cpos.root);
+	if (dom) this.focus(dom);
+};
 
 CoedPlugin.prototype.detach = function(pm) {
 	if (pm.content) {
 		pm.content.removeEventListener("mousedown", this.dragStart, true);
 		pm.content.removeEventListener("mouseup", this.dragStop);
-		pm.content.removeEventListener("click", this.fixChange);
 	}
-	pm.on.selectionChange.remove(this.fixChange);
+	pm.on.selectionChange.remove(this.change);
+	pm.on.click.remove(this.click);
 };
 
-CoedPlugin.prototype.fixChange = function() {
+CoedPlugin.prototype.change = function() {
 	if (this.dragging) return;
-	var rpos = this.pm.selection.$from;
-	var nodePos, fromPos, coedType, level = rpos.depth;
-	var inContent = false, inBetween = false;
-	var node;
-	while (level >= 0) {
-		node = rpos.node(level);
-		if (!node) {
-			console.info("no node at level", level);
-			break;
-		}
+	var sel = this.pm.selection;
+	if (!sel.empty) return;
+	var cpos = coedPos(sel.$from);
+	if (cpos.root == null) return;
+	var dom = posToNode(this.pm, cpos.root);
+	if (dom) this.focus(dom);
+};
 
-		if (rpos.nodeAfter && rpos.nodeAfter == this.pm.selection.$to.nodeBefore) {
-			node = rpos.nodeAfter;
-			inBetween = true;
-		}
-		coedType = node.type && node.type.coedType;
-		if (coedType == "content" || coedType == "wrap") {
-			inContent = true;
-		} else if (coedType == "root") {
-			// select root
-			if (inBetween) {
-				nodePos = rpos.pos;
-			} else {
-				nodePos = rpos.before(level);
-			}
-			if (!inContent) {
-				this.pm.setNodeSelection(nodePos);
-			}
-			break;
-		}
-		level--;
-	}
-
-	var dom = posToNode(this.pm, nodePos);
-
-	if (dom === false) return;
-
+CoedPlugin.prototype.focus = function(dom) {
 	if (this.focused && this.focused != dom) {
 		var fparent = this.focused;
 		while (fparent && fparent.nodeType == Node.ELEMENT_NODE) {
@@ -89,6 +64,53 @@ CoedPlugin.prototype.fixChange = function() {
 		this.focused = dom;
 	}
 };
+
+CoedPlugin.prototype.dragStart = function(e) {
+	this.dragging = true;
+	if (window.getSelection().isCollapsed == false) {
+		// if there is some kind of selection, do nothing
+		// if a pm node is selected continue
+		return;
+	}
+	var dom = e.target;
+	if (!dom) return;
+	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
+	var pos;
+	try { pos = posFromDOM(dom); } catch(ex) {return;}
+	var cpos = coedPos(this.pm.doc.resolve(pos.pos));
+	if (cpos.root == null || cpos.content != null || cpos.wrap != null) return;
+	e.target.draggable = false;
+	this.pm.setNodeSelection(cpos.root);
+	var dom = posToNode(this.pm, cpos.root);
+	if (dom) dom = dom.querySelector('*'); // select first child element
+	if (dom) {
+		dom.draggable = true;
+		this.dragTarget = dom;
+	}
+};
+
+CoedPlugin.prototype.dragStop = function(e) {
+	if (this.dragging) {
+		this.dragging = false;
+		if (this.dragTarget) {
+			this.dragTarget.draggable = false;
+			delete this.dragTarget;
+		}
+	}
+};
+
+function coedPos(rpos) {
+	var level = rpos.depth, node, type, pos;
+	var obj = {};
+	while (level >= 0) {
+		node = rpos.node(level);
+		type = node.type && node.type.coedType;
+		if (type) obj[type] = pos = rpos.before(level);
+		if (type == "root") break;
+		level--;
+	}
+	return obj;
+}
 
 function posToNode(pm, pos) {
 	try {
@@ -112,44 +134,6 @@ function isParentOf(parent, node) {
 	}
 	return false;
 }
-
-CoedPlugin.prototype.dragStart = function(e) {
-	this.dragging = true;
-	var dom = e.target;
-	if (!dom) return;
-	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
-	var pos;
-	try { pos = posFromDOM(dom); } catch(ex) {return;}
-	var rpos = this.pm.doc.resolve(pos.pos);
-	var level = rpos.depth;
-	var node, coedType, inContent = false, inRoot = false, nodePos;
-	while (level >= 0) {
-		node = rpos.node(level);
-		coedType = node.type && node.type.coedType;
-		if (coedType == "content" || coedType == "wrap") {
-			return;
-		} else if (coedType == "root") {
-			inRoot = true;
-			if (!inContent) {
-				nodePos = rpos.before(level);
-				this.pm.setNodeSelection(nodePos);
-				var dom = posToNode(this.pm, nodePos);
-				if (dom) dom = dom.querySelector('*'); // select first child element
-				if (dom) {
-					e.target.draggable = false;
-					dom.draggable = true;
-				}
-			}
-			break;
-		}
-		level--;
-	}
-	if (!inRoot) return;
-};
-
-CoedPlugin.prototype.dragStop = function(e) {
-	this.dragging = false;
-};
 
 module.exports = new Plugin(CoedPlugin);
 
