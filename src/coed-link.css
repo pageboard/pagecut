@@ -104,13 +104,16 @@ co-link > aside {
 	flex: 0 2 auto;
 	display:flex;
 	position:relative;
-	max-width:33%;
+	max-width:14em; /* this is what makes root size reasonnable */
+	min-width:0; /* slightly better when small */
+	cursor:pointer;
 }
 
 co-link > aside > figure {
 	flex: 1 1 auto;
 	min-height:0;
-	min-width:0;
+	min-width:66%;
+	max-width:0; /* this is a trick */
 	display:flex;
 	margin:0;
 }
@@ -139,6 +142,7 @@ co-link > aside > div {
 	font-family: monospace;
 	white-space: normal;
 	color:white;
+	min-width:50%;
 }
 co-link > aside > div:empty {
 	display:none;
@@ -156,7 +160,6 @@ co-link > aside > div > div > span {
 
 co-link > div {
 	flex: 1 1 auto;
-	width:66%;
 }
 co-link > div > div[coed-name] {
 	display: block;
@@ -188,7 +191,7 @@ co-link > div > div[coed-name="content"] {
 /* image type */
 
 co-link[type="image"] > div > div[coed-name="content"] {
-	display:block;
+	display:inline-block;
 }
 co-link[type="image"] > div > div[coed-name="content"]:before {
 	content: 'Credit: ';
