@@ -6,7 +6,6 @@ const tableSchema = require("prosemirror/dist/schema-table");
 const {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup");
 const {menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
 
-const BreaksPlugin = require("./utils/breaks-plugin");
 const UrlPlugin = require("./utils/url-plugin");
 
 const CoedPlugin = require("./plugin");
@@ -41,7 +40,6 @@ let schemaSpec = {
 exports.defaults = {
 	spec: schemaSpec,
 	plugins: [
-		BreaksPlugin.config(),
 		exampleSetup.config({menuBar: false, tooltipMenu: false})
 	],
 	handlers: [],
