@@ -2,7 +2,46 @@
 	<meta charset="utf-8">
 	<title>Sample editor</title>
 	<script src="agent.js"></script>
+	<style>
+#editor {
+	margin:1em;
+	border:1px solid silver;
+}
+.ProseMirror-content {
+	margin:0.1em;
+	padding:0.1em;
+}
+	</style>
 	<link rel="stylesheet" href="coed.min.css">
+	<script>
+document.addEventListener('DOMContentLoaded', function() {
+	var inspectorBase = "https://inspector.eda.sarl";
+
+	var coLink = new Coed.Link({
+		inspector: function(info, cb) {
+			var node = info.fragment && info.fragment.firstChild;
+			if (node && node.nodeName == "IFRAME") {
+				info.title = info.url = node.src;
+			} else {
+				node = null;
+			}
+			// url-inspector-daemon@1.5.0 has right properties names
+			GET(inspectorBase + "/inspector", {url: info.url}, cb);
+		}
+	});
+
+	var opts = {
+		content: document.querySelector("#content"),
+		place: document.querySelector("#editor"),
+		components: [coLink],
+		handlers: [coLink.handler] // handle url or dom paste events
+	};
+	var pm = Coed.init(opts);
+	opts.content.hidden = true;
+
+
+});
+	</script>
 	<script src="coed.min.js"></script>
 </head>
 <body>
