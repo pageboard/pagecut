@@ -67,7 +67,6 @@ CoedPlugin.prototype.focus = function(dom) {
 };
 
 CoedPlugin.prototype.dragStart = function(e) {
-	this.pm.focus();
 	this.dragging = true;
 	var dom = e.target;
 	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
@@ -80,7 +79,9 @@ CoedPlugin.prototype.dragStart = function(e) {
 		return;
 	}
 	e.target.draggable = false;
+
 	this.pm.setNodeSelection(cpos.root);
+
 	var dom = posToNode(this.pm, cpos.root);
 	if (dom) dom = dom.querySelector('*'); // select first child element
 	if (dom) {
