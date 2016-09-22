@@ -9,7 +9,7 @@ co-link {
 	overflow:hidden;
 	max-height:2.75em;
 	max-width:100%;
-	margin:1px 0;
+	margin:1px;
 }
 co-link [hidden] {
 	display:none !important;
