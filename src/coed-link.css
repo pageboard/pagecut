@@ -4,8 +4,8 @@ co-link {
 	display:inline-flex;
 	white-space: nowrap;
 	position:relative;
-	border:1px solid #333;
-	border-radius:0.5em;
+	border:1px solid #aaa;
+	border-radius:.3em;
 	overflow:hidden;
 	max-height:2.75em;
 	max-width:100%;
@@ -16,8 +16,8 @@ co-link [hidden] {
 }
 co-link[coed-focused] {
 	max-height:none;
-	box-shadow:1px 1px 1px black;
-	border-color:black;
+	box-shadow:1px 1px 1px #999;
+	border-color:#555;
 }
 
 co-link > header.ProseMirror-selectednode,
@@ -27,7 +27,7 @@ co-link > aside.ProseMirror-selectednode {
 
 co-link > header {
 	cursor:move;
-	background:#33393B;
+	background:#888;
 	flex: 0 0 auto;
 	padding-left:0.15em;
 	padding-right:0.2em;
@@ -55,6 +55,7 @@ co-link > header > [name]:after {
 	line-height: 1em;
 	margin: 0 auto;
 	color:white;
+	padding-top:.1em;
 }
 @keyframes co-link-spin {
 	0% {
@@ -87,6 +88,7 @@ co-link[coed-focused] > header > [name="preview"]:after {
 	left:0.2em;
 	width:1.2em;
 	display:block;
+	padding-bottom:.2em;
 }
 co-link > header > [title] {
 	display:block;
@@ -97,10 +99,12 @@ co-link > header > [title] > img {
 	margin:0 auto;
 	cursor:move !important;
 	vertical-align:middle;
+	padding-top:.1em;
+	margin-bottom:.2em;
 }
 
 co-link > aside {
-	background-color:#33393B;
+	background-color:#666;
 	flex: 0 2 auto;
 	display:flex;
 	position:relative;
@@ -129,13 +133,14 @@ co-link > aside > figure > img {
 }
 co-link > aside > div > p {
 	white-space: normal;
-	color:#CBCBCB;
+	color:#eee;
 	margin: 0 0.3em;
 	font-family: sans-serif;
-	font-size: 0.75em;
+	font-size: 0.7em;
 	max-height:8em;
 	overflow:visible;
 	text-align:left;
+	padding:.3em;
 }
 co-link > aside > div {
 	flex: 1 1 auto;
@@ -143,6 +148,7 @@ co-link > aside > div {
 	white-space: normal;
 	color:white;
 	min-width:50%;
+	color:#eee;
 }
 co-link > aside > div:empty {
 	display:none;
@@ -151,6 +157,9 @@ co-link > aside > div > div {
 	float:right;
 	margin-right:0.15em;
 	background-color:#444;
+	font-size:.9em;
+	border-bottom-left-radius:.3em;
+	padding:.1em;
 }
 co-link > aside > div > div > span {
 	float:right;
@@ -160,18 +169,28 @@ co-link > aside > div > div > span {
 
 co-link > div {
 	flex: 1 1 auto;
+	padding-top:.1em;
+	background:#eee;
+	padding-right:.1em;
 }
 co-link > div > div[coed-name] {
 	display: block;
 	overflow:hidden;
 	text-overflow:ellipsis;
 	position: relative;
-	line-height:1.4em;
+	line-height:1.15em;
 	margin-right: 0.2em;
 	padding-left: 0.4em;
+	font-family:sans-serif;
+	font-size:.95em;
+	margin-top:0.1em;
 }
 co-link[coed-focused] > div > div[coed-name] {
 	white-space: pre-wrap;
+}
+
+co-link[coed-focused] > div {
+	background:#fff;
 }
 
 co-link > div > div[coed-name]:before {
