@@ -47,6 +47,18 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 ```
 
+Defaults
+--------
+
+`Coed.defaults` has some useful references:
+
+- types: the ProseMirror default schema types (basic + table)
+- spec: a default, mutable, schema spec
+- plugins: array of plugins for ProseMirror
+- components: array of components like Coed-Link
+- handlers: array of url/dom nodes paste handlers
+
+
 Components
 ----------
 

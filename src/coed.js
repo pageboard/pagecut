@@ -39,6 +39,7 @@ let schemaSpec = {
 
 exports.defaults = {
 	spec: schemaSpec,
+	types: Object.assign({}, basicSchema, tableSchema),
 	plugins: [
 		exampleSetup.config({menuBar: false, tooltipMenu: false})
 	],
