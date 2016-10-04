@@ -54,8 +54,8 @@ exports.init = function(config) {
 	opts.plugins.push(UrlPlugin.config(opts));
 	opts.plugins.push(CoedPlugin.config(opts));
 
-	opts.components.forEach(function(def) {
-		initType(opts.spec, def);
+	opts.components.forEach(function(component) {
+		initType(opts.spec, component);
 	});
 
 	if (opts.spec) {
@@ -78,8 +78,8 @@ exports.init = function(config) {
 		content: fullMenu
 	}).attach(pm);
 
-	opts.components.forEach(function(def) {
-		if (def.init) def.init(pm);
+	opts.components.forEach(function(component) {
+		if (component.init) component.init(pm);
 	});
 
 	return pm;
@@ -107,42 +107,42 @@ exports.change = function(pm, fn) {
 };
 
 
-function initType(spec, def) {
-	defineSpec(def, spec.nodes, def.to({}));
+function initType(spec, component) {
+	defineSpec(component, spec.nodes, component.to({}));
 }
 
-function defineSpec(def, specs, dom) {
+function defineSpec(component, specs, dom) {
 	var content = [];
 	var typeName, type;
 	var coedName = dom.getAttribute('coed-name');
 	var specName, spec, recursive = false;
-	if (!def.index) {
-		def.index = 1;
+	if (!component.index) {
+		component.index = 1;
 		spec = {
-			group: def.group || "block",
-			type: getRootType(def)
+			group: component.group || "block",
+			type: getRootType(component)
 		};
-		specName = typeName = "root_" + def.name;
+		specName = typeName = "root_" + component.name;
 		recursive = true;
 	} else if (coedName) {
 		spec = {
-			type: getContentType(def),
-			content: def.contentSpec[coedName]
+			type: getContentType(component),
+			content: component.contentSpec[coedName]
 		};
-		if (!spec.content) throw new Error("Missing def.contentSpec[" + coedName + "]");
-		typeName = "content_" + def.name + def.index++;
+		if (!spec.content) throw new Error("Missing component.contentSpec[" + coedName + "]");
+		typeName = "content_" + component.name + component.index++;
 		specName = typeName + '[name="' + coedName + '"]';
 	} else if (dom.querySelector('[coed-name]')) {
-		specName = typeName = "wrap_" + def.name + def.index++;
+		specName = typeName = "wrap_" + component.name + component.index++;
 		spec = {
-			type: getWrapType(def)
+			type: getWrapType(component)
 		};
 		recursive = true;
 	} else {
-		specName = typeName = "hold_" + def.name;
+		specName = typeName = "hold_" + component.name;
 		if (!specs[typeName]) {
 			spec = {
-				type: getHoldType(def)
+				type: getHoldType(component)
 			};
 		}
 	}
@@ -153,7 +153,7 @@ function defineSpec(def, specs, dom) {
 		for (var i=0, child; i < childs.length; i++) {
 			child = childs.item(i);
 			if (child.nodeType != Node.ELEMENT_NODE) continue;
-			content.push(defineSpec(def, specs, child));
+			content.push(defineSpec(component, specs, child));
 		}
 		if (content.length) spec.content = content.join(" ");
 	}
@@ -163,7 +163,7 @@ function defineSpec(def, specs, dom) {
 	return specName;
 }
 
-function getRootType(opts) {
+function getRootType(component) {
 	function RootType(name, schema) {
 		Block.call(this, name, schema);
 		this.coedType = 'root'; // used by plugin to detect node types
@@ -172,7 +172,7 @@ function getRootType(opts) {
 
 	Object.defineProperty(RootType.prototype, "attrs", { get: function() {
 		var attrs = {};
-		var dataSpec = Object.assign({}, opts.dataSpec);
+		var dataSpec = Object.assign({}, component.dataSpec);
 		dataSpec.id = "";
 		Object.keys(dataSpec).forEach(function(key) {
 			var defaultVal = dataSpec[key];
@@ -186,7 +186,7 @@ function getRootType(opts) {
 
 	Object.defineProperty(RootType.prototype, "toDOM", { get: function() {
 		return function(node) {
-			var domNode = opts.to(node.attrs);
+			var domNode = component.to(node.attrs);
 			prepareDom(domNode, node);
 			return [domNode.nodeName, nodeAttrs(domNode), 0];
 		};
@@ -194,8 +194,8 @@ function getRootType(opts) {
 
 	Object.defineProperty(RootType.prototype, "matchDOMTag", { get: function() {
 		var ret = {};
-		ret[opts.tag] = function(node) {
-			var data = opts.from(node);
+		ret[component.tag] = function(node) {
+			var data = component.from(node);
 			prepareDom(node);
 			return data;
 		};
@@ -220,7 +220,7 @@ function getRootType(opts) {
 	return RootType;
 }
 
-function getWrapType(opts) {
+function getWrapType(component) {
 	function WrapType(name, schema) {
 		Block.call(this, name, schema);
 		this.coedType = 'wrap'; // used by plugin to detect node types
@@ -251,7 +251,7 @@ function getWrapType(opts) {
 		return {
 			'*': function(node) {
 				var tagName = node.nodeName.toLowerCase();
-				if (tagName == opts.tag || !node.querySelector('[coed-name]')) return false;
+				if (tagName == component.tag || !node.querySelector('[coed-name]')) return false;
 				return {
 					tag: tagName,
 					"class": node.getAttribute("class")
@@ -263,7 +263,7 @@ function getWrapType(opts) {
 }
 
 
-function getContentType(opts) {
+function getContentType(component) {
 	function ContentType(name, schema) {
 		Block.call(this, name, schema);
 		this.coedType = 'content'; // used by plugin to detect node types
@@ -307,7 +307,7 @@ function getContentType(opts) {
 }
 
 
-function getHoldType(opts) {
+function getHoldType(component) {
 	function HoldType(name, schema) {
 		Block.call(this, name, schema);
 		this.coedType = 'hold';
