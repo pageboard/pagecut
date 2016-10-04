@@ -15,6 +15,9 @@
 	<link rel="stylesheet" href="coed.min.css">
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
+	if (window.GET && diffDOM) {
+		document.getElementById('install').remove();
+	}
 	var inspectorBase = "https://inspector.eda.sarl";
 
 	var coLink = new Coed.Link({
@@ -30,21 +33,38 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 
-	var opts = {
-		content: document.querySelector("#content"),
+	var coed = new Coed.Editor({
 		place: document.querySelector("#editor"),
-		components: [coLink],
-		handlers: [coLink.handler] // handle url or dom paste events
-	};
-	var pm = Coed.init(opts);
-	opts.content.hidden = true;
+		components: [coLink]
+	});
+	var contentNode = document.getElementById("content");
+	coed.set(contentNode);
+	contentNode.hidden = true;
 
+	var differ = new diffDOM({
+		filterOuterDiff: function(from, to, diffs) {
+			// do not diff inside a rendered co-link, attributes will change anyway
+			if (from.nodeName == "DIV" && from.attributes['data-type'] && !diffs.length) {
+				from.innerDone = true;
+			}
+		}
+	});
 
+	coed.changed(function() {
+		var from = document.getElementById('preview');
+		var to = document.createElement('div');
+		to.id = 'preview';
+		to.appendChild(coed.get());
+		differ.apply(from, differ.diff(from, to));
+	});
 });
 	</script>
 	<script src="coed.min.js"></script>
 </head>
 <body>
+
+Coed demo.<br>
+<code id="install">npm install window-agent diff-dom</code>
 
 <div id="editor"></div>
 
@@ -107,6 +127,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <co-link type="link"><header><a name="type"></a><a title="fr.wikipedia.org" target="_blank" href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale"><img src="https://fr.wikipedia.org/static/favicon/wikipedia.ico"></a><a name="preview"></a></header><div><div coed-name="title">SESAM-Vitale — Wikipédia</div><div coed-name="content"><p></p></div></div><aside><div><div><span title="dimensions"></span><span title="duration"></span><span title="size"></span></div><p></p></div><figure></figure></aside><script type="text/html"><a href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale">SESAM-Vitale — Wikipédia</a></script></co-link>
 <p>e</p>
 </div>
+
+<div id="preview"></div>
 
 
 </body></html>
