@@ -101,6 +101,10 @@ exports.delete = function(pm) {
 	console.warn("TODO implement Coed.delete");
 };
 
+exports.change = function(pm, fn) {
+	pm.on.change.add(fn);
+};
+
 
 function initType(spec, def) {
 	defineSpec(def, spec.nodes, def.to({}));

@@ -52,14 +52,18 @@ Methods
 - Coed.init(opts)  
   returns an editor instance.
   Options are documented below in Defaults section.
-- Coed.paste(pm, str)  
-  paste a string, replacing current selection
-- Coed.delete(pm)  
-  delete current selection
 - Coed.set(pm, dom)  
   sets editor content DOM
 - Coed.get(pm)  
   gets editor content DOM
+
+- Coed.paste(pm, str)  
+  paste a string, replacing current selection
+- Coed.delete(pm)  
+  delete current selection
+
+- Coed.change(pm, listener)  
+  listen for change events
 
 
 Defaults

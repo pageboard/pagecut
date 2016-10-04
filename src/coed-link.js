@@ -245,6 +245,11 @@ CoLink.prototype.input = function(node) {
 }
 
 CoLink.prototype.output = function(data) {
-	console.log("TODO CoLink.output");
-	return this.to(data);
+	if (data.html) {
+		var div = document.createElement('div');
+		div.innerHTML = data.html;
+		return div;
+	} else {
+		return this.to(data);
+	}
 };
