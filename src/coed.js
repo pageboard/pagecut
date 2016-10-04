@@ -51,7 +51,6 @@ exports.Editor = Editor;
 function Editor(config) {
 	var opts = this.opts = Object.assign({}, exports.defaults, config);
 
-
 	if (!opts.components) opts.components = [];
 
 	opts.plugins.push(UrlPlugin.config(opts));
@@ -91,7 +90,14 @@ Editor.prototype.set = function(dom) {
 };
 
 Editor.prototype.get = function() {
-	return this.pm.doc.content.toDOM();
+	this.opts.components.forEach(function(component) {
+		component.alt = true;
+	});
+	var alt = this.pm.doc.content.toDOM();
+	this.opts.components.forEach(function(component) {
+		component.alt = false;
+	});
+	return alt;
 };
 
 Editor.prototype.replace = function(stuff) {
@@ -189,7 +195,11 @@ function getRootType(component) {
 
 	Object.defineProperty(RootType.prototype, "toDOM", { get: function() {
 		return function(node) {
-			var domNode = component.to(node.attrs);
+			var domNode;
+			if (component.alt && component.output) {
+				return component.output(node.attrs);
+			}
+			domNode = component.to(node.attrs);
 			prepareDom(domNode, node);
 			return [domNode.nodeName, nodeAttrs(domNode), 0];
 		};

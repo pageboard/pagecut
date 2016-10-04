@@ -49,8 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	var differ = new diffDOM({
 		filterOuterDiff: function(from, to, diffs) {
-			// this is an example, it actally does nothing
-			if (/^component-/i.test(from.nodeName) && !diffs.length) {
+			// do not diff inside a rendered co-link, attributes will change anyway
+			if (from.nodeName == "DIV" && from.attributes['data-type'] && !diffs.length) {
 				from.innerDone = true;
 			}
 		}

@@ -235,6 +235,10 @@ CoLink.prototype.input = function(node) {
 CoLink.prototype.output = function(data) {
 	if (data.html) {
 		var div = document.createElement('div');
+		for (var k in data) {
+			if (k == 'html') continue;
+			div.setAttribute('data-' + k, data[k]);
+		}
 		div.innerHTML = data.html;
 		return div;
 	} else {
