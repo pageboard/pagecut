@@ -8,6 +8,7 @@
 	<script src="../dist/coed.js"></script>
 	<script src="../dist/coed-link.js"></script>
 	<script src="agent.js"></script>
+	<script src="diffDOM.js"></script>
 	<style>
 #editor {
 	margin:1em;
@@ -43,13 +44,29 @@ document.addEventListener('DOMContentLoaded', function() {
 	Coed.set(pm, contentNode);
 	contentNode.hidden = true;
 
+	var differ = new diffDOM({
+		filterOuterDiff: function(from, to, diffs) {
+			// this is an example, it actally does nothing
+			if (/^component-/i.test(from.nodeName) && !diffs.length) {
+				from.innerDone = true;
+			}
+		}
+	});
+
 	Coed.change(pm, function() {
-		document.getElementById('preview').innerHTML = Coed.output(pm);
+		var from = document.getElementById('preview');
+		var to = document.createElement('div');
+		to.id = 'preview';
+		to.appendChild(Coed.get(pm));
+		differ.apply(from, differ.diff(from, to));
 	});
 });
 	</script>
 </head>
 <body>
+
+Coed demo.<br>
+Please install window-agent and diff-dom modules.
 
 <div id="editor"></div>
 
