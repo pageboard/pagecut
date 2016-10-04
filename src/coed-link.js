@@ -15,7 +15,7 @@ module.exports = CoLink;
 function CoLink(options) {
 	this.tag = "co-link";
 	this.name = "link";
-	this.attrs = {
+	this.dataSpec = {
 		id: "",
 		type:  "none",
 		url: "",
@@ -29,13 +29,25 @@ function CoLink(options) {
 		site: "",
 		html: ""
 	};
-	this.contents = {
+	this.contentSpec = {
 		title: "inline<_>*",
 		content: "inline<_>*"
 	};
 
 	if (options.inspector) this.inspector = options.inspector;
 }
+
+CoLink.prototype.init = function(pm) {
+	pm.content.addEventListener('click', function(e) {
+		var target = e.target;
+		var root = target.closest('co-link');
+		if (!root) return;
+		if (!target.closest('[name="preview"]')) return;
+		e.preventDefault();
+		var data = this.from(root);
+		console.log("will preview", data);
+	}.bind(this));
+};
 
 CoLink.prototype.inspector = function(info, cb) {
 	setTimeout(function() {
@@ -105,7 +117,7 @@ CoLink.prototype.parseSize = function(obj, s) {
 	if (/^\d+KB$/.test(s)) obj.size = parseInt(s) * 1000;
 };
 
-CoLink.prototype.to = function(attrs) {
+CoLink.prototype.to = function(data, content) {
 	var me = this;
 	var node = document.createElement(me.tag);
 	node.innerHTML = '<header><a name="type"></a><a title="" target="_blank"></a><a name="preview"></a></header><div>\
@@ -113,18 +125,18 @@ CoLink.prototype.to = function(attrs) {
 </div><aside><div><div></div><p></p></div><figure></figure></aside><script type="text/html"></script>';
 	var link = node.querySelector('header > a[title]');
 
-	link.setAttribute("title", attrs.site || "");
-	if (attrs.type) node.setAttribute("type", attrs.type);
-	if (attrs.id) node.setAttribute("id", attrs.id);
-	if (attrs.url) link.setAttribute("href", attrs.url);
-	if (attrs.icon) me.ensure(link, 'img', { src: attrs.icon });
-	if (attrs.thumbnail) me.ensure(node.querySelector('figure'), 'img', { src: attrs.thumbnail });
-	if (attrs.html) me.ensure(node, 'script', {type: 'text/html'}).textContent = attrs.html || '';
+	link.setAttribute("title", data.site || "");
+	if (data.type) node.setAttribute("type", data.type);
+	if (data.id) node.setAttribute("id", data.id);
+	if (data.url) link.setAttribute("href", data.url);
+	if (data.icon) me.ensure(link, 'img', { src: data.icon });
+	if (data.thumbnail) me.ensure(node.querySelector('figure'), 'img', { src: data.thumbnail });
+	if (data.html) me.ensure(node, 'script', {type: 'text/html'}).textContent = data.html || '';
 
 	var obj = {
-		dimensions: me.formatDimensions(attrs.width, attrs.height),
-		duration: me.formatDuration(attrs.duration),
-		size: me.formatSize(attrs.size)
+		dimensions: me.formatDimensions(data.width, data.height),
+		duration: me.formatDuration(data.duration),
+		size: me.formatSize(data.size)
 	};
 	Object.keys(obj).forEach(function(key) {
 		var span = document.createElement('span');
@@ -132,30 +144,35 @@ CoLink.prototype.to = function(attrs) {
 		span.innerHTML = obj[key] || "";
 		obj[key] = span;
 	});
-	node.querySelector('aside > div > p').innerHTML = attrs.description || "";
+	node.querySelector('aside > div > p').innerHTML = data.description || "";
 
 	me.fill(node.querySelector('aside > div > div'), obj);
+
+	if (content) Object.keys(content).forEach(function(name) {
+		node.querySelector('[coed-name="'+name+'"]').innerHTML = content[name];
+	});
+
 	return node;
 };
 
 CoLink.prototype.from = function(node) {
 	var me = this;
-	var attrs = {};
-	attrs.type = node.getAttribute('type') || 'none';
-	attrs.id = node.getAttribute('id') || undefined;
+	var data = {};
+	data.type = node.getAttribute('type') || 'none';
+	data.id = node.getAttribute('id') || undefined;
 
 	var link = node.querySelector("header > a[href]");
 	if (link) {
-		attrs.url = link.getAttribute('href');
-		attrs.site = link.getAttribute('title');
+		data.url = link.getAttribute('href');
+		data.site = link.getAttribute('title');
 		var icon = link.querySelector("img");
-		if (icon) attrs.icon = icon.getAttribute('src');
+		if (icon) data.icon = icon.getAttribute('src');
 	}
 	var html = node.querySelector('script[type="text/html"]');
-	if (html) attrs.html = html.textContent;
+	if (html) data.html = html.textContent;
 	var thumb = node.querySelector('aside > figure > img');
 	if (thumb) {
-		attrs.thumbnail = thumb.getAttribute('src');
+		data.thumbnail = thumb.getAttribute('src');
 	}
 	var i;
 	var asides = node.querySelectorAll('aside > div > span');
@@ -164,13 +181,13 @@ CoLink.prototype.from = function(node) {
 		aside = asides.item(i);
 		title = aside.getAttribute('title');
 		val = aside.innerHTML;
-		if (title == 'size') me.parseSize(attrs, val);
-		else if (title == 'dimensions') me.parseDimensions(attrs, val);
-		else attrs[title] = val;
+		if (title == 'size') me.parseSize(data, val);
+		else if (title == 'dimensions') me.parseDimensions(data, val);
+		else data[title] = val;
 	}
 	var description = node.querySelector('aside > div > p');
-	if (description) attrs.description = description.innerHTML;
-	return attrs;
+	if (description) data.description = description.innerHTML;
+	return data;
 };
 
 CoLink.prototype.input = function(node) {
@@ -210,8 +227,9 @@ CoLink.prototype.input = function(node) {
 			pm.tr.delete(begin, end).apply();
 			return;
 		}
-		var dom = me.to(props);
-		dom.querySelector('[coed-name="title"]').innerHTML = props.title;
+		var dom = me.to(props, {
+			title: props.title
+		});
 
 		pm.tr.replaceWith(begin, end, parseDom(dom)).apply();
 	});
@@ -226,3 +244,7 @@ CoLink.prototype.input = function(node) {
 	return parseDom(loadingNode);
 }
 
+CoLink.prototype.output = function(data) {
+	console.log("TODO CoLink.output");
+	return this.to(data);
+};

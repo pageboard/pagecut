@@ -21,31 +21,46 @@ Simply add dist/coed.min.css, dist/coed.min.js to a web page and initialize the 
 
 ```
 document.addEventListener('DOMContentLoaded', function() {
-	var inspectorBase = "http://inspector.eda.sarl";
+	var inspectorBase = "https://inspector.eda.sarl";
 
-	var opts = {
-		content: document.querySelector("#content"),
-		place: document.querySelector("#editor"),
-		components: [
-			ImageList
-		],
+	var coLink = new Coed.Link({
 		inspector: function(info, cb) {
+			// info is mutable
 			var node = info.fragment && info.fragment.firstChild;
 			if (node && node.nodeName == "IFRAME") {
-				info.url = node.src;
-				info.title = "Loading iframe at " + info.url;
-			} else {
-				node = null;
+				info.title = info.url = node.src;
 			}
-			GET(inspectorBase + "/inspector", {
-				url: info.url
-			}, cb);
+			// url-inspector-daemon@1.5.0 has right properties names
+			GET(inspectorBase + "/inspector", {url: info.url}, cb);
 		}
+	});
+
+	var opts = {
+		dom: document.querySelector("#content"),
+		place: document.querySelector("#editor"),
+		components: [coLink]
 	};
 	var pm = Coed.init(opts);
-	opts.content.hidden = true;
+	opts.dom.hidden = true;
 });
 ```
+
+
+Methods
+-------
+
+- Coed.init(opts)  
+  returns an editor instance.
+  Options are documented below in Defaults section.
+- Coed.paste(pm, str)  
+  paste a string, replacing current selection
+- Coed.delete(pm)  
+  delete current selection
+- Coed.set(pm, dom)  
+  sets editor content DOM
+- Coed.get(pm)  
+  gets editor content DOM
+
 
 Defaults
 --------
@@ -56,7 +71,18 @@ Defaults
 - spec: a default, mutable, schema spec
 - plugins: array of plugins for ProseMirror
 - components: array of components like Coed-Link
-- handlers: array of url/dom nodes paste handlers
+
+
+Blocks
+------
+
+A block is an object representing a component instance. It is not explicitely
+used by `coed` but its the main concept of the editor.
+
+A block is
+- type: the component name that can handle that block
+- data: an object mapping names to values
+- content: an object mapping names to html content
 
 
 Components
@@ -66,21 +92,34 @@ A component is an object that must implement this interface:
 
 ### Properties
 
-- tag: the component tag name. Preferably custom, but does not need web components to work.
-- name: the component name as seen by ProseMirror
-- attrs: an object mapping attributes with default values, tells ProseMirror what must be stored on the component.
-  Attributes are typically merged in the DOM instance of the component.
-- contents: an object mapping content node names to ProseMirror schemaSpec
+- tag  
+  the component tag name.
+  Preferably custom, but does not need web components to work.
+- name  
+  the component name as seen by ProseMirror.
+- dataSpec  
+  an object mapping attributes with default values,
+  tells ProseMirror what must be stored on the component.
+  Data values are typically merged in the DOM instance of the component.
+- contentSpec  
+  an object mapping content node names to ProseMirror schemaSpec.
 
 ### Methods
 
-- from(dom): returns attributes from a given DOM component node
-- to(attrs): returns a DOM component instance given a set of attributes
-  Nodes with editable content must have a unique `coed-name` attribute.
-- init(pm): optional method that is called after pm initialization
+- init(pm)  
+  called after pm initialization. Optional.
+- from(dom)  
+  returns block's data from a given DOM Node for edition.
+- to(data, content?)  
+  returns DOM for edition from a block's data, optionally with some content.
+  Nodes with editable content must have a `coed-name` attribute.
+- input(dom)  
+  returns block's data from input DOM, and adds `coed-name` attributes to that
+  input DOM. Optional.
+- output(data, content?)  
+  returns DOM for publication from block's data, optionally with some content.
+  If defined, `pm.output()` calls this method instead of `to`.
 
-Content nodes are entirely handled by ProseMirror - those two methods do not deal
-with them at all.
 
 A selected component gets a "focused" class.
 

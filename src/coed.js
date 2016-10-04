@@ -62,10 +62,6 @@ exports.init = function(config) {
 		opts.schema = new Schema(opts.spec);
 		delete opts.spec;
 	}
-	if (opts.content) {
-		opts.doc = opts.schema.parseDOM(opts.content);
-		delete opts.content;
-	}
 
 	let pm = new ProseMirror(opts);
 
@@ -88,10 +84,26 @@ exports.init = function(config) {
 	return pm;
 };
 
+exports.set = function(pm, dom) {
+	pm.setDoc(pm.schema.parseDOM(dom));
+};
+
+exports.get = function(pm) {
+	console.warn('TODO implement calls to composant.output');
+	return pm.doc.content.toDOM();
+};
+
+exports.paste = function(pm, str) {
+	console.warn("TODO implement Coed.paste");
+};
+
+exports.delete = function(pm) {
+	console.warn("TODO implement Coed.delete");
+};
+
 
 function initType(spec, def) {
-	var baseDom = def.to({});
-	defineSpec(def, spec.nodes, baseDom);
+	defineSpec(def, spec.nodes, def.to({}));
 }
 
 function defineSpec(def, specs, dom) {
@@ -110,9 +122,9 @@ function defineSpec(def, specs, dom) {
 	} else if (coedName) {
 		spec = {
 			type: getContentType(def),
-			content: def.contents[coedName]
+			content: def.contentSpec[coedName]
 		};
-		if (!spec.content) throw new Error("Missing def.contents[" + coedName + "]");
+		if (!spec.content) throw new Error("Missing def.contentSpec[" + coedName + "]");
 		typeName = "content_" + def.name + def.index++;
 		specName = typeName + '[name="' + coedName + '"]';
 	} else if (dom.querySelector('[coed-name]')) {
@@ -154,17 +166,17 @@ function getRootType(opts) {
 	inherits(RootType, Block);
 
 	Object.defineProperty(RootType.prototype, "attrs", { get: function() {
-		var typeAttrs = {};
-		var attrs = opts.attrs;
-		attrs.id = "";
-		Object.keys(attrs).forEach(function(key) {
-			var defaultVal = attrs[key];
+		var attrs = {};
+		var dataSpec = Object.assign({}, opts.dataSpec);
+		dataSpec.id = "";
+		Object.keys(dataSpec).forEach(function(key) {
+			var defaultVal = dataSpec[key];
 			if (typeof defaultVal != "string") defaultVal = "";
-			typeAttrs[key] = new Attribute({
+			attrs[key] = new Attribute({
 				"default": defaultVal
 			});
 		});
-		return typeAttrs;
+		return attrs;
 	}});
 
 	Object.defineProperty(RootType.prototype, "toDOM", { get: function() {
@@ -178,9 +190,9 @@ function getRootType(opts) {
 	Object.defineProperty(RootType.prototype, "matchDOMTag", { get: function() {
 		var ret = {};
 		ret[opts.tag] = function(node) {
-			var attrs = opts.from(node);
+			var data = opts.from(node);
 			prepareDom(node);
-			return attrs;
+			return data;
 		};
 		return ret;
 	}});

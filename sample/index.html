@@ -35,16 +35,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 
-	var opts = {
-		content: document.querySelector("#content"),
+	var pm = Coed.init({
 		place: document.querySelector("#editor"),
-		components: [coLink],
-		handlers: [coLink.handler] // handle url or dom paste events
-	};
-	var pm = Coed.init(opts);
-	opts.content.hidden = true;
-
-
+		components: [coLink]
+	});
+	var contentNode = document.getElementById("content");
+	Coed.set(pm, contentNode);
+	contentNode.hidden = true;
 });
 	</script>
 </head>
