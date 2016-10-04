@@ -5,8 +5,7 @@ FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
 all: clean dev
-	cp -f sample/agent.js dist/
-	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js coed.min.js --css coed.min.css --ignore agent.js --ignore .
+	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js coed.min.js --css coed.min.css --ignore agent.js --ignore diffDOM.js --ignore .
 
 dev: dist/coed.js dist/coed-link.js
 
