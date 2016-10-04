@@ -33,7 +33,6 @@ function CoLink(options) {
 		title: "inline<_>*",
 		content: "inline<_>*"
 	};
-	this.handler = this.handler.bind(this);
 
 	if (options.inspector) this.inspector = options.inspector;
 }
@@ -174,14 +173,19 @@ CoLink.prototype.from = function(node) {
 	return attrs;
 };
 
-CoLink.prototype.handler = function(pm, info) {
+CoLink.prototype.input = function(node) {
 	var me = this;
 
 	var loadingId = 'id-colink-' + Date.now();
 
-	if (!info.title) {
-		if (info.url) info.title = info.url;
-		else if (info.fragment) info.title = info.fragment.firstChild.innerText;
+	var info = {};
+
+	if (typeof node == "string") {
+		info.title = node;
+		info.url = node;
+	} else {
+		info.title = node.innerText;
+		info.fragment = node;
 	}
 
 	function parseDom(node) {

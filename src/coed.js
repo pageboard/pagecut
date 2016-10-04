@@ -43,7 +43,6 @@ exports.defaults = {
 	plugins: [
 		exampleSetup.config({menuBar: false, tooltipMenu: false})
 	],
-	handlers: [],
 	components: []
 };
 
@@ -51,7 +50,6 @@ exports.init = function(config) {
 	var opts = Object.assign({}, exports.defaults, config);
 
 	if (!opts.components) opts.components = [];
-	if (!opts.handlers) opts.handlers = [];
 
 	opts.plugins.push(UrlPlugin.config(opts));
 	opts.plugins.push(CoedPlugin.config(opts));

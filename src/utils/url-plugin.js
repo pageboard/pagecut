@@ -4,7 +4,7 @@ const {Slice, Fragment} = require("prosemirror/dist/model");
 const UrlRegex = require('url-regex');
 
 function UrlPlugin(pm, options) {
-	this.handlers = options.handlers;
+	this.components = options.components;
 	this.pm = pm;
 	this.filter = this.filter.bind(this);
 	pm.on.transformPasted.add(this.filter);
@@ -23,12 +23,13 @@ UrlPlugin.prototype.transform = function(fragment) {
 	var urlReg = UrlRegex();
 	for (var i = 0; i < fragment.childCount; i++) {
 		var child = fragment.child(i);
-		var newNode = null;
+		var newNode = null, jComp;
 		if (child.isText) {
 			var frog = asForeignFragment(child.text.trim());
 			if (hasOnlyChildElements(frog)) {
-				for (var j = 0; j < this.handlers.length; j++) {
-					newNode = this.handlers[j](this.pm, { fragment: frog });
+				for (var j = 0; j < this.components.length; j++) {
+					jComp = this.components[j];
+					if (jComp.input) newNode = jComp.input(frog);
 					if (newNode) break;
 				}
 				if (newNode) {
@@ -43,8 +44,9 @@ UrlPlugin.prototype.transform = function(fragment) {
 					var link = child.type.schema.marks.link;
 					if (start > 0) linkified.push(child.copy(child.text.slice(pos, start)));
 					var urlText = child.text.slice(start, end);
-					for (var j = 0; j < this.handlers.length; j++) {
-						newNode = this.handlers[j](this.pm, { url: urlText });
+					for (var j = 0; j < this.components.length; j++) {
+						jComp = this.components[j];
+						if (jComp.input) newNode = jComp.input(urlText);
 						if (newNode) break;
 					}
 					if (!newNode) {
