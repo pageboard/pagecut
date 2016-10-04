@@ -35,13 +35,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 
-	var opts = {
-		dom: document.querySelector("#content"),
+	var coed = new Coed.Editor({
 		place: document.querySelector("#editor"),
 		components: [coLink]
-	};
-	var pm = Coed.init(opts);
-	opts.dom.hidden = true;
+	});
+	var domContent = document.querySelector("#content");
+	coed.set(domContent);
+	domContent.hidden = true;
 });
 ```
 
@@ -49,21 +49,21 @@ document.addEventListener('DOMContentLoaded', function() {
 Methods
 -------
 
-- Coed.init(opts)  
-  returns an editor instance.
-  Options are documented below in Defaults section.
-- Coed.set(pm, dom)  
-  sets editor content DOM
-- Coed.get(pm)  
-  gets editor content DOM
+- new Coed.Editor(opts)  
+  returns an editor instance,
+  options are documented below in Defaults section.
+- coed.set(dom)  
+  sets editor content DOM.
+- coed.get()  
+  gets editor content DOM.
 
-- Coed.paste(pm, str)  
-  paste a string, replacing current selection
-- Coed.delete(pm)  
-  delete current selection
+- coed.replace(str or dom node)  
+  replace current selection with typed string or dom node.
+- coed.delete()  
+  delete current selection.
 
-- Coed.change(pm, listener)  
-  listen for change events
+- coed.changed(listener)  
+  listen for change events.
 
 
 Defaults

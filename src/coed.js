@@ -46,8 +46,11 @@ exports.defaults = {
 	components: []
 };
 
-exports.init = function(config) {
-	var opts = Object.assign({}, exports.defaults, config);
+exports.Editor = Editor;
+
+function Editor(config) {
+	var opts = this.opts = Object.assign({}, exports.defaults, config);
+
 
 	if (!opts.components) opts.components = [];
 
@@ -63,7 +66,7 @@ exports.init = function(config) {
 		delete opts.spec;
 	}
 
-	let pm = new ProseMirror(opts);
+	let pm = this.pm = new ProseMirror(opts);
 
 	let menu = buildMenuItems(pm.schema);
 	// keep full menu but remove selectParentNodeItem menu
@@ -81,31 +84,31 @@ exports.init = function(config) {
 	opts.components.forEach(function(component) {
 		if (component.init) component.init(pm);
 	});
+}
 
-	return pm;
+Editor.prototype.set = function(dom) {
+	this.pm.setDoc(this.pm.schema.parseDOM(dom));
 };
 
-exports.set = function(pm, dom) {
-	pm.setDoc(pm.schema.parseDOM(dom));
+Editor.prototype.get = function() {
+	return this.pm.doc.content.toDOM();
 };
 
-exports.get = function(pm) {
-	console.warn('TODO implement calls to composant.output');
-	return pm.doc.content.toDOM();
+Editor.prototype.replace = function(stuff) {
+	if (typeof stuff == "string") {
+		this.pm.tr.typeText(stuff).applyAndScroll();
+	} else if (stuff instanceof Node) {
+		this.pm.tr.replaceSelection(this.pm.schema.parseDOM(stuff)).applyAndScroll();
+	}
 };
 
-exports.paste = function(pm, str) {
-	console.warn("TODO implement Coed.paste");
+Editor.prototype.delete = function() {
+	this.pm.tr.deleteSelection().applyAndScroll();
 };
 
-exports.delete = function(pm) {
-	console.warn("TODO implement Coed.delete");
+Editor.prototype.changed = function(fn) {
+	this.pm.on.change.add(fn);
 };
-
-exports.change = function(pm, fn) {
-	pm.on.change.add(fn);
-};
-
 
 function initType(spec, component) {
 	defineSpec(component, spec.nodes, component.to({}));

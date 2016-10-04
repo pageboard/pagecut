@@ -36,12 +36,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 
-	var pm = Coed.init({
+	var coed = new Coed.Editor({
 		place: document.querySelector("#editor"),
 		components: [coLink]
 	});
 	var contentNode = document.getElementById("content");
-	Coed.set(pm, contentNode);
+	coed.set(contentNode);
 	contentNode.hidden = true;
 
 	var differ = new diffDOM({
@@ -53,11 +53,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 
-	Coed.change(pm, function() {
+	coed.changed(function() {
 		var from = document.getElementById('preview');
 		var to = document.createElement('div');
 		to.id = 'preview';
-		to.appendChild(Coed.get(pm));
+		to.appendChild(coed.get());
 		differ.apply(from, differ.diff(from, to));
 	});
 });
