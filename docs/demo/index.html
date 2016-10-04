@@ -2,14 +2,32 @@
 	<meta charset="utf-8">
 	<title>Sample editor</title>
 	<script src="agent.js"></script>
+	<script src="diffDOM.js"></script>
 	<style>
+html {
+	height:100%;
+}
+body {
+	display:flex;
+	flex-direction:column;
+	height:100%;
+	margin:0;
+}
 #editor {
+	flex: 1 1 auto;
 	margin:1em;
 	border:1px solid silver;
 }
 .ProseMirror-content {
 	margin:0.1em;
 	padding:0.1em;
+}
+#preview {
+	flex: 1 1 auto;
+	margin:1em;
+	border:2px solid black;
+	overflow:auto;
+	max-height:100%;
 }
 	</style>
 	<link rel="stylesheet" href="coed.min.css">
@@ -44,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	var differ = new diffDOM({
 		filterOuterDiff: function(from, to, diffs) {
 			// do not diff inside a rendered co-link, attributes will change anyway
-			if (from.nodeName == "DIV" && from.attributes['data-type'] && !diffs.length) {
+			if (from.nodeName == "DIV" && from.attributes && from.attributes['data-type'] && !diffs.length) {
 				from.innerDone = true;
 			}
 		}
