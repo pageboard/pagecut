@@ -83,7 +83,7 @@ CoedPlugin.prototype.change = function() {
 
 CoedPlugin.prototype.focus = function(pos) {
 	var dom = posToNode(this.pm, pos);
-	if (this.focused && this.focused != dom) {
+	if (this.focused && this.focused != dom && dom !== false) {
 		var fparent = this.focused;
 		while (fparent && fparent.nodeType == Node.ELEMENT_NODE) {
 			if (dom && isParentOf(fparent, dom)) {
