@@ -26,6 +26,7 @@ function CoLink(options) {
 }
 
 CoLink.prototype.init = function(pm) {
+	this.pm = pm;
 	pm.content.addEventListener('click', function(e) {
 		var target = e.target;
 		var root = target.closest('co-link');
@@ -180,6 +181,7 @@ CoLink.prototype.from = function(node) {
 
 CoLink.prototype.input = function(node) {
 	var me = this;
+	var pm = this.pm;
 
 	var loadingId = 'id-colink-' + Date.now();
 
