@@ -21,6 +21,9 @@
 	</style>
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
+	if (window.GET && diffDOM) {
+		document.getElementById('install').remove();
+	}
 	var inspectorBase = "https://inspector.eda.sarl";
 
 	var coLink = new Coed.Link({
@@ -66,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <body>
 
 Coed demo.<br>
-Please install window-agent and diff-dom modules.
+<code id="install">npm install window-agent diff-dom</code>
 
 <div id="editor"></div>
 
