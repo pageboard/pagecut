@@ -81,6 +81,7 @@ exports.init = function(config) {
 	opts.components.forEach(function(def) {
 		if (def.init) def.init(pm);
 	});
+
 	return pm;
 };
 

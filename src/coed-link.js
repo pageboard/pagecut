@@ -1,16 +1,4 @@
-
-
 module.exports = CoLink;
-
-// tag: the tag name (the same name is used for pm or dom node, for the sake of simplicity)
-// attrs: the attributes known by pm, with default values
-// contents: the contents specs by name
-// from: function(dom) -> props
-// to: function(props) -> dom
-// where props is an object with attributes and serialized contents
-
-
-
 
 function CoLink(options) {
 	this.tag = "co-link";
