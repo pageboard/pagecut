@@ -197,7 +197,7 @@ function getRootType(component) {
 		return function(node) {
 			var domNode;
 			if (component.alt && component.output) {
-				return component.output(node.attrs);
+				return component.output(node.attrs, collectContent({}, node));
 			}
 			domNode = component.to(node.attrs);
 			prepareDom(domNode, node);
@@ -230,6 +230,17 @@ function getRootType(component) {
 				child.isHolding = true;
 			}
 		}
+	}
+
+	function collectContent(content, node) {
+		if (node.type.coedType == "content") {
+			content[node.attrs.name] = node.toDOM().innerHTML;
+		} else {
+			node.forEach(function(child) {
+				collectContent(content, child);
+			});
+		}
+		return content;
 	}
 	return RootType;
 }
