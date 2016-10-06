@@ -135,7 +135,7 @@ function defineSpec(component, specs, dom) {
 		recursive = true;
 	} else if (coedName) {
 		spec = {
-			type: getContentType(component),
+			type: getContentType(component, dom),
 			content: component.contentSpec[coedName]
 		};
 		if (!spec.content) throw new Error("Missing component.contentSpec[" + coedName + "]");
@@ -144,14 +144,14 @@ function defineSpec(component, specs, dom) {
 	} else if (dom.querySelector('[coed-name]')) {
 		specName = typeName = "wrap_" + component.name + component.index++;
 		spec = {
-			type: getWrapType(component)
+			type: getWrapType(component, dom)
 		};
 		recursive = true;
 	} else {
 		specName = typeName = "hold_" + component.name;
 		if (!specs[typeName]) {
 			spec = {
-				type: getHoldType(component)
+				type: getHoldType(component, dom)
 			};
 		}
 	}
@@ -234,20 +234,29 @@ function getRootType(component) {
 	return RootType;
 }
 
-function getWrapType(component) {
+function getWrapType(component, dom) {
+	var defaultAttrs = from(dom);
+
 	function WrapType(name, schema) {
 		Block.call(this, name, schema);
 		this.coedType = 'wrap'; // used by plugin to detect node types
 	};
 	inherits(WrapType, Block);
 
+	function from(dom) {
+		return {
+			'class': dom.className || "",
+			tag: dom.nodeName
+		};
+	}
+
 	Object.defineProperty(WrapType.prototype, "attrs", { get: function() {
 		return {
 			"class": new Attribute({
-				"default": ""
+				"default": defaultAttrs.class
 			}),
 			"tag": new Attribute({
-				"default": "div"
+				"default": defaultAttrs.tag
 			})
 		};
 	}});
@@ -256,7 +265,7 @@ function getWrapType(component) {
 		return function(node) {
 			var attrs = node.attrs;
 			return [attrs.tag, {
-				'class': attrs['class']
+				'class': attrs.class
 			}, 0];
 		};
 	}});
@@ -266,10 +275,7 @@ function getWrapType(component) {
 			'*': function(node) {
 				var tagName = node.nodeName.toLowerCase();
 				if (tagName == component.tag || !node.querySelector('[coed-name]')) return false;
-				return {
-					tag: tagName,
-					"class": node.getAttribute("class")
-				};
+				return from(node);
 			}
 		};
 	}});
@@ -277,23 +283,33 @@ function getWrapType(component) {
 }
 
 
-function getContentType(component) {
+function getContentType(component, dom) {
+	var defaultAttrs = from(dom);
+
 	function ContentType(name, schema) {
 		Block.call(this, name, schema);
 		this.coedType = 'content'; // used by plugin to detect node types
 	};
 	inherits(ContentType, Block);
 
+	function from(dom) {
+		return {
+			name: dom.getAttribute("coed-name"),
+			'class': dom.className || "",
+			tag: dom.nodeName
+		};
+	}
+
 	Object.defineProperty(ContentType.prototype, "attrs", { get: function() {
 		return {
 			name: new Attribute({
-				"default": ""
+				"default": defaultAttrs.name
 			}),
 			"class": new Attribute({
-				"default": ""
+				"default": defaultAttrs.class
 			}),
 			"tag": new Attribute({
-				"default": "div"
+				"default": defaultAttrs.tag
 			})
 		};
 	}});
@@ -302,7 +318,7 @@ function getContentType(component) {
 		return function(node) {
 			var attrs = node.attrs;
 			return [attrs.tag, {
-				'class': attrs['class'],
+				'class': attrs.class,
 				'coed-name': attrs.name
 			}, 0];
 		};
@@ -311,9 +327,7 @@ function getContentType(component) {
 	Object.defineProperty(ContentType.prototype, "matchDOMTag", { get: function() {
 		return {
 			'[coed-name]': function(node) {
-				return {
-					name: node.getAttribute('coed-name')
-				};
+				return from(node);
 			}
 		};
 	}});
@@ -321,7 +335,8 @@ function getContentType(component) {
 }
 
 
-function getHoldType(component) {
+function getHoldType(component, dom) {
+	var defaultHTML = dom.outerHTML;
 	function HoldType(name, schema) {
 		Block.call(this, name, schema);
 		this.coedType = 'hold';
@@ -339,7 +354,7 @@ function getHoldType(component) {
 	Object.defineProperty(HoldType.prototype, "attrs", { get: function() {
 		return {
 			html: new Attribute({
-				"default": ""
+				"default": defaultHTML
 			})
 		};
 	}});
