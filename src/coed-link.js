@@ -234,8 +234,14 @@ CoLink.prototype.input = function(node) {
 	return parseDom(loadingNode);
 }
 
-CoLink.prototype.output = function(data) {
-	if (data.html) {
+CoLink.prototype.output = function(data, content) {
+	if (data.type == "link") {
+		var anchor = document.createElement('a');
+		anchor.href = data.url;
+		anchor.setAttribute('title', content.title);
+		anchor.innerHTML = content.content;
+		return anchor;
+	} else if (data.html) {
 		var div = document.createElement('div');
 		for (var k in data) {
 			if (k == 'html') continue;
