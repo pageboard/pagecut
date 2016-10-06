@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	if (window.GET && diffDOM) {
 		document.getElementById('install').remove();
 	}
+	if (/github\.io/.test(document.location.hostname)) {
+		document.body.insertAdjacentHTML('afterbegin', '<iframe src="https://ghbtns.com/github-btn.html?user=kapouer&repo=coed&type=star" frameborder="0" scrolling="0" width="170px" height="20px"></iframe>');
+	}
 	var inspectorBase = "https://inspector.eda.sarl";
 
 	var coLink = new Coed.Link({
@@ -85,7 +88,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </head>
 <body>
 
-Coed demo.<br>
+Coed demo.
+<br>
 <code id="install">npm install window-agent diff-dom</code>
 
 <div id="editor"></div>
