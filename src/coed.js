@@ -226,7 +226,8 @@ function getRootType(component) {
 			} else if (child.querySelector('[coed-name]')) {
 				prepareDom(child);
 			} else {
-
+				// make it as hold node
+				child.isHolding = true;
 			}
 		}
 	}
@@ -356,7 +357,7 @@ function getHoldType(component) {
 	Object.defineProperty(HoldType.prototype, "matchDOMTag", { get: function() {
 		return {
 			'*': function(node) {
-				if (node.hasAttribute('coed-name') || node.querySelector('[coed-name]')) return false;
+				if (!node.isHolding) return false;
 				return {html: node.outerHTML};
 			}
 		};
