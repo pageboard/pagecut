@@ -116,9 +116,9 @@ A component is an object that must implement this interface:
   returns block's data from a given DOM Node for edition.
 - to(data, content?)  
   returns DOM for edition from a block's data, optionally with some content.
-  Nodes with editable content must have a `coed-name` attribute.
+  Nodes with editable content must have a `content-name` attribute.
 - input(dom)  
-  returns block's data from input DOM, and adds `coed-name` attributes to that
+  returns block's data from input DOM, and adds `content-name` attributes to that
   input DOM. Optional.
 - output(data, content?)  
   returns DOM for publication from block's data, optionally with some content.

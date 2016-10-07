@@ -1,7 +1,6 @@
 module.exports = CoLink;
 
 function CoLink(options) {
-	this.tag = "co-link";
 	this.name = "link";
 	this.dataSpec = {
 		id: "",
@@ -108,9 +107,9 @@ CoLink.prototype.parseSize = function(obj, s) {
 
 CoLink.prototype.to = function(data, content) {
 	var me = this;
-	var node = document.createElement(me.tag);
+	var node = document.createElement('co-link');
 	node.innerHTML = '<header><a name="type"></a><a title="" target="_blank"></a><a name="preview"></a></header><div>\
-<div coed-name="title"></div><div coed-name="content"></div>\
+<div content-name="title"></div><div content-name="content"></div>\
 </div><aside><div><div></div><p></p></div><figure></figure></aside><script type="text/html"></script>';
 	var link = node.querySelector('header > a[title]');
 
@@ -138,7 +137,7 @@ CoLink.prototype.to = function(data, content) {
 	me.fill(node.querySelector('aside > div > div'), obj);
 
 	if (content) Object.keys(content).forEach(function(name) {
-		node.querySelector('[coed-name="'+name+'"]').innerHTML = content[name];
+		node.querySelector('[content-name="'+name+'"]').innerHTML = content[name];
 	});
 
 	return node;
