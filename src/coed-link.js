@@ -19,7 +19,7 @@ function CoLink(options) {
 	};
 	this.contentSpec = {
 		title: "inline<_>*",
-		content: "inline<_>*"
+		content: "block+"
 	};
 
 	if (options.inspector) this.inspector = options.inspector;
