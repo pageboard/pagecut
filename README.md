@@ -96,17 +96,19 @@ A component is an object that must implement this interface:
 
 ### Properties
 
-- tag  
-  the component tag name.
-  Preferably custom, but does not need web components to work.
 - name  
   the component name as seen by ProseMirror.
 - dataSpec  
-  an object mapping attributes with default values,
-  tells ProseMirror what must be stored on the component.
-  Data values are typically merged in the DOM instance of the component.
+  an object mapping data names with default values or validation functions,
+  tells ProseMirror what data can be stored on the component instance.
 - contentSpec  
   an object mapping content node names to ProseMirror schemaSpec.
+
+Data values are typically (but not necessarily all) merged in the DOM instance
+of the component. They are distinct from the attributes defined by a component
+template root DOM node, for example `dataSpec.class` won't override the
+template's root DOM node `class` attribute and its initial default value.
+
 
 ### Methods
 
