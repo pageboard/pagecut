@@ -148,7 +148,7 @@ function defineSpec(component, specs, dom) {
 		};
 		recursive = true;
 	} else {
-		specName = typeName = "hold_" + component.name;
+		specName = typeName = "hold_" + component.name + component.index++;
 		if (!specs[typeName]) {
 			spec = {
 				type: getHoldType(component, dom)
