@@ -171,7 +171,7 @@ function defineSpec(component, specs, dom) {
 }
 
 function getRootType(component, dom) {
-	var defaultAttrs = specAttrs(tagAttrs(dom));
+	var defaultAttrs = specAttrs(Object.assign({id: ""}, tagAttrs(dom)));
 
 	function RootType(name, schema) {
 		Block.call(this, name, schema);
@@ -180,9 +180,19 @@ function getRootType(component, dom) {
 	inherits(RootType, Block);
 
 	Object.defineProperty(RootType.prototype, "attrs", { get: function() {
-		return Object.assign({}, defaultAttrs, specAttrs(Object.assign({
-			id: ""
-		}, component.dataSpec)));
+		var dataSpec = component.dataSpec, specVal, attOpt;
+		var attrs = {};
+		for (var k in dataSpec) {
+			specVal = dataSpec[k];
+			attOpt = {};
+			if (typeof specVal == "string") {
+				attOpt.default = specVal;
+			} else {
+				attOpt.default = specVal.default || "";
+			}
+			attrs['data-' + k] = new Attribute(attOpt);
+		}
+		return Object.assign({}, defaultAttrs, attrs);
 	}});
 
 	Object.defineProperty(RootType.prototype, "toDOM", { get: function() {
@@ -191,7 +201,13 @@ function getRootType(component, dom) {
 			if (component.alt && component.output) {
 				return component.output(node.attrs, collectContent({}, node));
 			}
-			domNode = component.to(node.attrs);
+			var data = {};
+			for (var k in node.attrs) {
+				if (k.indexOf('data-') == 0) {
+					data[k.substring(5)] = node.attrs[k];
+				}
+			}
+			domNode = component.to(data);
 			prepareDom(domNode, node);
 			return [domNode.nodeName, nodeAttrs(domNode), 0];
 		};
@@ -202,10 +218,12 @@ function getRootType(component, dom) {
 		ret[defaultAttrs.tag.default] = function(node) {
 			var attrs = tagAttrs(node);
 			var data = component.from(node);
+			for (var k in data) {
+				attrs['data-' + k] = data[k];
+			}
 			node.coedType = "root";
 			prepareDom(node);
-			for (var k in attrs) data[k] = attrs[k];
-			return data;
+			return attrs;
 		};
 		return ret;
 	}});
