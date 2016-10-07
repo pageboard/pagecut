@@ -197,15 +197,15 @@ function getRootType(component, dom) {
 
 	Object.defineProperty(RootType.prototype, "toDOM", { get: function() {
 		return function(node) {
-			var domNode;
-			if (component.alt && component.output) {
-				return component.output(node.attrs, collectContent({}, node));
-			}
 			var data = {};
 			for (var k in node.attrs) {
 				if (k.indexOf('data-') == 0) {
 					data[k.substring(5)] = node.attrs[k];
 				}
+			}
+			var domNode;
+			if (component.alt && component.output) {
+				return component.output(data, collectContent({}, node));
 			}
 			domNode = component.to(data);
 			prepareDom(domNode, node);
