@@ -212,9 +212,8 @@ CoLink.prototype.input = function(node) {
 			pm.tr.delete(begin, end).apply();
 			return;
 		}
-		var dom = me.to(props, {
-			title: props.title
-		});
+		var dom = me.to(props);
+		dom.querySelector('[content-name="title"]').innerHTML = props.title;
 
 		pm.tr.replaceWith(begin, end, parseDom(dom)).apply();
 	});
