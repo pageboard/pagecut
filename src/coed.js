@@ -85,19 +85,25 @@ function Editor(config) {
 	});
 }
 
-Editor.prototype.set = function(dom) {
+Editor.prototype.set = function(dom, fn) {
+	if (fn) this.opts.components.forEach(function(component) {
+		component.setfn = fn;
+	});
 	this.pm.setDoc(this.pm.schema.parseDOM(dom));
+	if (fn) this.opts.components.forEach(function(component) {
+		delete component.setfn;
+	});
 };
 
-Editor.prototype.get = function() {
+Editor.prototype.get = function(fn) {
 	this.opts.components.forEach(function(component) {
-		component.alt = true;
+		component.getfn = fn || true;
 	});
-	var alt = this.pm.doc.content.toDOM();
+	var dom = this.pm.doc.content.toDOM();
 	this.opts.components.forEach(function(component) {
-		component.alt = false;
+		delete component.getfn;
 	});
-	return alt;
+	return dom;
 };
 
 Editor.prototype.replace = function(stuff) {
@@ -197,36 +203,54 @@ function getRootType(component, dom) {
 
 	Object.defineProperty(RootType.prototype, "toDOM", { get: function() {
 		return function(node) {
-			var data = {};
-			for (var k in node.attrs) {
-				if (k.indexOf('data-') == 0) {
-					data[k.substring(5)] = node.attrs[k];
+			var dom, ex;
+			if (component.getfn) {
+				ex = exportNode(node, true);
+				if (component.getfn !== true) {
+					dom = component.getfn(component, ex.data, ex.content);
 				}
+				if (dom == null && component.output) {
+					dom = component.output(ex.data, ex.content);
+				}
+				return dom;
+			} else {
+				ex = exportNode(node);
+				dom = component.to(ex.data);
+				prepareDom(dom);
+				return [dom.nodeName, nodeAttrs(dom), 0];
 			}
-			var domNode;
-			if (component.alt && component.output) {
-				return component.output(data, collectContent({}, node));
-			}
-			domNode = component.to(data);
-			prepareDom(domNode, node);
-			return [domNode.nodeName, nodeAttrs(domNode), 0];
 		};
 	}});
 
 	Object.defineProperty(RootType.prototype, "matchDOMTag", { get: function() {
 		var ret = {};
-		ret[defaultAttrs.tag.default] = function(node) {
-			var attrs = tagAttrs(node);
-			var data = component.from(node);
+		ret[defaultAttrs.tag.default] = function(dom) {
+			var attrs = tagAttrs(dom);
+			var data;
+			if (component.setfn) data = component.setfn(component, dom);
+			if (data == null) data = component.from(dom);
 			for (var k in data) {
 				attrs['data-' + k] = data[k];
 			}
-			node.coedType = "root";
-			prepareDom(node);
+			dom.coedType = "root";
+			prepareDom(dom);
 			return attrs;
 		};
 		return ret;
 	}});
+
+	function exportNode(node, content) {
+		var data = {};
+		for (var k in node.attrs) {
+			if (k.indexOf('data-') == 0) {
+				data[k.substring(5)] = node.attrs[k];
+			}
+		}
+		return {
+			data: data,
+			content: content ? collectContent(node) : null
+		};
+	}
 
 	function prepareDom(dom) {
 		var name;
@@ -245,12 +269,14 @@ function getRootType(component, dom) {
 		}
 	}
 
-	function collectContent(content, node) {
-		if (node.type.coedType == "content") {
-			content[node.attrs.content_name] = node.toDOM().innerHTML;
-		} else {
+	function collectContent(node, content) {
+		var type = node.type.coedType;
+		if (type == "content") {
+			content[node.attrs.content_name] = node.toDOM();
+		} else if (type != "root" || !content) {
+			if (!content) content = {};
 			node.forEach(function(child) {
-				collectContent(content, child);
+				collectContent(child, content);
 			});
 		}
 		return content;

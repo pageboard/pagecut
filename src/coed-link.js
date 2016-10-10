@@ -105,7 +105,7 @@ CoLink.prototype.parseSize = function(obj, s) {
 	if (/^\d+KB$/.test(s)) obj.size = parseInt(s) * 1000;
 };
 
-CoLink.prototype.to = function(data, content) {
+CoLink.prototype.to = function(data) {
 	var me = this;
 	var node = document.createElement('co-link');
 	node.innerHTML = '<header><a name="type"></a><a title="" target="_blank"></a><a name="preview"></a></header><div>\
@@ -135,10 +135,6 @@ CoLink.prototype.to = function(data, content) {
 	node.querySelector('aside > div > p').innerHTML = data.description || "";
 
 	me.fill(node.querySelector('aside > div > div'), obj);
-
-	if (content) Object.keys(content).forEach(function(name) {
-		node.querySelector('[content-name="'+name+'"]').innerHTML = content[name];
-	});
 
 	return node;
 };
@@ -226,9 +222,8 @@ CoLink.prototype.input = function(node) {
 	var loadingNode = me.to({
 		type: "none",
 		id: loadingId
-	}, {
-		title: info.title
 	});
+	loadingNode.querySelector('[content-name="title"]').innerHTML = info.title;
 
 	return parseDom(loadingNode);
 }
@@ -238,7 +233,7 @@ CoLink.prototype.output = function(data, content) {
 		var anchor = document.createElement('a');
 		anchor.href = data.url;
 		anchor.setAttribute('title', content.title);
-		anchor.innerHTML = content.content;
+		anchor.innerHTML = content.content.innerHTML;
 		return anchor;
 	} else if (data.html) {
 		var div = document.createElement('div');

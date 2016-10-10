@@ -52,10 +52,13 @@ Methods
 - new Coed.Editor(opts)  
   returns an editor instance,
   options are documented below in Defaults section.
-- coed.set(dom)  
-  sets editor content DOM.
-- coed.get()  
+- coed.set(dom, fn)  
+  sets editor content DOM.  
+  Optional fn(component, dom) can override `component.from` by returning block data.
+- coed.get(fn)  
   gets editor content DOM.
+  Optional fn(component, data, content) can override `component.output` by
+  returning a dom node.
 
 - coed.replace(str or dom node)  
   replace current selection with typed string or dom node.
@@ -116,16 +119,16 @@ template's root DOM node `class` attribute and its initial default value.
   called after pm initialization. Optional.
 - from(dom)  
   returns block's data from a given DOM Node for edition.
-- to(data, content?)  
-  returns DOM for edition from a block's data, optionally with some content.
+- to(data)  
+  returns DOM for edition from a block's data.  
   Nodes with editable content must have a `content-name` attribute.
 - input(dom)  
-  returns block's data from input DOM, and adds `content-name` attributes to that
-  input DOM. Optional.
-- output(data, content?)  
-  returns DOM for publication from block's data, optionally with some content.
-  If defined, `pm.output()` calls this method instead of `to`.
-
+  returns block's data from input DOM, and sets `content-name` attributes on
+  inner content nodes that must be parsed.  
+  Optional.
+- output(data, content)  
+  returns DOM for publication from block's data and content.  
+  Here `content[name]` is the node having the `content-name` attribute.
 
 A selected component gets a "focused" class.
 
