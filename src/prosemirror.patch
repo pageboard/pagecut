@@ -1,41 +1,30 @@
-# diff -u node_modules/prosemirror/dist/edit/draw.js node_modules.new/prosemirror/dist/edit/draw.js > src/prosemirror.patch
---- node_modules/prosemirror/dist/edit/draw.js	2016-09-12 12:04:09.000000000 +0200
-+++ node_modules.new/prosemirror/dist/edit/draw.js	2016-09-21 12:42:41.561146051 +0200
-@@ -24,7 +24,7 @@
-         if (offset != null) dom.setAttribute("pm-offset", offset);
-         dom.setAttribute("pm-size", node.nodeSize);
-         if (node.isTextblock) adjustTrailingHacks(dom, node);
--        if (dom.contentEditable == "false") dom = elt("div", null, dom);
-+        if (node.type && node.type.readonly) dom.setAttribute("contenteditable", "false");
+diff -Nur node_modules/prosemirror-view/dist/draw.js node_modules.new/prosemirror-view/dist/draw.js
+--- node_modules/prosemirror-view/dist/draw.js	2016-10-04 08:43:12.000000000 +0200
++++ node_modules.new/prosemirror-view/dist/draw.js	2016-10-11 16:11:32.507132476 +0200
+@@ -23,11 +23,7 @@
+         dom.setAttribute("pm-size", node.nodeSize)
+         if (node.isTextblock)
+           { adjustTrailingHacks(serializer, dom, node) }
+-        if (dom.contentEditable == "false") {
+-          var wrap = document.createElement("div")
+-          wrap.appendChild(dom)
+-          dom = wrap
+-        }
++        if (node.type && node.type.spec.readonly) dom.setAttribute("contenteditable", "false");
        }
-
-       return dom;
-@@ -195,4 +195,4 @@
-     window.getComputedStyle(dom).listStyle;
-     dom.style.cssText = oldCSS;
+ 
+       return dom
+diff -Nur node_modules/prosemirror-view/dist/selection.js node_modules.new/prosemirror-view/dist/selection.js
+--- node_modules/prosemirror-view/dist/selection.js	2016-10-04 08:43:12.000000000 +0200
++++ node_modules.new/prosemirror-view/dist/selection.js	2016-10-11 17:51:45.631291127 +0200
+@@ -103,9 +103,8 @@
+ 
+ function selectionToDOM(view, sel, takeFocus) {
+   if (!view.hasFocus()) {
+-    if (!takeFocus) { return }
+     // See https://bugzilla.mozilla.org/show_bug.cgi?id=921444
+-    else if (browser.gecko) { this.view.content.focus() }
++    if (takeFocus && browser.gecko) { this.view.content.focus() }
    }
--}
-\ Pas de fin de ligne à la fin du fichier
-+}
-
---- node_modules/prosemirror/dist/edit/selection.js	2016-09-12 12:04:11.000000000 +0200
-+++ node_modules.new/prosemirror/dist/edit/selection.js	2016-09-22 11:57:20.468350830 +0200
-@@ -146,9 +146,7 @@
-     key: "toDOM",
-     value: function toDOM(takeFocus) {
-       if (!hasFocus(this.pm)) {
--        if (!takeFocus) return;
--        // See https://bugzilla.mozilla.org/show_bug.cgi?id=921444
--        else if (browser.gecko) this.pm.content.focus();
-+        if (takeFocus && browser.gecko) this.pm.content.focus();
-       }
-       if (this.range instanceof NodeSelection) this.nodeToDOM();else this.rangeToDOM();
-     }
-@@ -569,4 +567,4 @@
-   }
-   return true;
- }
--exports.verticalMotionLeavesTextblock = verticalMotionLeavesTextblock;
-\ Pas de fin de ligne à la fin du fichier
-+exports.verticalMotionLeavesTextblock = verticalMotionLeavesTextblock;
-
+ 
+   if (sel instanceof NodeSelection)
