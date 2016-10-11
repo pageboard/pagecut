@@ -1,6 +1,5 @@
 BROWSERIFY = $(shell node -p 'require.resolve("browserify/bin/cmd.js")')
 BUNDLEDOM = $(shell node -p 'require.resolve("bundledom/bin/bundledom.js")')
-PROSEMIRROR = $(shell node -p 'require("path").resolve(require.resolve("prosemirror") + "/../..")')
 FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
@@ -13,11 +12,11 @@ clean:
 	rm -f dist/*
 
 dist/coed-link.js: src/coed-link.js
-	$(BROWSERIFY) --standalone Coed.Link --outfile $@ -t [ babelify --presets [ es2015 ] ] src/coed-link.js
+	$(BROWSERIFY) --standalone Coed.Link --outfile $@ src/coed-link.js
 
-dist/coed.js: src/*.js $(PROSEMIRROR)/**/*.js src/utils/*
 	-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
-	$(BROWSERIFY) --standalone Coed --outfile $@ -t [ babelify --presets [ es2015 ] ] src/coed.js
+dist/coed.js: src/*.js src/utils/*
+	$(BROWSERIFY) --standalone Coed --outfile $@ src/coed.js
 
 fontopen:
 	@if test ! `which curl` ; then \
