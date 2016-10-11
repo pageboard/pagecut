@@ -14,8 +14,8 @@ clean:
 dist/coed-link.js: src/coed-link.js
 	$(BROWSERIFY) --standalone Coed.Link --outfile $@ src/coed-link.js
 
-	-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
 dist/coed.js: src/*.js src/utils/*
+	-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
 	$(BROWSERIFY) --standalone Coed --outfile $@ src/coed.js
 
 fontopen:
