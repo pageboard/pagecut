@@ -25,14 +25,21 @@
     "url": "https://github.com/kapouer/coed/issues"
   },
   "homepage": "https://github.com/kapouer/coed#readme",
-  "dependencies": {
-    "babel-preset-es2015": "^6.13.2",
-    "bundledom": "^1.5.0",
-    "prosemirror": "^0.10.1",
-    "url-regex": "^3.2.0"
-  },
   "devDependencies": {
-    "babelify": "^7.3.0",
-    "browserify": "^13.1.0"
+    "browserify": "^13.1.0",
+    "bundledom": "^1.5.0",
+    "prosemirror-commands": "^0.11.2",
+    "prosemirror-example-setup": "^0.11.1",
+    "prosemirror-history": "^0.11.1",
+    "prosemirror-inputrules": "^0.11.1",
+    "prosemirror-keymap": "^0.11.1",
+    "prosemirror-menu": "^0.11.1",
+    "prosemirror-schema-basic": "^0.11.1",
+    "prosemirror-schema-list": "^0.11.1",
+    "prosemirror-schema-table": "^0.11.1",
+    "prosemirror-state": "^0.11.1",
+    "prosemirror-transform": "^0.11.1",
+    "prosemirror-view": "^0.11.2",
+    "url-regex": "^3.2.0"
   }
 }
