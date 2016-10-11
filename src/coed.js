@@ -268,6 +268,8 @@ function createHoldSpec(component, dom) {
 
 	return {
 		coedType: "hold",
+		selectable: false,
+		readonly: true,
 		attrs: defaultAttrs,
 		parseDOM: [{ tag: sel, getAttrs: function(dom) {
 			if (dom.coedType != "hold") return false;
