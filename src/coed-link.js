@@ -24,17 +24,17 @@ function CoLink(options) {
 	if (options.inspector) this.inspector = options.inspector;
 }
 
-CoLink.prototype.init = function(pm) {
-	this.pm = pm;
-	pm.content.addEventListener('click', function(e) {
-		var target = e.target;
-		var root = target.closest('co-link');
-		if (!root) return;
-		if (!target.closest('[name="preview"]')) return;
-		e.preventDefault();
-		var data = this.from(root);
-		console.log("will preview", data);
-	}.bind(this));
+CoLink.prototype.init = function(coed) {
+	this.coed = coed;
+	// coed.view.content.addEventListener('click', function(e) {
+	// 	var target = e.target;
+	// 	var root = target.closest('co-link');
+	// 	if (!root) return;
+	// 	if (!target.closest('[name="preview"]')) return;
+	// 	e.preventDefault();
+	// 	var data = this.from(root);
+	// 	console.log("will preview", data);
+	// }.bind(this));
 };
 
 CoLink.prototype.inspector = function(info, cb) {
@@ -176,7 +176,7 @@ CoLink.prototype.from = function(node) {
 
 CoLink.prototype.input = function(node) {
 	var me = this;
-	var pm = this.pm;
+	var coed = this.coed;
 
 	var loadingId = 'id-colink-' + Date.now();
 
@@ -190,10 +190,15 @@ CoLink.prototype.input = function(node) {
 		info.fragment = node;
 	}
 
-	function parseDom(node) {
+	function parseDom(schema, node) {
+		var schemaSpec = { nodes: Object.assign({}, schema.nodeSpec) };
+		schemaSpec.nodes.doc = Object.assign({}, schema.nodeSpec.doc);
+		schemaSpec.nodes.doc.content = "root_link";
+
 		var div = document.createElement("div");
 		div.appendChild(node);
-		var newNode = pm.schema.parseDOM(div);
+
+		var newNode = coed.model.DOMParser.fromSchema(new coed.model.Schema(schemaSpec)).parse(dom);
 		return newNode.firstChild;
 	}
 
@@ -202,20 +207,27 @@ CoLink.prototype.input = function(node) {
 		if (!oldnode) {
 			return;
 		}
-		var pos = pm.posFromDOM(oldnode);
+		var state = coed.view.state;
+		var pos = coed.posFromDOM(oldnode);
 		var begin = pos.pos;
-		var $pos = pm.doc.resolve(begin);
+		var $pos = state.doc.resolve(begin);
 		var end = begin + $pos.nodeAfter.nodeSize;
+		var Transform = coed.transform.Transform;
 
 		if (err) {
 			console.error(err);
-			pm.tr.delete(begin, end).apply();
+			state.applyAction({
+				type: "transform",
+				transform: new Transform(state.doc).delete(begin, end)
+			});
 			return;
 		}
 		var dom = me.to(props);
 		dom.querySelector('[content-name="title"]').innerHTML = props.title;
-
-		pm.tr.replaceWith(begin, end, parseDom(dom)).apply();
+		state.applyAction({
+			type: "transform",
+			transform: new Transform(state.doc).replaceWith(begin, end, parseDom(state, dom))
+		});
 	});
 
 	var loadingNode = me.to({
@@ -224,14 +236,14 @@ CoLink.prototype.input = function(node) {
 	});
 	loadingNode.querySelector('[content-name="title"]').innerHTML = info.title;
 
-	return parseDom(loadingNode);
+	return parseDom(state, loadingNode);
 }
 
 CoLink.prototype.output = function(data, content) {
 	if (data.type == "link") {
 		var anchor = document.createElement('a');
 		anchor.href = data.url;
-		anchor.setAttribute('title', content.title);
+		anchor.setAttribute('title', content.title.innerHTML);
 		anchor.innerHTML = content.content.innerHTML;
 		return anchor;
 	} else if (data.html) {

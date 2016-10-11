@@ -1,88 +1,104 @@
-const {Plugin, NodeSelection, TextSelection, commands, Keymap} = require("prosemirror/dist/edit");
-const {posFromDOM, DOMFromPos} = require("prosemirror/dist/edit/dompos");
+var State = require("prosemirror-state");
+var Model = require("prosemirror-model");
+var keymap = require("prosemirror-keymap").keymap;
+var Commands = require("prosemirror-commands");
+var dompos = require("prosemirror-view/dist/dompos");
 
-function CoedPlugin(pm, options) {
-	this.pm = pm;
-	pm.posFromDOM = posFromDOM;
+function CreateCoedPlugin(coed, options) {
+	var coedHandler = new CoedHandler(coed, options);
+	return new State.Plugin({
+		props: {
+			handleClick: coedHandler.click,
+			handleDOMEvent: coedHandler.event
+		},
+		stateFields: {
+			coed: {
+				init: function(config, state) {
+					return {};
+				},
+				applyAction: coedHandler.change
+			}
+		}
+	});
+}
 
-	this.dragStart = this.dragStart.bind(this);
-	this.dragStop = this.dragStop.bind(this);
+function CoedHandler(coed, options) {
+	this.coed = coed;
+	coed.posFromDOM = dompos.posFromDOM;
+
+	this.event = this.event.bind(this);
 	this.change = this.change.bind(this);
 	this.click = this.click.bind(this);
 
-	pm.on.selectionChange.add(this.change);
-	pm.on.click.add(this.click);
-
-	pm.content.addEventListener("mousedown", this.dragStart, true);
-	pm.content.addEventListener("mouseup", this.dragStop);
-
 	this.command = this.command.bind(this);
 
-	pm.addKeymap(new Keymap({
+	options.plugins.unshift(keymap({
 		Enter: this.command
-	}, {
-		name: "DoubleBreak"
-	}, 0), -1);
+	}));
 }
 
-CoedPlugin.prototype.command = function(pm) {
-	var bef = pm.selection.$to.nodeBefore;
-	var aft = pm.selection.$from.nodeAfter;
+CoedHandler.prototype.command = function(state, onAction, view) {
+	var sel = state.selection;
+	var bef = sel.$to.nodeBefore;
+	var aft = sel.$from.nodeAfter;
 
-	if (pm.selection.empty && (!bef || !aft)) {
-		var fam = nodeParents(pm.selection.$to);
+	if (sel.empty && (!bef || !aft)) {
+		var fam = nodeParents(sel.$to);
 		if (fam.pos.root != null) {
 			var npos = fam.pos.root + (bef ? fam.node.root.nodeSize : 0);
-			var rpos = pm.doc.resolve(npos);
+			var rpos = state.doc.resolve(npos);
 			if (!bef) {
 				if (rpos.nodeBefore && rpos.nodeBefore.isTextblock) return true;
 			}
 			if (!aft) {
 				if (rpos.nodeAfter && rpos.nodeAfter.isTextblock) return true;
 			}
-			pm.tr.insertText(npos, "\n").apply();
+			state.applyAction(
+				state.tr.insertText("\n", npos).action()
+			);
 			return true;
 		}
 	}
 
 	if (bef && bef.type.name == "hard_break") {
-		commands.deleteCharBefore(pm, true);
-		commands.splitBlock(pm, true);
+		Commands.deleteCharBefore(state);
+		Commands.splitBlock(state);
 		return true;
 	} else {
 		// if at start of a coed content or wrap node, move selection before parent root node
 		// if at end of ....., move selection after parent root node
-		pm.tr.replaceSelection(pm.schema.nodes.hard_break.create()).applyAndScroll();
+		state.applyAction(
+			state.tr.replaceSelection(state.schema.nodes.hard_break.create()).scrollAction()
+		);
 		return true;
 	}
 	return true;
 };
 
-CoedPlugin.prototype.click = function(pos, e) {
-	var cpos = nodeParents(this.pm.doc.resolve(pos)).pos;
-	this.focus(cpos.root);
-};
-
-CoedPlugin.prototype.detach = function(pm) {
-	if (pm.content) {
-		pm.content.removeEventListener("mousedown", this.dragStart, true);
-		pm.content.removeEventListener("mouseup", this.dragStop);
+CoedHandler.prototype.event = function(view, e) {
+	if (e.type == "mousedown") {
+		this.dragStart(view, e);
+	} else if (e.type == "mouseup") {
+		this.dragStop(view, e);
 	}
-	pm.on.selectionChange.remove(this.change);
-	pm.on.click.remove(this.click);
-	pm.removeKeymap("DoubleBreak");
 };
 
-CoedPlugin.prototype.change = function() {
+CoedHandler.prototype.click = function(view, pos, e) {
+	var cpos = nodeParents(view.state.doc.resolve(pos)).pos;
+	this.focus(view, cpos.root);
+};
+
+CoedHandler.prototype.change = function(state, action) {
+	if (action.type != "selection") return;
 	if (this.dragging) return;
-	var sel = this.pm.selection;
+	var sel = action.selection;
 	if (!sel.empty) return;
 	var cpos = nodeParents(sel.$from).pos;
-	this.focus(cpos.root);
+	this.focus(this.coed.view, cpos.root);
 };
 
-CoedPlugin.prototype.focus = function(pos) {
-	var dom = posToNode(this.pm, pos);
+CoedHandler.prototype.focus = function(view, pos) {
+	var dom = posToNode(view, pos);
 	if (this.focused && this.focused != dom && dom !== false) {
 		var fparent = this.focused;
 		while (fparent && fparent.nodeType == Node.ELEMENT_NODE) {
@@ -101,7 +117,7 @@ CoedPlugin.prototype.focus = function(pos) {
 	}
 };
 
-CoedPlugin.prototype.dragStart = function(e) {
+CoedHandler.prototype.dragStart = function(view, e) {
 	this.dragging = true;
 	var dom = e.target;
 	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
@@ -109,15 +125,17 @@ CoedPlugin.prototype.dragStart = function(e) {
 	try { pos = posFromDOM(dom); } catch(ex) {
 		return;
 	}
-	var cpos = nodeParents(this.pm.doc.resolve(pos.pos)).pos;
+	var cpos = nodeParents(view.state.doc.resolve(pos.pos)).pos;
 	if (cpos.root == null || cpos.content != null || cpos.wrap != null) {
 		return;
 	}
 	e.target.draggable = false;
 
-	this.pm.setNodeSelection(cpos.root);
+	var $root = view.state.doc.resolve(cpos.root);
 
-	var dom = posToNode(this.pm, cpos.root);
+	view.state.applyAction(new State.NodeSelection($root).action());
+
+	var dom = posToNode(view, cpos.root);
 	if (dom) dom = dom.querySelector('*'); // select first child element
 	if (dom) {
 		dom.draggable = true;
@@ -125,7 +143,7 @@ CoedPlugin.prototype.dragStart = function(e) {
 	}
 };
 
-CoedPlugin.prototype.dragStop = function(e) {
+CoedHandler.prototype.dragStop = function(view, e) {
 	if (this.dragging) {
 		this.dragging = false;
 		if (this.dragTarget) {
@@ -140,7 +158,7 @@ function nodeParents(rpos) {
 	var obj = {pos: {}, node: {}};
 	while (level >= 0) {
 		node = rpos.node(level);
-		type = node.type && node.type.coedType;
+		type = node.type && node.type.spec.coedType;
 		if (type) {
 			obj.pos[type] = rpos.before(level);
 			obj.node[type] = node;
@@ -151,10 +169,10 @@ function nodeParents(rpos) {
 	return obj;
 }
 
-function posToNode(pm, pos) {
+function posToNode(view, pos) {
 	if (!pos) return;
 	try {
-		var fromPos = DOMFromPos(pm, pos);
+		var fromPos = dompos.DOMFromPos(view, pos);
 		if (fromPos) {
 			var dom = fromPos.node;
 			var offset = fromPos.offset;
@@ -175,7 +193,7 @@ function isParentOf(parent, node) {
 	return false;
 }
 
-module.exports = new Plugin(CoedPlugin);
+module.exports = CreateCoedPlugin;
 
 
 

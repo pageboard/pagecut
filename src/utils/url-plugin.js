@@ -1,24 +1,27 @@
-const {Plugin} = require("prosemirror/dist/edit");
-const {Slice, Fragment} = require("prosemirror/dist/model");
+var state = require("prosemirror-state");
+var model = require("prosemirror-model");
 
-const UrlRegex = require('url-regex');
+var UrlRegex = require('url-regex');
 
-function UrlPlugin(pm, options) {
-	this.components = options.components;
-	this.pm = pm;
-	this.filter = this.filter.bind(this);
-	pm.on.transformPasted.add(this.filter);
+function CreateUrlPlugin(options) {
+	var urlHandler = new UrlHandler(options);
+	return new state.Plugin({
+		props: {
+			transformPasted: urlHandler.filter
+		}
+	});
 }
 
-UrlPlugin.prototype.detach = function(pm) {
-	pm.on.transformPasted.remove(this.filter);
+function UrlHandler(options) {
+	this.components = options.components;
+	this.filter = this.filter.bind(this);
+}
+
+UrlHandler.prototype.filter = function(slice) {
+	return new model.Slice(this.transform(slice.content), slice.openLeft, slice.openRight);
 };
 
-UrlPlugin.prototype.filter = function(slice) {
-	return new Slice(this.transform(slice.content), slice.openLeft, slice.openRight);
-};
-
-UrlPlugin.prototype.transform = function(fragment) {
+UrlHandler.prototype.transform = function(fragment) {
 	var linkified = [];
 	var urlReg = UrlRegex();
 	for (var i = 0; i < fragment.childCount; i++) {
@@ -61,7 +64,7 @@ UrlPlugin.prototype.transform = function(fragment) {
 			linkified.push(child.copy(this.transform(child.content)));
 		}
 	}
-	return Fragment.fromArray(linkified);
+	return model.Fragment.fromArray(linkified);
 };
 
 function hasOnlyChildElements(fragment) {
@@ -107,5 +110,5 @@ function asForeignFragment(str) {
 	return fragment;
 }
 
-module.exports = new Plugin(UrlPlugin);
+module.exports = CreateUrlPlugin;
 

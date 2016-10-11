@@ -1,47 +1,30 @@
-const {ProseMirror} = require("prosemirror/dist/edit");
-const {Schema, Block, Inline, Attribute} = require("prosemirror/dist/model");
-const inherits = require('./utils/inherits');
-const basicSchema = require("prosemirror/dist/schema-basic");
-const tableSchema = require("prosemirror/dist/schema-table");
-const {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup");
-const {menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
 
-const UrlPlugin = require("./utils/url-plugin");
+var EditorState = require("prosemirror-state").EditorState;
+var EditorView = require("prosemirror-view").EditorView;
+var basicSchema = require("prosemirror-schema-basic").schema;
 
-const CoedPlugin = require("./plugin");
+//var listSchema = require("prosemirror-schema-list").schema;
+//var tableSchema = require("prosemirror-schema-table").schema;
 
-let schemaSpec = {
-	nodes: {
-		doc: {type: basicSchema.Doc, content: "block+"},
+var model = require("prosemirror-model");
+var transform = require("prosemirror-transform");
 
-		paragraph: { type: basicSchema.Paragraph, content: "inline<_>*", group: "block" },
-		blockquote: { type: basicSchema.BlockQuote, content: "block+", group: "block" },
-		ordered_list: { type: basicSchema.OrderedList, content: "list_item+", group: "block" },
-		bullet_list: { type: basicSchema.BulletList, content: "list_item+", group: "block" },
-		horizontal_rule: { type: basicSchema.HorizontalRule, group: "block" },
-		heading: { type: basicSchema.Heading, content: "inline<_>*", group: "block" },
-		code_block: { type: basicSchema.CodeBlock, content: "text*", group: "block" },
+// var {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup");
+// var {menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
 
-		list_item: { type: basicSchema.ListItem, content: "paragraph block*" },
+var CreateUrlPlugin = require("./utils/url-plugin");
 
-		table: { type: tableSchema.Table, content: "table_row[columns=.columns]+", group: "block" },
-		table_row: { type: tableSchema.TableRow, content: "table_cell{.columns}" },
-		table_cell: { type: tableSchema.TableCell, content: "inline<_>*" },
+var CreateCoedPlugin = require("./plugin");
 
-		text: {type: basicSchema.Text, group: "inline"},
-		hard_break: {type: basicSchema.HardBreak, group: "inline"}
-	},
-	marks: {
-		strong: basicSchema.StrongMark,
-		em: basicSchema.EmMark
-	}
+var schemaSpec = {
+	nodes: basicSchema.nodeSpec,
+	marks: basicSchema.markSpec
 };
 
 exports.defaults = {
 	spec: schemaSpec,
-	types: Object.assign({}, basicSchema, tableSchema),
 	plugins: [
-		exampleSetup.config({menuBar: false, tooltipMenu: false})
+		// exampleSetup.config({menuBar: false, tooltipMenu: false})
 	],
 	components: []
 };
@@ -49,39 +32,56 @@ exports.defaults = {
 exports.Editor = Editor;
 
 function Editor(config) {
+	var me = this;
+	this.transform = transform;
+	this.model = model;
 	var opts = this.opts = Object.assign({}, exports.defaults, config);
 
 	if (!opts.components) opts.components = [];
 
-	opts.plugins.push(UrlPlugin.config(opts));
-	opts.plugins.push(CoedPlugin.config(opts));
-
+	opts.plugins.push(CreateUrlPlugin(opts));
+	opts.plugins.push(CreateCoedPlugin(this, opts));
 	opts.components.forEach(function(component) {
-		initType(opts.spec, component);
+		defineSpec(me, component, opts.spec, component.to({}));
 	});
 
 	if (opts.spec) {
-		opts.schema = new Schema(opts.spec);
+		opts.schema = new model.Schema(opts.spec);
 		delete opts.spec;
+		console.log(opts.schema);
 	}
 
-	let pm = this.pm = new ProseMirror(opts);
+	var domParser = model.DOMParser.fromSchema(opts.schema);
 
-	let menu = buildMenuItems(pm.schema);
-	// keep full menu but remove selectParentNodeItem menu
-	var fullMenu = menu.fullMenu.map(function(arr) {
-		return arr.filter(function(item) {
-			return item != selectParentNodeItem;
-		});
+	var view = this.view = new EditorView(opts.place, {
+		state: EditorState.create({
+			schema: opts.schema,
+			plugins: opts.plugins,
+			doc: domParser.parse(opts.content)
+		}),
+		domParser: domParser,
+		domSerializer: model.DOMSerializer.fromSchema(opts.schema),
+		onAction: function(action) {
+			view.updateState(view.state.applyAction(action));
+			if (opts.updated) opts.updated(action);
+		}
 	});
 
-	menuBar.config({
-		float: true,
-		content: fullMenu
-	}).attach(pm);
+	// var menu = buildMenuItems(view.schema);
+	// keep full menu but remove selectParentNodeItem menu
+	// var fullMenu = menu.fullMenu.map(function(arr) {
+	// 	return arr.filter(function(item) {
+	// 		return item != selectParentNodeItem;
+	// 	});
+	// });
+
+	// menuBar.config({
+	// 	float: true,
+	// 	content: fullMenu
+	// }).attach(pm);
 
 	opts.components.forEach(function(component) {
-		if (component.init) component.init(pm);
+		if (component.init) component.init(me);
 	});
 }
 
@@ -89,7 +89,12 @@ Editor.prototype.set = function(dom, fn) {
 	if (fn) this.opts.components.forEach(function(component) {
 		component.setfn = fn;
 	});
-	this.pm.setDoc(this.pm.schema.parseDOM(dom));
+	var view = this.view;
+	var newDoc = view.props.domParser.parse(dom);
+	console.log("set new doc", newDoc);
+	view.updateState(view.state.reconfigure({
+		doc: newDoc
+	}));
 	if (fn) this.opts.components.forEach(function(component) {
 		delete component.setfn;
 	});
@@ -99,7 +104,8 @@ Editor.prototype.get = function(fn) {
 	this.opts.components.forEach(function(component) {
 		component.getfn = fn || true;
 	});
-	var dom = this.pm.doc.content.toDOM();
+	var view = this.view;
+	var dom = view.props.domSerializer.serializeFragment(view.state.doc.content);
 	this.opts.components.forEach(function(component) {
 		delete component.getfn;
 	});
@@ -107,57 +113,44 @@ Editor.prototype.get = function(fn) {
 };
 
 Editor.prototype.replace = function(stuff) {
+	var tr;
+	var view = this.view;
 	if (typeof stuff == "string") {
-		this.pm.tr.typeText(stuff).applyAndScroll();
+		tr = view.state.tr.insertText(stuff);
 	} else if (stuff instanceof Node) {
-		this.pm.tr.replaceSelection(this.pm.schema.parseDOM(stuff)).applyAndScroll();
+		// TODO the dom parser should be the one created from current parent node content spec
+		tr = view.state.tr.replaceSelection(view.props.domParser.parse(stuff));
 	}
+	view.state.applyAction(tr.scrollAction());
 };
 
 Editor.prototype.delete = function() {
-	this.pm.tr.deleteSelection().applyAndScroll();
+	this.view.state.applyAction(this.view.state.tr.deleteSelection().scrollAction());
 };
 
-Editor.prototype.changed = function(fn) {
-	this.pm.on.change.add(fn);
-};
-
-function initType(spec, component) {
-	defineSpec(component, spec.nodes, component.to({}));
-}
-
-function defineSpec(component, specs, dom) {
+function defineSpec(coed, component, schemaSpecs, dom) {
 	var content = [];
 	var typeName, type;
 	var contentName = dom.getAttribute('content-name');
 	var specName, spec, recursive = false;
 	if (!component.index) {
 		component.index = 1;
-		spec = {
-			group: component.group || "block",
-			type: getRootType(component, dom)
-		};
+		spec = createRootSpec(coed, component, dom);
 		specName = typeName = "root_" + component.name;
 		recursive = true;
 	} else if (contentName) {
-		spec = {
-			type: getContentType(component, dom),
-			content: component.contentSpec[contentName]
-		};
+		spec = createContentSpec(component, dom);
+		spec.content = component.contentSpec[contentName];
 		if (!spec.content) throw new Error("Missing component.contentSpec[" + contentName + "]");
 		typeName = "content_" + component.name + component.index++;
 		specName = typeName + '[content_name="' + contentName + '"]';
 	} else if (dom.querySelector('[content-name]')) {
 		specName = typeName = "wrap_" + component.name + component.index++;
-		spec = {
-			type: getWrapType(component, dom)
-		};
+		spec = createWrapSpec(component, dom);
 		recursive = true;
 	} else {
 		specName = typeName = "hold_" + component.name + component.index++;
-		spec = {
-			type: getHoldType(component, dom)
-		};
+		spec = createHoldSpec(component, dom);
 	}
 
 	var content = [];
@@ -166,65 +159,39 @@ function defineSpec(component, specs, dom) {
 		for (var i=0, child; i < childs.length; i++) {
 			child = childs.item(i);
 			if (child.nodeType != Node.ELEMENT_NODE) continue;
-			content.push(defineSpec(component, specs, child));
+			content.push(defineSpec(coed, component, schemaSpecs, child));
 		}
 		if (content.length) spec.content = content.join(" ");
 	}
 	if (spec) {
-		specs[typeName] = spec;
+		schemaSpecs.nodes = schemaSpecs.nodes.addToEnd(typeName, spec);
 	}
 	return specName;
 }
 
-function getRootType(component, dom) {
+function createRootSpec(coed, component, dom) {
 	var defaultAttrs = specAttrs(Object.assign({id: ""}, tagAttrs(dom)));
 
-	function RootType(name, schema) {
-		Block.call(this, name, schema);
-		this.coedType = 'root'; // used by plugin to detect node types
-	};
-	inherits(RootType, Block);
-
-	Object.defineProperty(RootType.prototype, "attrs", { get: function() {
-		var dataSpec = component.dataSpec, specVal, attOpt;
-		var attrs = {};
-		for (var k in dataSpec) {
-			specVal = dataSpec[k];
-			attOpt = {};
-			if (typeof specVal == "string") {
-				attOpt.default = specVal;
-			} else {
-				attOpt.default = specVal.default || "";
-			}
-			attrs['data-' + k] = new Attribute(attOpt);
-		}
-		return Object.assign({}, defaultAttrs, attrs);
-	}});
-
-	Object.defineProperty(RootType.prototype, "toDOM", { get: function() {
-		return function(node) {
-			var dom, ex;
-			if (component.getfn) {
-				ex = exportNode(node, true);
-				if (component.getfn !== true) {
-					dom = component.getfn(component, ex.data, ex.content);
+	return {
+		coedType: "root",
+		group: component.group || "block",
+		inline: component.inline || false,
+		attrs: (function() {
+			var dataSpec = component.dataSpec, specVal, attOpt;
+			var attrs = {};
+			for (var k in dataSpec) {
+				specVal = dataSpec[k];
+				attOpt = {};
+				if (typeof specVal == "string") {
+					attOpt.default = specVal;
+				} else {
+					attOpt.default = specVal.default || "";
 				}
-				if (dom == null && component.output) {
-					dom = component.output(ex.data, ex.content);
-				}
-				return dom;
-			} else {
-				ex = exportNode(node);
-				dom = component.to(ex.data);
-				prepareDom(dom);
-				return [dom.nodeName, nodeAttrs(dom), 0];
+				attrs['data-' + k] = attOpt;
 			}
-		};
-	}});
-
-	Object.defineProperty(RootType.prototype, "matchDOMTag", { get: function() {
-		var ret = {};
-		ret[defaultAttrs.tag.default] = function(dom) {
+			return Object.assign({}, defaultAttrs, attrs);
+		})(),
+		parseDOM: [{ tag: defaultAttrs.tag.default, getAttrs: function(dom) {
 			var attrs = tagAttrs(dom);
 			var data;
 			if (component.setfn) data = component.setfn(component, dom);
@@ -235,164 +202,130 @@ function getRootType(component, dom) {
 			dom.coedType = "root";
 			prepareDom(dom);
 			return attrs;
-		};
-		return ret;
-	}});
-
-	function exportNode(node, content) {
-		var data = {};
-		for (var k in node.attrs) {
-			if (k.indexOf('data-') == 0) {
-				data[k.substring(5)] = node.attrs[k];
-			}
-		}
-		return {
-			data: data,
-			content: content ? collectContent(node) : null
-		};
-	}
-
-	function prepareDom(dom) {
-		var name;
-		for (var i=0, child; i < dom.childNodes.length; i++) {
-			child = dom.childNodes.item(i);
-			if (child.nodeType != Node.ELEMENT_NODE) continue;
-			name = child.getAttribute('content-name');
-			if (name) {
-				child.coedType = "content";
-			} else if (child.querySelector('[content-name]')) {
-				child.coedType = "wrap";
-				prepareDom(child);
+		}}],
+		toDOM: function(node) {
+			var dom, ex;
+			if (component.getfn) {
+				ex = exportNode(coed.view, node, true);
+				if (component.getfn !== true) {
+					dom = component.getfn(component, ex.data, ex.content);
+				}
+				if (dom == null && component.output) {
+					dom = component.output(ex.data, ex.content);
+				}
+				return dom;
 			} else {
-				child.coedType = "hold";
+				ex = exportNode(coed.view, node);
+				dom = component.to(ex.data);
+				prepareDom(dom);
+				return [dom.nodeName, nodeAttrs(dom), 0];
 			}
 		}
-	}
+	};
+}
 
-	function collectContent(node, content) {
-		var type = node.type.coedType;
-		if (type == "content") {
-			content[node.attrs.content_name] = node.toDOM();
-		} else if (type != "root" || !content) {
-			if (!content) content = {};
-			node.forEach(function(child) {
-				collectContent(child, content);
-			});
+
+function createWrapSpec(component, dom) {
+	var defaultAttrs = specAttrs(tagAttrs(dom));
+
+	return {
+		coedType: "wrap",
+		attrs: defaultAttrs,
+		parseDOM: [{ tag: defaultAttrs.tag.default, getAttrs: function(dom) {
+			if (dom.coedType != "wrap") return false;
+			return tagAttrs(dom);
+		}}],
+		toDOM: function(node) {
+			return [node.attrs.tag, domAttrs(node.attrs), 0];
 		}
-		return content;
-	}
-	return RootType;
+	};
 }
 
-function getWrapType(component, dom) {
+function createContentSpec(component, dom) {
 	var defaultAttrs = specAttrs(tagAttrs(dom));
 
-	function WrapType(name, schema) {
-		Block.call(this, name, schema);
-		this.coedType = 'wrap'; // used by plugin to detect node types
-	};
-	inherits(WrapType, Block);
-
-	Object.defineProperty(WrapType.prototype, "attrs", { get: function() {
-		return defaultAttrs;
-	}});
-
-	Object.defineProperty(WrapType.prototype, "toDOM", { get: function() {
-		return function(node) {
+	return {
+		coedType: "content",
+		attrs: defaultAttrs,
+		parseDOM: [{ tag: defaultAttrs.tag.default + '[content-name]', getAttrs: function(dom) {
+			if (dom.coedType != "content") return false;
+			return tagAttrs(dom);
+		}}],
+		toDOM: function(node) {
 			return [node.attrs.tag, domAttrs(node.attrs), 0];
-		};
-	}});
-
-	Object.defineProperty(WrapType.prototype, "matchDOMTag", { get: function() {
-		var ret = {};
-		ret[defaultAttrs.tag.default] = function(node) {
-			if (node.coedType != "wrap") return false;
-			return tagAttrs(node);
-		};
-		return ret;
-	}});
-	return WrapType;
+		}
+	};
 }
 
-
-function getContentType(component, dom) {
-	var defaultAttrs = specAttrs(tagAttrs(dom));
-
-	function ContentType(name, schema) {
-		Block.call(this, name, schema);
-		this.coedType = 'content'; // used by plugin to detect node types
-	};
-	inherits(ContentType, Block);
-
-	Object.defineProperty(ContentType.prototype, "attrs", { get: function() {
-		return defaultAttrs;
-	}});
-
-	Object.defineProperty(ContentType.prototype, "toDOM", { get: function() {
-		return function(node) {
-			return [node.attrs.tag, domAttrs(node.attrs), 0];
-		};
-	}});
-
-	Object.defineProperty(ContentType.prototype, "matchDOMTag", { get: function() {
-		var ret = {};
-		ret[defaultAttrs.tag.default + '[content-name]'] = function(node) {
-			if (node.coedType != "content") return false;
-			return tagAttrs(node);
-		};
-		return ret;
-	}});
-	return ContentType;
-}
-
-
-function getHoldType(component, dom) {
+function createHoldSpec(component, dom) {
 	var defaultAttrs = specAttrs(Object.assign(tagAttrs(dom), {
 		html: dom.outerHTML
 	}));
 
-	function HoldType(name, schema) {
-		Block.call(this, name, schema);
-		this.coedType = 'hold';
-	};
-	inherits(HoldType, Block);
+	var sel = defaultAttrs.tag.default;
+	var selClass = defaultAttrs.class;
+	if (selClass && selClass.default) sel += "." + selClass.default;
 
-	Object.defineProperty(HoldType.prototype, "selectable", { get: function() {
-		return false;
-	}});
-
-	Object.defineProperty(HoldType.prototype, "readonly", { get: function() {
-		return true;
-	}});
-
-	Object.defineProperty(HoldType.prototype, "attrs", { get: function() {
-		return defaultAttrs;
-	}});
-
-	Object.defineProperty(HoldType.prototype, "toDOM", { get: function() {
-		return function(node) {
+	return {
+		coedType: "hold",
+		attrs: defaultAttrs,
+		parseDOM: [{ tag: sel, getAttrs: function(dom) {
+			if (dom.coedType != "hold") return false;
+			var attrs = tagAttrs(dom);
+			attrs.html = dom.outerHTML;
+			return attrs;
+		}}],
+		toDOM: function(node) {
 			var div = document.createElement("div");
 			div.innerHTML = node.attrs.html;
 			var elem = div.querySelector('*');
-			if (elem == null) return "";
+			if (!elem) throw new Error("Wrong html on HoldType", node, defaultAttrs);
 			return elem;
-		};
-	}});
+		}
+	};
+}
 
-	Object.defineProperty(HoldType.prototype, "matchDOMTag", { get: function() {
-		var ret = {};
-		var sel = defaultAttrs.tag.default;
-		var selClass = defaultAttrs.class;
-		if (selClass && selClass.default) sel += "." + selClass.default;
-		ret[sel] = function(node) {
-			if (node.coedType != "hold") return false;
-			var attrs = tagAttrs(node);
-			attrs.html = node.outerHTML;
-			return attrs;
-		};
-		return ret;
-	}});
-	return HoldType;
+function exportNode(view, node, content) {
+	var data = {};
+	for (var k in node.attrs) {
+		if (k.indexOf('data-') == 0) {
+			data[k.substring(5)] = node.attrs[k];
+		}
+	}
+	return {
+		data: data,
+		content: content ? collectContent(view, node) : null
+	};
+}
+
+function prepareDom(dom) {
+	var name;
+	for (var i=0, child; i < dom.childNodes.length; i++) {
+		child = dom.childNodes.item(i);
+		if (child.nodeType != Node.ELEMENT_NODE) continue;
+		name = child.getAttribute('content-name');
+		if (name) {
+			child.coedType = "content";
+		} else if (child.querySelector('[content-name]')) {
+			child.coedType = "wrap";
+			prepareDom(child);
+		} else {
+			child.coedType = "hold";
+		}
+	}
+}
+
+function collectContent(view, node, content) {
+	var type = node.type.spec.coedType;
+	if (type == "content") {
+		content[node.attrs.content_name] = view.props.domSerializer.serializeNode(node);
+	} else if (type != "root" || !content) {
+		if (!content) content = {};
+		node.forEach(function(child) {
+			collectContent(view, child, content);
+		});
+	}
+	return content;
 }
 
 function domAttrs(attrs) {
@@ -413,9 +346,9 @@ function tagAttrs(dom) {
 function specAttrs(atts) {
 	var obj = {};
 	for (var k in atts) {
-		obj[k] = new Attribute({
+		obj[k] = {
 			'default': atts[k]
-		});
+		};
 	}
 	return obj;
 }
