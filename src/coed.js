@@ -1,25 +1,29 @@
-var setup = require("prosemirror-example-setup");
+var Setup = require("prosemirror-example-setup");
 var State = require("prosemirror-state");
 var Menu = require("prosemirror-menu");
 var EditorView = require("prosemirror-view").EditorView;
-var model = require("prosemirror-model");
-var basicSchema = require("prosemirror-schema-basic").schema;
+var Model = require("prosemirror-model");
 var Input = require("prosemirror-inputrules");
 var keymap = require("prosemirror-keymap").keymap;
 var Commands = require("prosemirror-commands");
 var history = require("prosemirror-history").history;
 
-//var listSchema = require("prosemirror-schema-list").schema;
-//var tableSchema = require("prosemirror-schema-table").schema;
+var baseSchema = require("prosemirror-schema-basic").schema;
+var listSchema = require("prosemirror-schema-list");
+// var tableSchema = require("prosemirror-schema-table");
 
 
 var CreateUrlPlugin = require("./utils/url-plugin");
 
 var CreateCoedPlugin = require("./plugin");
 
+var nodesSpec = baseSchema.nodeSpec;
+nodesSpec = listSchema.addListNodes(nodesSpec, "paragraph block*", "block");
+// nodesSpec = tableSchema.addTableNodes(nodesSpec, "inline<_>*", "block");
+
 var schemaSpec = {
-	nodes: basicSchema.nodeSpec,
-	marks: basicSchema.markSpec
+	nodes: nodesSpec,
+	marks: baseSchema.markSpec
 };
 
 exports.defaults = {
@@ -29,24 +33,22 @@ exports.defaults = {
 	buildMenu: defaultBuildMenu
 };
 
-exports.Setup = Setup;
-
 exports.Editor = Editor;
 
 function defaultBuildMenu(Menu, Commands, items) {
 	return items.fullMenu;
 }
 
-function Setup(options) {
+function CreateSetupPlugin(options) {
 	var deps = [
 		Input.inputRules({
-			rules: Input.allInputRules.concat(setup.buildInputRules(options.schema))
+			rules: Input.allInputRules.concat(Setup.buildInputRules(options.schema))
 		}),
-		keymap(setup.buildKeymap(options.schema, options.mapKeys)),
+		keymap(Setup.buildKeymap(options.schema, options.mapKeys)),
 		keymap(Commands.baseKeymap)
 	];
 	if (options.history !== false) deps.push(history);
-	var menu = options.buildMenu(Menu, Commands, setup.buildMenuItems(options.schema));
+	var menu = options.buildMenu(Menu, Commands, Setup.buildMenuItems(options.schema));
 
 	return new State.Plugin({
 		props: {
@@ -62,7 +64,7 @@ function Setup(options) {
 
 function Editor(config) {
 	var me = this;
-	this.model = model;
+	this.model = Model;
 	var opts = this.opts = Object.assign({}, exports.defaults, config);
 
 	if (!opts.components) opts.components = [];
@@ -74,13 +76,13 @@ function Editor(config) {
 	});
 
 	if (opts.spec) {
-		opts.schema = new model.Schema(opts.spec);
+		opts.schema = new Model.Schema(opts.spec);
 		delete opts.spec;
 	}
-	var setupPlugin = opts.setup ? opts.setup(opts) : Setup(opts);
-	opts.plugins.push(setupPlugin);
 
-	var domParser = model.DOMParser.fromSchema(opts.schema);
+	opts.plugins.push(CreateSetupPlugin(opts));
+
+	var domParser = Model.DOMParser.fromSchema(opts.schema);
 
 	var menuBarView = new Menu.MenuBarEditorView(opts.place, {
 		state: State.EditorState.create({
@@ -89,7 +91,7 @@ function Editor(config) {
 			doc: domParser.parse(opts.content)
 		}),
 		domParser: domParser,
-		domSerializer: model.DOMSerializer.fromSchema(opts.schema),
+		domSerializer: Model.DOMSerializer.fromSchema(opts.schema),
 		onAction: function(action) {
 			view.updateState(view.state.applyAction(action));
 			if (opts.updated) opts.updated(action);
