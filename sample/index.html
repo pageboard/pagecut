@@ -72,6 +72,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	var contentNode = document.getElementById("content");
 	window.coed = new Coed.Editor({
+		buildMenu: function(Menu, Commands, items) {
+			return [[items.toggleStrong, items.toggleEm, items.toggleCode]];
+		},
 		place: document.querySelector("#editor"),
 		content: contentNode,
 		components: [coLink],

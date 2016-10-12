@@ -1,16 +1,17 @@
-var Setup = require("prosemirror-example-setup").exampleSetup;
-var EditorState = require("prosemirror-state").EditorState;
-var MenuBarEditorView = require("prosemirror-menu").MenuBarEditorView;
+var setup = require("prosemirror-example-setup");
+var State = require("prosemirror-state");
+var Menu = require("prosemirror-menu");
 var EditorView = require("prosemirror-view").EditorView;
+var model = require("prosemirror-model");
 var basicSchema = require("prosemirror-schema-basic").schema;
+var Input = require("prosemirror-inputrules");
+var keymap = require("prosemirror-keymap").keymap;
+var Commands = require("prosemirror-commands");
+var history = require("prosemirror-history").history;
 
 //var listSchema = require("prosemirror-schema-list").schema;
 //var tableSchema = require("prosemirror-schema-table").schema;
 
-var model = require("prosemirror-model");
-
-// var {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup");
-// var {menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
 
 var CreateUrlPlugin = require("./utils/url-plugin");
 
@@ -23,13 +24,41 @@ var schemaSpec = {
 
 exports.defaults = {
 	spec: schemaSpec,
-	plugins: [
-		// exampleSetup.config({menuBar: false, tooltipMenu: false})
-	],
-	components: []
+	plugins: [],
+	components: [],
+	buildMenu: defaultBuildMenu
 };
 
+exports.Setup = Setup;
+
 exports.Editor = Editor;
+
+function defaultBuildMenu(Menu, Commands, items) {
+	return items.fullMenu;
+}
+
+function Setup(options) {
+	var deps = [
+		Input.inputRules({
+			rules: Input.allInputRules.concat(setup.buildInputRules(options.schema))
+		}),
+		keymap(setup.buildKeymap(options.schema, options.mapKeys)),
+		keymap(Commands.baseKeymap)
+	];
+	if (options.history !== false) deps.push(history);
+	var menu = options.buildMenu(Menu, Commands, setup.buildMenuItems(options.schema));
+
+	return new State.Plugin({
+		props: {
+			menuContent: menu.map(function(group) { return group.filter(function(x) {
+				// remove undefined items
+				return !!x;
+			}); }),
+			floatingMenu: true
+		},
+		dependencies: deps
+	});
+}
 
 function Editor(config) {
 	var me = this;
@@ -48,16 +77,13 @@ function Editor(config) {
 		opts.schema = new model.Schema(opts.spec);
 		delete opts.spec;
 	}
-
-	opts.plugins.push(Setup({
-		history: true,
-		schema: opts.schema
-	}));
+	var setupPlugin = opts.setup ? opts.setup(opts) : Setup(opts);
+	opts.plugins.push(setupPlugin);
 
 	var domParser = model.DOMParser.fromSchema(opts.schema);
 
-	var menuBarView = new MenuBarEditorView(opts.place, {
-		state: EditorState.create({
+	var menuBarView = new Menu.MenuBarEditorView(opts.place, {
+		state: State.EditorState.create({
 			schema: opts.schema,
 			plugins: opts.plugins,
 			doc: domParser.parse(opts.content)
@@ -70,19 +96,6 @@ function Editor(config) {
 		}
 	});
 	var view = this.view = menuBarView.editor;
-
-	// var menu = buildMenuItems(view.schema);
-	// keep full menu but remove selectParentNodeItem menu
-	// var fullMenu = menu.fullMenu.map(function(arr) {
-	// 	return arr.filter(function(item) {
-	// 		return item != selectParentNodeItem;
-	// 	});
-	// });
-
-	// menuBar.config({
-	// 	float: true,
-	// 	content: fullMenu
-	// }).attach(pm);
 
 	opts.components.forEach(function(component) {
 		if (component.init) component.init(me);
