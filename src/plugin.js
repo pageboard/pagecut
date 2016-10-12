@@ -53,26 +53,21 @@ CoedHandler.prototype.command = function(state, onAction, view) {
 			if (!aft) {
 				if (rpos.nodeAfter && rpos.nodeAfter.isTextblock) return true;
 			}
-			state.applyAction(
-				state.tr.insertText("\n", npos).action()
-			);
+			if (onAction) {
+				onAction(state.tr.insertText("\n", npos).scrollAction());
+			}
 			return true;
 		}
 	}
 
 	if (bef && bef.type.name == "hard_break") {
-		Commands.deleteCharBefore(state);
-		Commands.splitBlock(state);
-		return true;
+		Commands.deleteCharBefore(state, onAction);
+		// just let other plugins split the block properly
+		return false;
 	} else {
-		// if at start of a coed content or wrap node, move selection before parent root node
-		// if at end of ....., move selection after parent root node
-		state.applyAction(
-			state.tr.replaceSelection(state.schema.nodes.hard_break.create()).scrollAction()
-		);
+		onAction(state.tr.replaceSelection(state.schema.nodes.hard_break.create()).scrollAction());
 		return true;
 	}
-	return true;
 };
 
 CoedHandler.prototype.event = function(view, e) {
@@ -122,7 +117,7 @@ CoedHandler.prototype.dragStart = function(view, e) {
 	var dom = e.target;
 	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
 	var pos;
-	try { pos = posFromDOM(dom); } catch(ex) {
+	try { pos = dompos.posFromDOM(dom); } catch(ex) {
 		return;
 	}
 	var cpos = nodeParents(view.state.doc.resolve(pos.pos)).pos;
@@ -133,7 +128,8 @@ CoedHandler.prototype.dragStart = function(view, e) {
 
 	var $root = view.state.doc.resolve(cpos.root);
 
-	view.state.applyAction(new State.NodeSelection($root).action());
+	var action = view.state.tr.setSelection(new State.NodeSelection($root)).action();
+	view.updateState(view.state.applyAction(action));
 
 	var dom = posToNode(view, cpos.root);
 	if (dom) dom = dom.querySelector('*'); // select first child element

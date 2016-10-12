@@ -65,19 +65,18 @@ Methods
 - coed.delete()  
   delete current selection.
 
-- coed.changed(listener)  
-  listen for change events.
 
+Options
+-------
 
-Defaults
---------
+Coed.Editor options.
+- updated: a function called upon update
 
-`Coed.defaults` has some useful references:
-
-- types: the ProseMirror default schema types (basic + table)
+`Coed.defaults` stores some useful default values:
 - spec: a default, mutable, schema spec
 - plugins: array of plugins for ProseMirror
 - components: array of components like Coed-Link
+
 
 
 Blocks
@@ -115,8 +114,8 @@ template's root DOM node `class` attribute and its initial default value.
 
 ### Methods
 
-- init(pm)  
-  called after pm initialization. Optional.
+- init(view)  
+  called after view initialization. Optional.
 - from(dom)  
   returns block's data from a given DOM Node for edition.
 - to(data)  

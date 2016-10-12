@@ -1,5 +1,6 @@
-
+var Setup = require("prosemirror-example-setup").exampleSetup;
 var EditorState = require("prosemirror-state").EditorState;
+var MenuBarEditorView = require("prosemirror-menu").MenuBarEditorView;
 var EditorView = require("prosemirror-view").EditorView;
 var basicSchema = require("prosemirror-schema-basic").schema;
 
@@ -7,7 +8,6 @@ var basicSchema = require("prosemirror-schema-basic").schema;
 //var tableSchema = require("prosemirror-schema-table").schema;
 
 var model = require("prosemirror-model");
-var transform = require("prosemirror-transform");
 
 // var {exampleSetup, buildMenuItems} = require("prosemirror/dist/example-setup");
 // var {menuBar, selectParentNodeItem} = require("prosemirror/dist/menu");
@@ -33,7 +33,6 @@ exports.Editor = Editor;
 
 function Editor(config) {
 	var me = this;
-	this.transform = transform;
 	this.model = model;
 	var opts = this.opts = Object.assign({}, exports.defaults, config);
 
@@ -48,12 +47,16 @@ function Editor(config) {
 	if (opts.spec) {
 		opts.schema = new model.Schema(opts.spec);
 		delete opts.spec;
-		console.log(opts.schema);
 	}
+
+	opts.plugins.push(Setup({
+		history: true,
+		schema: opts.schema
+	}));
 
 	var domParser = model.DOMParser.fromSchema(opts.schema);
 
-	var view = this.view = new EditorView(opts.place, {
+	var menuBarView = new MenuBarEditorView(opts.place, {
 		state: EditorState.create({
 			schema: opts.schema,
 			plugins: opts.plugins,
@@ -66,6 +69,7 @@ function Editor(config) {
 			if (opts.updated) opts.updated(action);
 		}
 	});
+	var view = this.view = menuBarView.editor;
 
 	// var menu = buildMenuItems(view.schema);
 	// keep full menu but remove selectParentNodeItem menu
@@ -91,7 +95,6 @@ Editor.prototype.set = function(dom, fn) {
 	});
 	var view = this.view;
 	var newDoc = view.props.domParser.parse(dom);
-	console.log("set new doc", newDoc);
 	view.updateState(view.state.reconfigure({
 		doc: newDoc
 	}));

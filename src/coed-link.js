@@ -190,15 +190,23 @@ CoLink.prototype.input = function(node) {
 		info.fragment = node;
 	}
 
-	function parseDom(schema, node) {
-		var schemaSpec = { nodes: Object.assign({}, schema.nodeSpec) };
-		schemaSpec.nodes.doc = Object.assign({}, schema.nodeSpec.doc);
-		schemaSpec.nodes.doc.content = "root_link";
-
+	function parseDom(node) {
 		var div = document.createElement("div");
 		div.appendChild(node);
 
-		var newNode = coed.model.DOMParser.fromSchema(new coed.model.Schema(schemaSpec)).parse(dom);
+		var state = coed.view.state;
+		var schemaSpec = {
+			nodes: state.schema.nodeSpec,
+			marks: state.schema.markSpec
+		};
+		var doc = schemaSpec.nodes.get('doc');
+		var oldContent = doc.content;
+		//doc.content = "root_link";
+
+		// var newNode = coed.model.DOMParser.fromSchema(new coed.model.Schema(schemaSpec)).parse(div);
+		var newNode = coed.view.props.domParser.parse(div);
+		//doc.content = oldContent;
+
 		return newNode.firstChild;
 	}
 
@@ -212,31 +220,29 @@ CoLink.prototype.input = function(node) {
 		var begin = pos.pos;
 		var $pos = state.doc.resolve(begin);
 		var end = begin + $pos.nodeAfter.nodeSize;
-		var Transform = coed.transform.Transform;
 
 		if (err) {
 			console.error(err);
-			state.applyAction({
-				type: "transform",
-				transform: new Transform(state.doc).delete(begin, end)
-			});
+			coed.view.updateState(
+				state.applyAction(
+					state.tr.delete(begin, end).action()
+				)
+			);
 			return;
 		}
 		var dom = me.to(props);
 		dom.querySelector('[content-name="title"]').innerHTML = props.title;
-		state.applyAction({
-			type: "transform",
-			transform: new Transform(state.doc).replaceWith(begin, end, parseDom(state, dom))
-		});
+		var action = state.tr.replaceWith(begin, end, parseDom(dom)).action();
+		coed.view.updateState(state.applyAction(action));
 	});
 
 	var loadingNode = me.to({
-		type: "none",
-		id: loadingId
+		type: "none"
 	});
+	loadingNode.setAttribute("id", loadingId);
 	loadingNode.querySelector('[content-name="title"]').innerHTML = info.title;
 
-	return parseDom(state, loadingNode);
+	return parseDom(loadingNode);
 }
 
 CoLink.prototype.output = function(data, content) {

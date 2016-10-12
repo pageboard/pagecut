@@ -3,11 +3,11 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Sample editor</title>
-	<link href="../src/coed.css" rel="stylesheet" />
-	<link href="../src/coed-link.css" rel="stylesheet" />
 	<link href="prosemirror.css" rel="stylesheet" />
 	<link href="prosemirror-setup.css" rel="stylesheet" />
 	<link href="prosemirror-menu.css" rel="stylesheet" />
+	<link href="../src/coed.css" rel="stylesheet" />
+	<link href="../src/coed-link.css" rel="stylesheet" />
 	<script src="../dist/coed.js"></script>
 	<script src="../dist/coed-link.js"></script>
 	<script src="agent.js"></script>
@@ -62,14 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 
-	var coed = new Coed.Editor({
-		place: document.querySelector("#editor"),
-		components: [coLink]
-	});
-	var contentNode = document.getElementById("content");
-	coed.set(contentNode);
-	contentNode.hidden = true;
-
 	var differ = new diffDOM({
 		filterOuterDiff: function(from, to, diffs) {
 			// do not diff inside a rendered co-link, attributes will change anyway
@@ -78,14 +70,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 	});
-
-	coed.changed(function() {
-		var from = document.getElementById('preview');
-		var to = document.createElement('div');
-		to.id = 'preview';
-		to.appendChild(coed.get());
-		differ.apply(from, differ.diff(from, to));
+	var contentNode = document.getElementById("content");
+	window.coed = new Coed.Editor({
+		place: document.querySelector("#editor"),
+		content: contentNode,
+		components: [coLink],
+		updated: function() {
+			var from = document.getElementById('preview');
+			var to = document.createElement('div');
+			to.id = 'preview';
+			to.appendChild(coed.get());
+			differ.apply(from, differ.diff(from, to));
+		}
 	});
+	//
+	// coed.set(contentNode);
+	contentNode.hidden = true;
 });
 	</script>
 </head>
