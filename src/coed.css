@@ -16,7 +16,7 @@
 	position: absolute;
 	font-size: 0.8em;
 	color: black;
-	left: -0.9em;
+	right: 0px;
 	content: '\00b6';
 	opacity: 0.5;
 	top: 0.1em;
