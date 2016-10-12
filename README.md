@@ -76,6 +76,7 @@ Coed.Editor options.
 - spec: a default, mutable, schema spec
 - plugins: array of plugins for ProseMirror
 - components: array of components like Coed-Link
+- buildMenu: function(Menu, Commands, items) { return items.fullMenu; }
 
 
 
