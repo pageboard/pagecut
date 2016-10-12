@@ -72,9 +72,9 @@ CoedHandler.prototype.command = function(state, onAction, view) {
 
 CoedHandler.prototype.event = function(view, e) {
 	if (e.type == "mousedown") {
-		this.dragStart(view, e);
+		return this.mousedown(view, e);
 	} else if (e.type == "mouseup") {
-		this.dragStop(view, e);
+		return this.mouseup(view, e);
 	}
 };
 
@@ -112,7 +112,7 @@ CoedHandler.prototype.focus = function(view, pos) {
 	}
 };
 
-CoedHandler.prototype.dragStart = function(view, e) {
+CoedHandler.prototype.mousedown = function(view, e) {
 	this.dragging = true;
 	var dom = e.target;
 	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
@@ -139,7 +139,7 @@ CoedHandler.prototype.dragStart = function(view, e) {
 	}
 };
 
-CoedHandler.prototype.dragStop = function(view, e) {
+CoedHandler.prototype.mouseup = function(view, e) {
 	if (this.dragging) {
 		this.dragging = false;
 		if (this.dragTarget) {
