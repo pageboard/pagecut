@@ -73,7 +73,7 @@ CoedHandler.prototype.command = function(state, onAction, view) {
 CoedHandler.prototype.event = function(view, e) {
 	if (e.type == "mousedown") {
 		return this.mousedown(view, e);
-	} else if (e.type == "mouseup") {
+	} else if (e.type == "mouseup" || e.type == "drop") {
 		return this.mouseup(view, e);
 	}
 };
@@ -145,6 +145,10 @@ CoedHandler.prototype.mouseup = function(view, e) {
 		if (this.dragTarget) {
 			this.dragTarget.draggable = false;
 			delete this.dragTarget;
+			setTimeout(function() {
+				var action = view.state.tr.setSelection(new State.TextSelection(view.state.tr.selection.$from)).action();
+				view.updateState(view.state.applyAction(action));
+			});
 		}
 	}
 };
