@@ -37,6 +37,9 @@ co-link > header {
 	display:flex;
 	flex-direction:column;
 }
+co-link a[href] > * {
+	pointer-events: none;
+}
 
 co-link.ProseMirror-selectednode > header {
 	background-color:#555;
