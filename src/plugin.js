@@ -120,13 +120,13 @@ CoedHandler.prototype.mousedown = function(view, e) {
 	try { pos = dompos.posFromDOM(dom); } catch(ex) {
 		return;
 	}
-	var cpos = nodeParents(view.state.doc.resolve(pos.pos)).pos;
+	var cpos = nodeParents(view.state.tr.doc.resolve(pos.pos)).pos;
 	if (cpos.root == null || cpos.content != null || cpos.wrap != null) {
 		return;
 	}
 	e.target.draggable = false;
 
-	var $root = view.state.doc.resolve(cpos.root);
+	var $root = view.state.tr.doc.resolve(cpos.root);
 
 	var action = view.state.tr.setSelection(new State.NodeSelection($root)).action();
 	view.updateState(view.state.applyAction(action));
@@ -145,6 +145,7 @@ CoedHandler.prototype.mouseup = function(view, e) {
 		if (this.dragTarget) {
 			this.dragTarget.draggable = false;
 			delete this.dragTarget;
+			// this is a workaround
 			setTimeout(function() {
 				var action = view.state.tr.setSelection(new State.TextSelection(view.state.tr.selection.$from)).action();
 				view.updateState(view.state.applyAction(action));
