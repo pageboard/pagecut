@@ -172,7 +172,7 @@ function nodeParents(rpos) {
 }
 
 function posToNode(view, pos) {
-	if (!pos) return;
+	if (pos == null) return;
 	try {
 		var fromPos = dompos.DOMFromPos(view, pos);
 		if (fromPos) {
