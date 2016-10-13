@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		},
 		place: document.querySelector("#editor"),
 		components: [coLink],
-		action: function(action) {
+		action: function(coed, action) {
 			if (action.type != "transform") return;
 			var from = document.getElementById('preview');
 			var to = document.createElement('div');

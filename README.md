@@ -70,8 +70,8 @@ Options
 -------
 
 Coed.Editor options.
-- action: a function called upon each action  to the editor  
-  if that function returns true, the action is not applied to the editor view.
+- action(coed, action): called upon each action  
+  if it returns true, the action is not applied to the editor view.
 
 `Coed.defaults` stores some useful default values:
 - spec: a default, mutable, schema spec

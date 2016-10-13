@@ -93,7 +93,7 @@ function Editor(config) {
 		domParser: domParser,
 		domSerializer: Model.DOMSerializer.fromSchema(opts.schema),
 		onAction: function(action) {
-			if (!opts.action || !opts.action(action)) view.updateState(view.state.applyAction(action));
+			if (!opts.action || !opts.action(me, action)) view.updateState(view.state.applyAction(action));
 		}
 	});
 	var view = this.view = menuBarView.editor;
