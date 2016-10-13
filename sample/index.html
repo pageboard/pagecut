@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			];
 		},
 		place: document.querySelector("#editor"),
-		content: contentNode,
+		//content: contentNode,
 		components: [coLink],
 		updated: function() {
 			var from = document.getElementById('preview');
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	//
-	// coed.set(contentNode);
+	coed.set(contentNode);
 	contentNode.hidden = true;
 });
 	</script>

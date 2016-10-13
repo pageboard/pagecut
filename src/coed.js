@@ -88,7 +88,7 @@ function Editor(config) {
 		state: State.EditorState.create({
 			schema: opts.schema,
 			plugins: opts.plugins,
-			doc: domParser.parse(opts.content)
+			doc: opts.content ? domParser.parse(opts.content) : undefined
 		}),
 		domParser: domParser,
 		domSerializer: Model.DOMSerializer.fromSchema(opts.schema),
@@ -110,9 +110,12 @@ Editor.prototype.set = function(dom, fn) {
 	});
 	var view = this.view;
 	var newDoc = view.props.domParser.parse(dom);
-	view.updateState(view.state.reconfigure({
-		doc: newDoc
-	}));
+	var start = State.Selection.atStart(view.state.doc);
+	var end = State.Selection.atEnd(view.state.doc);
+	var oldDocEnd = view.state.doc.content.offsetAt(view.state.doc.content.childCount);
+	var action = view.state.tr.replaceWith(0, oldDocEnd, newDoc.content).action();
+
+	view.updateState(view.state.applyAction(action));
 	if (fn) this.opts.components.forEach(function(component) {
 		delete component.setfn;
 	});
