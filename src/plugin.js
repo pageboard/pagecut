@@ -38,27 +38,7 @@ function CoedHandler(coed, options) {
 }
 
 CoedHandler.prototype.command = function(state, onAction, view) {
-	var sel = state.selection;
-	var bef = sel.$to.nodeBefore;
-	var aft = sel.$from.nodeAfter;
-
-	if (sel.empty && (!bef || !aft)) {
-		var fam = nodeParents(sel.$to);
-		if (fam.pos.root != null) {
-			var npos = fam.pos.root + (bef ? fam.node.root.nodeSize : 0);
-			var rpos = state.doc.resolve(npos);
-			if (!bef) {
-				if (rpos.nodeBefore && rpos.nodeBefore.isTextblock) return true;
-			}
-			if (!aft) {
-				if (rpos.nodeAfter && rpos.nodeAfter.isTextblock) return true;
-			}
-			if (onAction) {
-				onAction(state.tr.insertText("\n", npos).scrollAction());
-			}
-			return true;
-		}
-	}
+	var bef = state.tr.selection.$to.nodeBefore;
 
 	if (bef && bef.type.name == "hard_break") {
 		Commands.deleteCharBefore(state, onAction);
