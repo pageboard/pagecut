@@ -70,7 +70,8 @@ Options
 -------
 
 Coed.Editor options.
-- updated: a function called upon update
+- action: a function called upon each action  to the editor  
+  if that function returns true, the action is not applied to the editor view.
 
 `Coed.defaults` stores some useful default values:
 - spec: a default, mutable, schema spec

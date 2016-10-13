@@ -80,9 +80,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			];
 		},
 		place: document.querySelector("#editor"),
-		//content: contentNode,
 		components: [coLink],
-		updated: function() {
+		action: function(action) {
+			if (action.type != "transform") return;
 			var from = document.getElementById('preview');
 			var to = document.createElement('div');
 			to.id = 'preview';
@@ -90,7 +90,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			differ.apply(from, differ.diff(from, to));
 		}
 	});
-	//
 	coed.set(contentNode);
 	contentNode.hidden = true;
 });
