@@ -30,12 +30,12 @@ exports.defaults = {
 	spec: schemaSpec,
 	plugins: [],
 	components: [],
-	buildMenu: defaultBuildMenu
+	menu: defaultMenu
 };
 
 exports.Editor = Editor;
 
-function defaultBuildMenu(Menu, Commands, items) {
+function defaultMenu(items, Menu, Commands) {
 	return items.fullMenu;
 }
 
@@ -48,7 +48,7 @@ function CreateSetupPlugin(options) {
 		keymap(Commands.baseKeymap)
 	];
 	if (options.history !== false) deps.push(history);
-	var menu = options.buildMenu(Menu, Commands, Setup.buildMenuItems(options.schema));
+	var menu = options.menu(Setup.buildMenuItems(options.schema), Menu, Commands);
 
 	return new State.Plugin({
 		props: {
