@@ -3,13 +3,16 @@ BUNDLEDOM = $(shell node -p 'require.resolve("bundledom/bin/bundledom.js")')
 FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
-all: clean dev
+all: clean dev predist
 	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js coed.min.js --css coed.min.css --ignore agent.js --ignore diffDOM.js --ignore .
 
 dev: dist/coed.js dist/coed-link.js
 
 clean:
 	rm -f dist/*
+
+predist:
+	cp src/prosemirror*.css dist/
 
 dist/coed-link.js: src/coed-link.js
 	$(BROWSERIFY) --standalone Coed.Link --outfile $@ src/coed-link.js
