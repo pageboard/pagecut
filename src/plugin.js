@@ -118,6 +118,7 @@ CoedHandler.prototype.mousedown = function(view, e) {
 	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
 	var pos;
 	try { pos = dompos.posFromDOM(dom); } catch(ex) {
+		console.info(ex);
 		return;
 	}
 	var cpos = nodeParents(view.state.tr.doc.resolve(pos.pos)).pos;
