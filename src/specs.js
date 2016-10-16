@@ -15,7 +15,7 @@ function defineSpecs(coed, component, schemaSpecs, dom) {
 		spec.content = component.contentSpec[contentName];
 		if (!spec.content) throw new Error("Missing component.contentSpec[" + contentName + "]");
 		typeName = "content_" + component.name + component.index++;
-		specName = typeName + '[content_name="' + contentName + '"]';
+		specName = typeName + '[block_content="' + contentName + '"]';
 	} else if (dom.querySelector('[block-content]')) {
 		specName = typeName = "wrap_" + component.name + component.index++;
 		spec = createWrapSpec(component, dom);
@@ -191,7 +191,7 @@ function prepareDom(dom) {
 function collectContent(view, node, content) {
 	var type = node.type.spec.coedType;
 	if (type == "content") {
-		content[node.attrs.content_name] = view.props.domSerializer.serializeNode(node);
+		content[node.attrs.block_content] = view.props.domSerializer.serializeNode(node);
 	} else if (type != "root" || !content) {
 		if (!content) content = {};
 		node.forEach(function(child) {
