@@ -69,6 +69,7 @@ function Editor(config) {
 	this.Menu = Menu;
 	this.Commands = Commands;
 	this.Pos = dompos;
+	this.keymap = keymap;
 
 	var opts = Object.assign({}, exports.defaults, config);
 

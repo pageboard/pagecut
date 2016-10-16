@@ -1,11 +1,6 @@
-var State = require("prosemirror-state");
-var Model = require("prosemirror-model");
-var keymap = require("prosemirror-keymap").keymap;
-var Commands = require("prosemirror-commands");
-
 function CreateCoedPlugin(coed, options) {
 	var coedHandler = new CoedHandler(coed, options);
-	return new State.Plugin({
+	return new coed.State.Plugin({
 		props: {
 			handleClick: coedHandler.click,
 			handleDOMEvent: coedHandler.event
@@ -30,7 +25,7 @@ function CoedHandler(coed, options) {
 
 	this.command = this.command.bind(this);
 
-	options.plugins.unshift(keymap({
+	options.plugins.unshift(coed.keymap({
 		Enter: this.command
 	}));
 }
@@ -39,7 +34,7 @@ CoedHandler.prototype.command = function(state, onAction, view) {
 	var bef = state.tr.selection.$to.nodeBefore;
 
 	if (bef && bef.type.name == "hard_break") {
-		Commands.deleteCharBefore(state, onAction);
+		this.coed.Commands.deleteCharBefore(state, onAction);
 		// just let other plugins split the block properly
 		return false;
 	} else {
@@ -107,7 +102,7 @@ CoedHandler.prototype.mousedown = function(view, e) {
 
 	var $root = view.state.tr.doc.resolve(cpos.root);
 
-	var action = view.state.tr.setSelection(new State.NodeSelection($root)).action();
+	var action = view.state.tr.setSelection(new this.coed.State.NodeSelection($root)).action();
 	view.updateState(view.state.applyAction(action));
 
 	var dom = posToNode(this.coed, view, cpos.root);
@@ -126,7 +121,7 @@ CoedHandler.prototype.mouseup = function(view, e) {
 			delete this.dragTarget;
 			// this is a workaround
 			setTimeout(function() {
-				var action = view.state.tr.setSelection(new State.TextSelection(view.state.tr.selection.$from)).action();
+				var action = view.state.tr.setSelection(new coed.State.TextSelection(view.state.tr.selection.$from)).action();
 				view.updateState(view.state.applyAction(action));
 			});
 		}
