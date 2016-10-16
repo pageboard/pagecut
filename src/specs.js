@@ -146,6 +146,7 @@ function createHoldSpec(component, dom) {
 			if (dom.coedType != "hold") return false;
 			var attrs = tagAttrs(dom);
 			attrs.html = dom.outerHTML;
+			if (defaultAttrs.block_handle) dom.setAttribute('block-handle', '');
 			return attrs;
 		}}],
 		toDOM: function(node) {
@@ -153,6 +154,7 @@ function createHoldSpec(component, dom) {
 			div.innerHTML = node.attrs.html;
 			var elem = div.querySelector('*');
 			if (!elem) throw new Error("Wrong html on HoldType", node, defaultAttrs);
+			if (defaultAttrs.block_handle) elem.setAttribute('block-handle', '');
 			return elem;
 		}
 	};

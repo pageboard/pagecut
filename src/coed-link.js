@@ -109,7 +109,7 @@ CoLink.prototype.parseSize = function(obj, s) {
 CoLink.prototype.to = function(data) {
 	var me = this;
 	var node = document.createElement('co-link');
-	node.innerHTML = '<header><a name="type"></a><a title="" target="_blank"></a><a name="preview"></a></header><div>\
+	node.innerHTML = '<header block-handle><a name="type"></a><a title="" target="_blank"></a><a name="preview"></a></header><div>\
 <div block-content="title"></div><div block-content="content"></div>\
 </div><aside><div><div></div><p></p></div><figure></figure></aside><script type="text/html"></script>';
 	var link = node.querySelector('header > a[title]');

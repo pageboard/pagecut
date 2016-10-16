@@ -106,7 +106,7 @@ CoedHandler.prototype.mousedown = function(view, e) {
 	view.updateState(view.state.applyAction(action));
 
 	var dom = posToNode(this.coed, view, cpos.root);
-	if (dom) dom = dom.querySelector('*'); // select first child element
+	if (dom) dom = dom.querySelector('[block-handle]');
 	if (dom) {
 		dom.draggable = true;
 		this.dragTarget = dom;
