@@ -110,6 +110,8 @@ CoedHandler.prototype.mousedown = function(view, e) {
 	if (dom) {
 		dom.draggable = true;
 		this.dragTarget = dom;
+	} else {
+		//return true; // let pm handle that for now...
 	}
 };
 
