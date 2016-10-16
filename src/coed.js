@@ -141,7 +141,7 @@ Editor.prototype.insert = function(dom, sel) {
 	if (!sel) sel = tr.selection;
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
-	var action = tr.replaceWith(start, end, this.parse(dom, sel.$from || sel.$anchor)).action();
+	var action = tr.replaceWith(start, end, this.parse(dom, sel)).action();
 	view.updateState(view.state.applyAction(action));
 };
 
@@ -155,13 +155,14 @@ Editor.prototype.delete = function(sel) {
 	view.updateState(view.state.applyAction(action));
 };
 
-Editor.prototype.parse = function(dom, $from) {
+Editor.prototype.parse = function(dom, sel) {
 	if (!dom) return;
 	var parser = this.view.someProp("domParser");
-	if (!$from) $from = this.view.state.tr.selection.$from;
+	if (!sel) sel = this.view.state.tr.selection;
+	var $context = sel.$from || sel.$anchor;
 	var frag = dom.ownerDocument.createDocumentFragment();
 	frag.appendChild(dom);
-	return parser.parseInContext($from, frag).content; // parseInContext returns a Slice
+	return parser.parseInContext($context, frag).content; // parseInContext returns a Slice
 };
 
 Editor.prototype.replace = function(fragment, regexp, replacer) {

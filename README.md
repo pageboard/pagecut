@@ -68,12 +68,14 @@ Methods
   parse a dom node as if it was pasted into selection, useful for components,
   and called by `insert`.
 
+`selection` parameter is a prosemirror's Selection instance.
+
 
 Properties
 ----------
 
 coed instance conveniently exposes underlying prosemirror editor modules:
-Menu, Commands, State, Model, Pos (from dompos).
+Menu, Commands, State, Model, Pos (from dompos), keymap.
 
 
 Options
