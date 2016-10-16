@@ -73,14 +73,14 @@ CoedHandler.prototype.focus = function(view, pos) {
 			if (dom && isParentOf(fparent, dom)) {
 				// do not remove attribute
 			} else {
-				fparent.removeAttribute('coed-focused');
+				fparent.removeAttribute('block-focused');
 			}
 			fparent = fparent.parentNode;
 		}
 		delete this.focused;
 	}
 	if (dom) {
-		dom.setAttribute("coed-focused", 1);
+		dom.setAttribute("block-focused", 1);
 		this.focused = dom;
 	}
 };

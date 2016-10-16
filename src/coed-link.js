@@ -110,7 +110,7 @@ CoLink.prototype.to = function(data) {
 	var me = this;
 	var node = document.createElement('co-link');
 	node.innerHTML = '<header><a name="type"></a><a title="" target="_blank"></a><a name="preview"></a></header><div>\
-<div content-name="title"></div><div content-name="content"></div>\
+<div block-content="title"></div><div block-content="content"></div>\
 </div><aside><div><div></div><p></p></div><figure></figure></aside><script type="text/html"></script>';
 	var link = node.querySelector('header > a[title]');
 
@@ -199,7 +199,7 @@ CoLink.prototype.convertUrl = function(coed, url) {
 			return;
 		}
 		var dom = me.to(props);
-		dom.querySelector('[content-name="title"]').innerHTML = props.title;
+		dom.querySelector('[block-content="title"]').innerHTML = props.title;
 		coed.insert(dom, sel);
 	});
 
@@ -207,7 +207,7 @@ CoLink.prototype.convertUrl = function(coed, url) {
 		type: "none"
 	});
 	tempDom.setAttribute("id", id);
-	tempDom.querySelector('[content-name="title"]').innerHTML = info.title;
+	tempDom.querySelector('[block-content="title"]').innerHTML = info.title;
 	return coed.parse(tempDom).firstChild;
 };
 

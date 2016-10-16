@@ -176,7 +176,7 @@ co-link > div {
 	background:#eee;
 	padding-right:.1em;
 }
-co-link > div > div[content-name] {
+co-link > div > div[block-content] {
 	display: block;
 	overflow:hidden;
 	text-overflow:ellipsis;
@@ -188,7 +188,7 @@ co-link > div > div[content-name] {
 	font-size:.95em;
 	margin-top:0.1em;
 }
-co-link[coed-focused] > div > div[content-name] {
+co-link[coed-focused] > div > div[block-content] {
 	white-space: pre-wrap;
 }
 
@@ -196,26 +196,26 @@ co-link[coed-focused] > div {
 	background:#fff;
 }
 
-co-link > div > div[content-name]:before {
+co-link > div > div[block-content]:before {
 	color:grey;
 	font-family:sans-serif;
 	letter-spacing:-1px;
 	font-size:0.8em;
 }
 
-co-link > div > div[content-name="title"]:before {
+co-link > div > div[block-content="title"]:before {
 	content: 'Title: ';
 }
-co-link > div > div[content-name="content"] {
+co-link > div > div[block-content="content"] {
 	display:none;
 }
 
 /* image type */
 
-co-link[type="image"] > div > div[content-name="content"] {
+co-link[type="image"] > div > div[block-content="content"] {
 	display:inline-block;
 }
-co-link[type="image"] > div > div[content-name="content"]:before {
+co-link[type="image"] > div > div[block-content="content"]:before {
 	content: 'Credit: ';
 }
 
@@ -235,9 +235,9 @@ co-link[type="link"]:not([coed-focused]) > header {
 co-link:not([coed-focused])[type="link"]> header > img {
 	margin:0;
 }
-co-link[type="link"] > div > div[content-name="content"] {
+co-link[type="link"] > div > div[block-content="content"] {
 	display:block;
 }
-co-link[type="link"] > div > div[content-name="content"]:before {
+co-link[type="link"] > div > div[block-content="content"]:before {
 	content: 'Content: ';
 }

@@ -3,7 +3,7 @@ module.exports = defineSpecs;
 function defineSpecs(coed, component, schemaSpecs, dom) {
 	var content = [];
 	var typeName, type;
-	var contentName = dom.getAttribute('content-name');
+	var contentName = dom.getAttribute('block-content');
 	var specName, spec, recursive = false;
 	if (!component.index) {
 		component.index = 1;
@@ -16,7 +16,7 @@ function defineSpecs(coed, component, schemaSpecs, dom) {
 		if (!spec.content) throw new Error("Missing component.contentSpec[" + contentName + "]");
 		typeName = "content_" + component.name + component.index++;
 		specName = typeName + '[content_name="' + contentName + '"]';
-	} else if (dom.querySelector('[content-name]')) {
+	} else if (dom.querySelector('[block-content]')) {
 		specName = typeName = "wrap_" + component.name + component.index++;
 		spec = createWrapSpec(component, dom);
 		recursive = true;
@@ -118,7 +118,7 @@ function createContentSpec(component, dom) {
 	return {
 		coedType: "content",
 		attrs: defaultAttrs,
-		parseDOM: [{ tag: defaultAttrs.tag.default + '[content-name]', getAttrs: function(dom) {
+		parseDOM: [{ tag: defaultAttrs.tag.default + '[block-content]', getAttrs: function(dom) {
 			if (dom.coedType != "content") return false;
 			return tagAttrs(dom);
 		}}],
@@ -176,10 +176,10 @@ function prepareDom(dom) {
 	for (var i=0, child; i < dom.childNodes.length; i++) {
 		child = dom.childNodes.item(i);
 		if (child.nodeType != Node.ELEMENT_NODE) continue;
-		name = child.getAttribute('content-name');
+		name = child.getAttribute('block-content');
 		if (name) {
 			child.coedType = "content";
-		} else if (child.querySelector('[content-name]')) {
+		} else if (child.querySelector('[block-content]')) {
 			child.coedType = "wrap";
 			prepareDom(child);
 		} else {

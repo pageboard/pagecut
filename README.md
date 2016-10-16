@@ -134,12 +134,22 @@ template's root DOM node `class` attribute and its initial default value.
   returns block's data from a given DOM Node for edition.
 - to(data)  
   returns DOM for edition from a block's data.  
-  Nodes with editable content must have a `content-name` attribute.
+  Nodes with editable content must have a `block-content` attribute.
 - output(data, content)  
   returns DOM for publication from block's data and content.  
-  Here `content[name]` is the node having the `content-name` attribute.
+  Here `content[name]` is the node having the `block-content` attribute.
 
-A selected component gets a "focused" class.
+
+### Attributes
+
+- block-content  
+  a component must set this attribute on editable nodes, with a name matching
+  contentSpec's component.
+- block-handle  
+  a component must set this attribute on non-editable nodes that can be used
+  for dragging a block.
+- block-focused  
+  this attribute is set on a block when it is focused.
 
 
 Link Component
