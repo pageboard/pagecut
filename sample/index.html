@@ -68,12 +68,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	var contentNode = document.getElementById("content");
+	// expose coed for debug purpose only
 	window.coed = new Coed.Editor({
-		menu: function(items, Menu, Commands) {
+		menu: function(coed, items) {
 			return [
 				[items.toggleStrong, items.toggleEm, items.toggleCode],
 				[items.wrapBulletList, items.wrapOrderedList, items.wrapBlockQuote],
-				[Menu.undoItem, Menu.redoItem],
+				[coed.Menu.undoItem, coed.Menu.redoItem],
 			];
 		},
 		place: document.querySelector("#editor"),

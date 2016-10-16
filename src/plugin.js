@@ -2,7 +2,6 @@ var State = require("prosemirror-state");
 var Model = require("prosemirror-model");
 var keymap = require("prosemirror-keymap").keymap;
 var Commands = require("prosemirror-commands");
-var dompos = require("prosemirror-view/dist/dompos");
 
 function CreateCoedPlugin(coed, options) {
 	var coedHandler = new CoedHandler(coed, options);
@@ -24,7 +23,6 @@ function CreateCoedPlugin(coed, options) {
 
 function CoedHandler(coed, options) {
 	this.coed = coed;
-	coed.posFromDOM = dompos.posFromDOM;
 
 	this.event = this.event.bind(this);
 	this.change = this.change.bind(this);
@@ -73,7 +71,7 @@ CoedHandler.prototype.change = function(state, action) {
 };
 
 CoedHandler.prototype.focus = function(view, pos) {
-	var dom = posToNode(view, pos);
+	var dom = posToNode(this.coed, view, pos);
 	if (this.focused && this.focused != dom && dom !== false) {
 		var fparent = this.focused;
 		while (fparent && fparent.nodeType == Node.ELEMENT_NODE) {
@@ -97,7 +95,7 @@ CoedHandler.prototype.mousedown = function(view, e) {
 	var dom = e.target;
 	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
 	var pos;
-	try { pos = dompos.posFromDOM(dom); } catch(ex) {
+	try { pos = this.coed.Pos.posFromDOM(dom); } catch(ex) {
 		console.info(ex);
 		return;
 	}
@@ -112,7 +110,7 @@ CoedHandler.prototype.mousedown = function(view, e) {
 	var action = view.state.tr.setSelection(new State.NodeSelection($root)).action();
 	view.updateState(view.state.applyAction(action));
 
-	var dom = posToNode(view, cpos.root);
+	var dom = posToNode(this.coed, view, cpos.root);
 	if (dom) dom = dom.querySelector('*'); // select first child element
 	if (dom) {
 		dom.draggable = true;
@@ -151,10 +149,10 @@ function nodeParents(rpos) {
 	return obj;
 }
 
-function posToNode(view, pos) {
+function posToNode(coed, view, pos) {
 	if (pos == null) return;
 	try {
-		var fromPos = dompos.DOMFromPos(view, pos);
+		var fromPos = coed.Pos.DOMFromPos(view, pos);
 		if (fromPos) {
 			var dom = fromPos.node;
 			var offset = fromPos.offset;

@@ -1,5 +1,7 @@
 module.exports = CoLink;
 
+var UrlRegex = require('url-regex');
+
 function CoLink(options) {
 	this.name = "link";
 	this.dataSpec = {
@@ -24,17 +26,16 @@ function CoLink(options) {
 	if (options.inspector) this.inspector = options.inspector;
 }
 
-CoLink.prototype.init = function(coed) {
-	this.coed = coed;
-	// coed.view.content.addEventListener('click', function(e) {
-	// 	var target = e.target;
-	// 	var root = target.closest('co-link');
-	// 	if (!root) return;
-	// 	if (!target.closest('[name="preview"]')) return;
-	// 	e.preventDefault();
-	// 	var data = this.from(root);
-	// 	console.log("will preview", data);
-	// }.bind(this));
+CoLink.prototype.plugin = function(coed) {
+	var me = this;
+	return {
+		props: {
+			transformPasted: function(slice) {
+				var frag = coed.replace(slice.content, UrlRegex(), me.convertUrl.bind(me, coed));
+				return new coed.Model.Slice(frag, slice.openLeft, slice.openRight);
+			}
+		}
+	};
 };
 
 CoLink.prototype.inspector = function(info, cb) {
@@ -174,76 +175,41 @@ CoLink.prototype.from = function(node) {
 	return data;
 };
 
-CoLink.prototype.input = function(node) {
+CoLink.prototype.convertUrl = function(coed, url) {
 	var me = this;
-	var coed = this.coed;
-
-	var loadingId = 'id-colink-' + Date.now();
-
-	var info = {};
-
-	if (typeof node == "string") {
-		info.title = node;
-		info.url = node;
-	} else {
-		info.title = node.innerText;
-		info.fragment = node;
-	}
-
-	function parseDom(node) {
-		var div = document.createElement("div");
-		div.appendChild(node);
-
-		var state = coed.view.state;
-		var schemaSpec = {
-			nodes: state.schema.nodeSpec,
-			marks: state.schema.markSpec
-		};
-		var doc = schemaSpec.nodes.get('doc');
-		var oldContent = doc.content;
-		//doc.content = "root_link";
-
-		// var newNode = coed.model.DOMParser.fromSchema(new coed.model.Schema(schemaSpec)).parse(div);
-		var newNode = coed.view.props.domParser.parse(div);
-		//doc.content = oldContent;
-
-		return newNode.firstChild;
-	}
+	var id = 'id-colink-' + Date.now();
+	var info = {
+		title: url,
+		url: url
+	};
 
 	me.inspector(info, function(err, props) {
-		var oldnode = document.getElementById(loadingId);
-		if (!oldnode) {
+		var oldDom = document.getElementById(id);
+		if (!oldDom) {
 			return;
 		}
 		var state = coed.view.state;
-		var pos = coed.posFromDOM(oldnode);
-		var begin = pos.pos;
-		var $pos = state.doc.resolve(begin);
-		var end = begin + $pos.nodeAfter.nodeSize;
+		var pos = coed.Pos.posFromDOM(oldDom);
+		var $pos = state.doc.resolve(pos.pos);
+		var sel = new coed.State.NodeSelection($pos);
 
 		if (err) {
 			console.error(err);
-			coed.view.updateState(
-				state.applyAction(
-					state.tr.delete(begin, end).action()
-				)
-			);
+			coed.delete(sel);
 			return;
 		}
 		var dom = me.to(props);
 		dom.querySelector('[content-name="title"]').innerHTML = props.title;
-		var action = state.tr.replaceWith(begin, end, parseDom(dom)).action();
-		coed.view.updateState(state.applyAction(action));
+		coed.insert(dom, sel);
 	});
 
-	var loadingNode = me.to({
+	var tempDom = me.to({
 		type: "none"
 	});
-	loadingNode.setAttribute("id", loadingId);
-	loadingNode.querySelector('[content-name="title"]').innerHTML = info.title;
-
-	return parseDom(loadingNode);
-}
+	tempDom.setAttribute("id", id);
+	tempDom.querySelector('[content-name="title"]').innerHTML = info.title;
+	return coed.parse(tempDom).firstChild;
+};
 
 CoLink.prototype.output = function(data, content) {
 	if (data.type == "link") {

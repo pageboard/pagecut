@@ -60,10 +60,20 @@ Methods
   Optional fn(component, data, content) can override `component.output` by
   returning a dom node.
 
-- coed.replace(str or dom node)  
-  replace current selection with typed string or dom node.
-- coed.delete()  
-  delete current selection.
+- coed.insert(dom, selection?)  
+  replace selection or current selection with dom node.
+- coed.delete(selection?)  
+  delete selection or current selection.
+- coed.parse(dom, selection?)  
+  parse a dom node as if it was pasted into selection, useful for components,
+  and called by `insert`.
+
+
+Properties
+----------
+
+coed instance conveniently exposes underlying prosemirror editor modules:
+Menu, Commands, State, Model, Pos (from dompos).
 
 
 Options
@@ -77,7 +87,7 @@ Coed.Editor options.
 - spec: a default, mutable, schema spec
 - plugins: array of plugins for ProseMirror
 - components: array of components like Coed-Link
-- menu: function(Menu, Commands, items) { return items.fullMenu; }
+- menu: function(coed, items) { return items.fullMenu; }
 
 
 
@@ -116,17 +126,13 @@ template's root DOM node `class` attribute and its initial default value.
 
 ### Methods
 
-- init(view)  
-  called after view initialization. Optional.
+- plugin(coed)  
+  returns a plugin object, optional.
 - from(dom)  
   returns block's data from a given DOM Node for edition.
 - to(data)  
   returns DOM for edition from a block's data.  
   Nodes with editable content must have a `content-name` attribute.
-- input(dom)  
-  returns block's data from input DOM, and sets `content-name` attributes on
-  inner content nodes that must be parsed.  
-  Optional.
 - output(data, content)  
   returns DOM for publication from block's data and content.  
   Here `content[name]` is the node having the `content-name` attribute.
