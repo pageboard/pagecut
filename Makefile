@@ -17,7 +17,7 @@ predist:
 dist/coed-link.js: src/coed-link.js
 	$(BROWSERIFY) --standalone Coed.Link --outfile $@ src/coed-link.js
 
-dist/coed.js: src/*.js src/utils/*
+dist/coed.js: src/*.js
 	-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
 	$(BROWSERIFY) --standalone Coed --outfile $@ src/coed.js
 
