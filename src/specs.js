@@ -75,7 +75,8 @@ function createRootSpec(coed, component, dom) {
 					attrs['data-' + k] = data[k];
 				}
 				dom.coedType = "root";
-				prepareDom(dom);
+				dom.coedName = component.name;
+				prepareDom(component, dom);
 				return attrs;
 			}
 		}],
@@ -93,7 +94,7 @@ function createRootSpec(coed, component, dom) {
 			} else {
 				ex = exportNode(coed.view, node);
 				dom = component.to(ex.data);
-				prepareDom(dom);
+				prepareDom(component, dom);
 				return [dom.nodeName, nodeAttrs(dom), 0];
 			}
 		}
@@ -110,7 +111,7 @@ function createWrapSpec(component, dom) {
 		parseDOM: [{
 			tag: domSelector(defaultAttrs),
 			getAttrs: function(dom) {
-				if (dom.coedType != "wrap") return false;
+				if (dom.coedName != component.name || dom.coedType != "wrap") return false;
 				return tagAttrs(dom);
 			}
 		}],
@@ -130,7 +131,7 @@ function createContentSpec(component, dom) {
 		parseDOM: [{
 			tag: defaultAttrs.tag + '[block-content="'+defaultAttrs.block_content+'"]',
 			getAttrs: function(dom) {
-				if (dom.coedType != "content") return false;
+				if (dom.coedName != component.name || dom.coedType != "content") return false;
 				return tagAttrs(dom);
 			}
 		}],
@@ -153,7 +154,7 @@ function createHoldSpec(component, dom) {
 		readonly: true,
 		attrs: defaultSpecAttrs,
 		parseDOM: [{ tag: sel, getAttrs: function(dom) {
-			if (dom.coedType != "hold") return false;
+			if (dom.coedName != component.name || dom.coedType != "hold") return false;
 			var attrs = tagAttrs(dom);
 			attrs.html = dom.outerHTML;
 			if (defaultSpecAttrs.block_handle) dom.setAttribute('block-handle', '');
@@ -183,17 +184,18 @@ function exportNode(view, node, content) {
 	};
 }
 
-function prepareDom(dom) {
+function prepareDom(component, dom) {
 	var name;
 	for (var i=0, child; i < dom.childNodes.length; i++) {
 		child = dom.childNodes.item(i);
 		if (child.nodeType != Node.ELEMENT_NODE) continue;
+		child.coedName = component.name;
 		name = child.getAttribute('block-content');
 		if (name) {
 			child.coedType = "content";
 		} else if (child.querySelector('[block-content]')) {
 			child.coedType = "wrap";
-			prepareDom(child);
+			prepareDom(component, child);
 		} else {
 			child.coedType = "hold";
 		}
