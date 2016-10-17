@@ -90,7 +90,7 @@ Coed.Editor options.
 - plugins: array of plugins for ProseMirror
 - components: array of components like Coed-Link
 - menu: function(coed, items) { return items.fullMenu; }
-
+- content: a DOM node, similar to a call to `coed.set`
 
 
 Blocks
