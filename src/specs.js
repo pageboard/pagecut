@@ -42,7 +42,8 @@ function defineSpecs(coed, component, schemaSpecs, dom) {
 }
 
 function createRootSpec(coed, component, dom) {
-	var defaultAttrs = specAttrs(Object.assign({id: ""}, tagAttrs(dom)));
+	var defaultAttrs = tagAttrs(dom);
+	var defaultSpecAttrs = specAttrs(Object.assign({id: ""}, defaultAttrs));
 
 	return {
 		coedType: "root",
@@ -61,20 +62,23 @@ function createRootSpec(coed, component, dom) {
 				}
 				attrs['data-' + k] = attOpt;
 			}
-			return Object.assign({}, defaultAttrs, attrs);
+			return Object.assign({}, defaultSpecAttrs, attrs);
 		})(),
-		parseDOM: [{ tag: defaultAttrs.tag.default, getAttrs: function(dom) {
-			var attrs = tagAttrs(dom);
-			var data;
-			if (component.setfn) data = component.setfn(component, dom);
-			if (data == null) data = component.from(dom);
-			for (var k in data) {
-				attrs['data-' + k] = data[k];
+		parseDOM: [{
+			tag: defaultAttrs.tag,
+			getAttrs: function(dom) {
+				var attrs = tagAttrs(dom);
+				var data;
+				if (component.setfn) data = component.setfn(component, dom);
+				if (data == null) data = component.from(dom);
+				for (var k in data) {
+					attrs['data-' + k] = data[k];
+				}
+				dom.coedType = "root";
+				prepareDom(dom);
+				return attrs;
 			}
-			dom.coedType = "root";
-			prepareDom(dom);
-			return attrs;
-		}}],
+		}],
 		toDOM: function(node) {
 			var dom, ex;
 			if (component.getfn) {
@@ -97,15 +101,19 @@ function createRootSpec(coed, component, dom) {
 }
 
 function createWrapSpec(component, dom) {
-	var defaultAttrs = specAttrs(tagAttrs(dom));
+	var defaultAttrs = tagAttrs(dom);
+	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
 		coedType: "wrap",
-		attrs: defaultAttrs,
-		parseDOM: [{ tag: defaultAttrs.tag.default, getAttrs: function(dom) {
-			if (dom.coedType != "wrap") return false;
-			return tagAttrs(dom);
-		}}],
+		attrs: defaultSpecAttrs,
+		parseDOM: [{
+			tag: domSelector(defaultAttrs),
+			getAttrs: function(dom) {
+				if (dom.coedType != "wrap") return false;
+				return tagAttrs(dom);
+			}
+		}],
 		toDOM: function(node) {
 			return [node.attrs.tag, domAttrs(node.attrs), 0];
 		}
@@ -113,15 +121,19 @@ function createWrapSpec(component, dom) {
 }
 
 function createContentSpec(component, dom) {
-	var defaultAttrs = specAttrs(tagAttrs(dom));
+	var defaultAttrs = tagAttrs(dom);
+	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
 		coedType: "content",
-		attrs: defaultAttrs,
-		parseDOM: [{ tag: defaultAttrs.tag.default + '[block-content]', getAttrs: function(dom) {
-			if (dom.coedType != "content") return false;
-			return tagAttrs(dom);
-		}}],
+		attrs: defaultSpecAttrs,
+		parseDOM: [{
+			tag: defaultAttrs.tag + '[block-content="'+defaultAttrs.block_content+'"]',
+			getAttrs: function(dom) {
+				if (dom.coedType != "content") return false;
+				return tagAttrs(dom);
+			}
+		}],
 		toDOM: function(node) {
 			return [node.attrs.tag, domAttrs(node.attrs), 0];
 		}
@@ -129,24 +141,22 @@ function createContentSpec(component, dom) {
 }
 
 function createHoldSpec(component, dom) {
-	var defaultAttrs = specAttrs(Object.assign(tagAttrs(dom), {
+	var defaultAttrs = tagAttrs(dom);
+	var sel = domSelector(defaultAttrs);
+	var defaultSpecAttrs = specAttrs(Object.assign(defaultAttrs, {
 		html: dom.outerHTML
 	}));
-
-	var sel = defaultAttrs.tag.default;
-	var selClass = defaultAttrs.class;
-	if (selClass && selClass.default) sel += "." + selClass.default;
 
 	return {
 		coedType: "hold",
 		selectable: false,
 		readonly: true,
-		attrs: defaultAttrs,
+		attrs: defaultSpecAttrs,
 		parseDOM: [{ tag: sel, getAttrs: function(dom) {
 			if (dom.coedType != "hold") return false;
 			var attrs = tagAttrs(dom);
 			attrs.html = dom.outerHTML;
-			if (defaultAttrs.block_handle) dom.setAttribute('block-handle', '');
+			if (defaultSpecAttrs.block_handle) dom.setAttribute('block-handle', '');
 			return attrs;
 		}}],
 		toDOM: function(node) {
@@ -154,7 +164,7 @@ function createHoldSpec(component, dom) {
 			div.innerHTML = node.attrs.html;
 			var elem = div.querySelector('*');
 			if (!elem) throw new Error("Wrong html on HoldType", node, defaultAttrs);
-			if (defaultAttrs.block_handle) elem.setAttribute('block-handle', '');
+			if (defaultSpecAttrs.block_handle) elem.setAttribute('block-handle', '');
 			return elem;
 		}
 	};
@@ -239,4 +249,11 @@ function nodeAttrs(node, convert) {
 		obj[name] = att.value;
 	}
 	return obj;
+}
+
+function domSelector(attrs) {
+	var sel = attrs.tag;
+	var className = attrs.class;
+	if (className) sel += "." + className.split(' ').join('.');
+	return sel;
 }
