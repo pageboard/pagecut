@@ -67,6 +67,8 @@ Methods
 - coed.parse(dom, selection?)  
   parse a dom node as if it was pasted into selection, useful for components,
   and called by `insert`.
+- coed.merge(dom, contents)  
+  merges contents object by filling nodes matching `block-content` attribute name.
 
 `selection` parameter is a prosemirror's Selection instance.
 
@@ -128,14 +130,14 @@ template's root DOM node `class` attribute and its initial default value.
 
 ### Methods
 
-- plugin(coed)  
-  returns a plugin object, optional.
 - from(dom)  
   returns block's data from a given DOM Node for edition.
 - to(data)  
   returns DOM for edition from a block's data.  
   Nodes with editable content must have a `block-content` attribute.
-- output(data, content)  
+- plugin(coed)  
+  returns a plugin object, optional.
+- output(coed, data, content)  
   returns DOM for publication from block's data and content.  
   Here `content[name]` is the node having the `block-content` attribute.
 
