@@ -199,7 +199,9 @@ CoLink.prototype.convertUrl = function(coed, url) {
 			return;
 		}
 		var dom = me.to(props);
-		dom.querySelector('[block-content="title"]').innerHTML = props.title;
+		coed.merge(dom, {
+			title: props.title
+		});
 		coed.insert(dom, sel);
 	});
 
@@ -207,11 +209,13 @@ CoLink.prototype.convertUrl = function(coed, url) {
 		type: "none"
 	});
 	tempDom.setAttribute("id", id);
-	tempDom.querySelector('[block-content="title"]').innerHTML = info.title;
+	coed.merge(tempDom, {
+		title: info.title
+	});
 	return coed.parse(tempDom).firstChild;
 };
 
-CoLink.prototype.output = function(data, content) {
+CoLink.prototype.output = function(coed, data, content) {
 	if (data.type == "link") {
 		var anchor = document.createElement('a');
 		anchor.href = data.url;

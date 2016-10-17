@@ -87,8 +87,13 @@ function createRootSpec(coed, component, dom) {
 				if (component.getfn !== true) {
 					dom = component.getfn(component, ex.data, ex.content);
 				}
-				if (dom == null && component.output) {
-					dom = component.output(ex.data, ex.content);
+				if (dom === undefined) {
+					if (component.output) {
+						dom = component.output(coed, ex.data, ex.content);
+					} else {
+						dom = component.to(ex.data);
+						coed.merge(dom, ex.content);
+					}
 				}
 				return dom;
 			} else {

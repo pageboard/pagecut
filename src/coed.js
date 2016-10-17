@@ -189,3 +189,13 @@ Editor.prototype.replace = function(fragment, regexp, replacer) {
 	return Model.Fragment.fromArray(list);
 };
 
+Editor.prototype.merge = function(dom, content) {
+	Object.keys(content).forEach(function(name) {
+		var contentNode = dom.querySelector('[block-content="'+name+'"]');
+		if (!contentNode) return;
+		var val = content[name];
+		if (!val.nodeType) contentNode.innerHTML = val;
+		else contentNode.parentNode.replaceChild(val, contentNode);
+	});
+	return dom;
+};
