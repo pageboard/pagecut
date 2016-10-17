@@ -86,9 +86,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			to.id = 'preview';
 			to.appendChild(coed.get());
 			differ.apply(from, differ.diff(from, to));
-		}
+		},
+		content: contentNode
 	});
-	coed.set(contentNode);
+	//coed.set(contentNode);
 	contentNode.hidden = true;
 });
 	</script>
