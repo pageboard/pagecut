@@ -56,9 +56,9 @@ Methods
   sets editor content DOM.  
   Optional fn(component, dom) can override `component.from` by returning block data.
 - coed.get(fn)  
-  gets editor content DOM.
-  Optional fn(component, data, content) can override `component.output` by
-  returning a dom node.
+  gets editor content DOM.  
+  Optional fn(component, dom, data, content) is called right after dom is
+  returned by output.
 
 - coed.insert(dom, selection?)  
   replace selection or current selection with dom node.

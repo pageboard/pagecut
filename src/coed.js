@@ -124,14 +124,10 @@ Editor.prototype.set = function(dom, fn) {
 };
 
 Editor.prototype.get = function(fn) {
-	this.components.forEach(function(component) {
-		component.getfn = fn || true;
-	});
+	this.exporter = fn || true;
 	var view = this.view;
 	var dom = view.props.domSerializer.serializeFragment(view.state.doc.content);
-	this.components.forEach(function(component) {
-		delete component.getfn;
-	});
+	delete this.exporter;
 	return dom;
 };
 
