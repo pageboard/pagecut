@@ -81,11 +81,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		components: [coLink],
 		action: function(coed, action) {
 			if (action.type != "transform") return;
-			var from = document.getElementById('preview');
-			var to = document.createElement('div');
-			to.id = 'preview';
-			to.appendChild(coed.get());
-			differ.apply(from, differ.diff(from, to));
+			setTimeout(function() {
+				var from = document.getElementById('preview');
+				var to = document.createElement('div');
+				to.id = 'preview';
+				to.appendChild(coed.get());
+				differ.apply(from, differ.diff(from, to));
+			});
 		},
 		change: function(coed, block) {
 			console.log(block);
