@@ -73,7 +73,7 @@ function createRootSpec(coed, component, dom) {
 			getAttrs: function(dom) {
 				var attrs = tagAttrs(dom);
 				var data;
-				if (component.setfn) data = component.setfn(component, dom);
+				if (coed.importer) data = coed.importer(component, dom);
 				if (data == null) data = component.from(dom);
 				for (var k in data) {
 					attrs['data-' + k] = data[k];

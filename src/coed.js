@@ -117,15 +117,11 @@ function Editor(config) {
 }
 
 Editor.prototype.set = function(dom, fn) {
-	if (fn) this.components.forEach(function(component) {
-		component.setfn = fn;
-	});
+	this.importer = fn;
 	var content = this.view.state.doc.content;
 	this.delete(new State.TextSelection(0, content.offsetAt(content.childCount)));
 	this.insert(dom, new State.NodeSelection(this.view.state.doc.resolve(0)));
-	if (fn) this.components.forEach(function(component) {
-		delete component.setfn;
-	});
+	delete this.importer;
 };
 
 Editor.prototype.get = function(fn) {
