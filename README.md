@@ -69,7 +69,7 @@ Methods
   and called by `insert`.
 - coed.merge(dom, contents)  
   merges contents object by filling nodes matching `block-content` attribute name.
-- coed.refresh(component, dom)  
+- coed.refresh(dom)  
   refresh data collected from a DOM node and synchronize the editor.
 - coed.toBlock(node, withoutContent)  
   returns a block from an editor node (not a DOM node).  
@@ -121,7 +121,7 @@ Components
 A component is an object that must expose the properties and methods defined
 below.
 
-A component instance must also call `coed.refresh(component, dom)` when
+A component instance must also call `coed.refresh(dom)` when
 something else than the editor changed its DOM.
 
 ### Properties

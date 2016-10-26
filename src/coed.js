@@ -201,13 +201,18 @@ Editor.prototype.merge = function(dom, content) {
 	return dom;
 };
 
-Editor.prototype.refresh = function(component, dom) {
-	var tr = new this.Transform.Transform(this.view.state.doc);
+Editor.prototype.refresh = function(dom) {
+	var tr = new this.Transform.Transform(this.view.state.tr.doc);
 	var pos;
 	try { pos = this.Pos.posFromDOM(dom); } catch(ex) {
 		console.info(ex);
 		return;
 	}
+	var component = getComponentByName(this.components, dom.getAttribute('block-type'));
+	if (!component) {
+		throw new Error("No component matching dom node was found");
+	}
+
 	var data = component.from(dom);
 	var attrs = {};
 	for (var k in data) {
@@ -240,6 +245,12 @@ Editor.prototype.parents = function(rpos, all) {
 	if (all) return ret;
 	else return obj;
 };
+
+function getComponentByName(list, name) {
+	for (var i=0; i < list.length; i++) {
+		if (list[i].name == name) return list[i];
+	}
+}
 
 function actionAncestorBlock(coed, action) {
 	// returns the ancestor block modified by this action
