@@ -1,5 +1,6 @@
 var Setup = require("prosemirror-example-setup");
 var State = require("prosemirror-state");
+var Transform = require("prosemirror-transform");
 var Menu = require("prosemirror-menu");
 var EditorView = require("prosemirror-view").EditorView;
 var Model = require("prosemirror-model");
@@ -66,6 +67,7 @@ function Editor(config) {
 	var me = this;
 	this.Model = Model;
 	this.State = State;
+	this.Transform = Transform;
 	this.Menu = Menu;
 	this.Commands = Commands;
 	this.Pos = dompos;

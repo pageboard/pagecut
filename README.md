@@ -79,7 +79,7 @@ Properties
 ----------
 
 coed instance conveniently exposes underlying prosemirror editor modules:
-Menu, Commands, State, Model, Pos (from dompos), keymap.
+Menu, Commands, State, Transform, Model, Pos (from dompos), keymap.
 
 
 Options
