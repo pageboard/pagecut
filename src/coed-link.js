@@ -33,6 +33,19 @@ CoLink.prototype.plugin = function(coed) {
 			transformPasted: function(slice) {
 				var frag = coed.replace(slice.content, UrlRegex(), me.convertUrl.bind(me, coed));
 				return new coed.Model.Slice(frag, slice.openLeft, slice.openRight);
+			},
+			handleDOMEvent: function(view, event) {
+				// this is an example of how to deal with
+				if (event.type != "mousedown") return;
+				var target = event.target;
+				if (target.nodeType == 3) target = target.parentNode;
+				if (target.nodeName != "A" || target.getAttribute("name") != "preview") return;
+				var root = target.closest("co-link");
+				if (!root) return;
+				var type = root.getAttribute("type");
+				if (!type || type == "none") return;
+				if (type != "link") root.setAttribute("type", "link");
+				coed.refresh(me, root);
 			}
 		}
 	};
