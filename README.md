@@ -69,6 +69,8 @@ Methods
   and called by `insert`.
 - coed.merge(dom, contents)  
   merges contents object by filling nodes matching `block-content` attribute name.
+- coed.refresh(component, dom)  
+  refresh data collected from a DOM node and synchronize the editor.
 
 `selection` parameter is a prosemirror's Selection instance.
 

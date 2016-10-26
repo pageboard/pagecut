@@ -195,3 +195,22 @@ Editor.prototype.merge = function(dom, content) {
 	});
 	return dom;
 };
+
+Editor.prototype.refresh = function(component, dom) {
+	var tr = new this.Transform.Transform(this.view.state.doc);
+	var pos;
+	try { pos = this.Pos.posFromDOM(dom); } catch(ex) {
+		console.info(ex);
+		return;
+	}
+	var data = component.from(dom);
+	var attrs = {};
+	for (var k in data) {
+		attrs['data-' + k] = data[k];
+	}
+	// set nodetype to null because of https://github.com/ProseMirror/prosemirror/issues/478
+	this.view.updateState(this.view.state.applyAction({
+		type: "transform",
+		transform: tr.setNodeType(pos.pos, null, attrs)
+	}));
+};
