@@ -82,21 +82,6 @@ coed instance conveniently exposes underlying prosemirror editor modules:
 Menu, Commands, State, Transform, Model, Pos (from dompos), keymap.
 
 
-Options
--------
-
-Coed.Editor options.
-- action(coed, action): called upon each action  
-  if it returns true, the action is not applied to the editor view.
-
-`Coed.defaults` stores some useful default values:
-- spec: a default, mutable, schema spec
-- plugins: array of plugins for ProseMirror
-- components: array of components like Coed-Link
-- menu: function(coed, items) { return items.fullMenu; }
-- content: a DOM node, similar to a call to `coed.set`
-
-
 Blocks
 ------
 
@@ -109,10 +94,30 @@ A block is
 - content: an object mapping names to html content
 
 
+Options
+-------
+
+Coed.Editor options.
+- action(coed, action): called upon each action  
+  if it returns true, the action is not applied to the editor view.  
+  This gives a way to override underlying editor onAction event.
+
+`Coed.defaults` stores some useful default values:
+- spec: a default, mutable, schema spec
+- plugins: array of plugins for ProseMirror
+- components: array of components like Coed-Link
+- menu: function(coed, items) { return items.fullMenu; }
+- content: a DOM node, similar to a call to `coed.set`
+
+
 Components
 ----------
 
-A component is an object that must implement this interface:
+A component is an object that must expose the properties and methods defined
+below.
+
+A component instance must also call `coed.refresh(component, dom)` when
+something else than the editor changed its DOM.
 
 ### Properties
 
