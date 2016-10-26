@@ -34,9 +34,7 @@ CoLink.prototype.plugin = function(coed) {
 				var frag = coed.replace(slice.content, UrlRegex(), me.convertUrl.bind(me, coed));
 				return new coed.Model.Slice(frag, slice.openLeft, slice.openRight);
 			},
-			handleDOMEvent: function(view, event) {
-				// this is an example of how to deal with
-				if (event.type != "mousedown") return;
+			handleClick: function(view, pos, event) {
 				var target = event.target;
 				if (target.nodeType == 3) target = target.parentNode;
 				if (target.nodeName != "A" || target.getAttribute("name") != "preview") return;
