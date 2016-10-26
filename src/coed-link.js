@@ -203,7 +203,7 @@ CoLink.prototype.convertUrl = function(coed, url) {
 		}
 		var state = coed.view.state;
 		var pos = coed.Pos.posFromDOM(oldDom);
-		var $pos = state.doc.resolve(pos.pos);
+		var $pos = state.doc.resolve(pos);
 		var sel = new coed.State.NodeSelection($pos);
 
 		if (err) {

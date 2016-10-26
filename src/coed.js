@@ -48,7 +48,7 @@ function CreateSetupPlugin(coed, options) {
 		keymap(Setup.buildKeymap(options.schema, options.mapKeys)),
 		keymap(Commands.baseKeymap)
 	];
-	if (options.history !== false) deps.push(history);
+	if (options.history !== false) deps.push(history());
 	var menu = options.menu(coed, Setup.buildMenuItems(options.schema));
 
 	return new State.Plugin({
@@ -58,8 +58,7 @@ function CreateSetupPlugin(coed, options) {
 				return !!x;
 			}); }),
 			floatingMenu: true
-		},
-		dependencies: deps
+		}
 	});
 }
 
@@ -217,7 +216,7 @@ Editor.prototype.refresh = function(component, dom) {
 	// set nodetype to null because of https://github.com/ProseMirror/prosemirror/issues/478
 	this.view.updateState(this.view.state.applyAction({
 		type: "transform",
-		transform: tr.setNodeType(pos.pos, null, attrs)
+		transform: tr.setNodeType(pos, null, attrs)
 	}));
 };
 

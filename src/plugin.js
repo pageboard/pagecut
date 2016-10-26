@@ -5,13 +5,11 @@ function CreateCoedPlugin(coed, options) {
 			handleClick: coedHandler.click,
 			handleDOMEvent: coedHandler.event
 		},
-		stateFields: {
-			coed: {
-				init: function(config, state) {
-					return {};
-				},
-				applyAction: coedHandler.action
-			}
+		state: {
+			init: function(config, state) {
+				return {};
+			},
+			applyAction: coedHandler.action
 		}
 	});
 }
@@ -56,7 +54,7 @@ CoedHandler.prototype.click = function(view, pos, e) {
 	this.focus(view, cpos.root);
 };
 
-CoedHandler.prototype.action = function(state, action) {
+CoedHandler.prototype.action = function(action) {
 	if (action.type != "selection") return;
 	if (this.dragging) return;
 	var sel = action.selection;
@@ -94,7 +92,7 @@ CoedHandler.prototype.mousedown = function(view, e) {
 		console.info(ex);
 		return;
 	}
-	var cpos = this.coed.parents(view.state.tr.doc.resolve(pos.pos)).pos;
+	var cpos = this.coed.parents(view.state.tr.doc.resolve(pos)).pos;
 	if (cpos.root == null || cpos.content != null || cpos.wrap != null) {
 		return;
 	}
