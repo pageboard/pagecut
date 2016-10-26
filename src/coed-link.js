@@ -6,6 +6,7 @@ function CoLink(options) {
 	this.name = "link";
 	this.dataSpec = {
 		id: "",
+		originalType: "none",
 		type:  "none",
 		url: "",
 		description: "",
@@ -37,13 +38,19 @@ CoLink.prototype.plugin = function(coed) {
 			handleClick: function(view, pos, event) {
 				var target = event.target;
 				if (target.nodeType == 3) target = target.parentNode;
-				if (target.nodeName != "A" || target.getAttribute("name") != "preview") return;
+				if (target.nodeName != "A" || target.getAttribute("name") != "type") return;
 				var root = target.closest("co-link");
 				if (!root) return;
 				var type = root.getAttribute("type");
 				if (!type || type == "none") return;
-				if (type != "link") root.setAttribute("type", "link");
-				coed.refresh(me, root);
+				if (type != "link") {
+					root.setAttribute("original-type", type);
+					root.setAttribute("type", "link");
+				} else {
+					var orgType = root.getAttribute("original-type");
+					if (orgType) root.setAttribute("type", orgType);
+				}
+				coed.refresh(root);
 			}
 		}
 	};
@@ -127,6 +134,7 @@ CoLink.prototype.to = function(data) {
 
 	link.setAttribute("title", data.site || "");
 	if (data.type) node.setAttribute("type", data.type);
+	if (data.originalType) node.setAttribute("original-type", data.originalType);
 	if (data.id) node.setAttribute("id", data.id);
 	if (data.url) link.setAttribute("href", data.url);
 	if (data.icon) me.ensure(link, 'img', { src: data.icon });
@@ -155,6 +163,7 @@ CoLink.prototype.from = function(node) {
 	var me = this;
 	var data = {};
 	data.type = node.getAttribute('type') || 'none';
+	data.originalType = node.getAttribute('original-type') || null;
 	data.id = node.getAttribute('id') || undefined;
 
 	var link = node.querySelector("header > a[href]");
