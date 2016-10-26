@@ -1,40 +1,19 @@
---- node_modules/prosemirror-view/dist/draw.js	2016-10-04 08:43:12.000000000 +0200
-+++ node_modules.new/prosemirror-view/dist/draw.js	2016-10-11 16:11:32.507132476 +0200
-@@ -23,11 +23,7 @@
-         dom.setAttribute("pm-size", node.nodeSize)
-         if (node.isTextblock)
-           { adjustTrailingHacks(serializer, dom, node) }
--        if (dom.contentEditable == "false") {
--          var wrap = document.createElement("div")
--          wrap.appendChild(dom)
--          dom = wrap
--        }
-+        if (node.type && node.type.spec.readonly) dom.setAttribute("contenteditable", "false");
-       }
+--- node_modules/prosemirror-view/dist/draw.js	2016-10-26 18:23:31.146688480 +0200
++++ node_modules.new/prosemirror-view/dist/draw.js	2016-10-26 18:24:31.265533515 +0200
+@@ -123,7 +123,7 @@
  
-       return dom
---- node_modules/prosemirror-view/dist/selection.js	2016-10-04 08:43:12.000000000 +0200
-+++ node_modules.new/prosemirror-view/dist/selection.js	2016-10-11 17:51:45.631291127 +0200
-@@ -103,9 +103,8 @@
- 
- function selectionToDOM(view, sel, takeFocus) {
-   if (!view.hasFocus()) {
--    if (!takeFocus) { return }
-     // See https://bugzilla.mozilla.org/show_bug.cgi?id=921444
--    else if (browser.gecko) { this.view.content.focus() }
-+    if (takeFocus && browser.gecko) { this.view.content.focus() }
-   }
- 
-   if (sel instanceof NodeSelection)
---- node_modules/prosemirror-keymap/dist/keymap.js	2016-09-21 16:09:55.000000000 +0200
-+++ node_modules.new/prosemirror-keymap/dist/keymap.js	2016-10-12 11:41:54.091435308 +0200
-@@ -102,7 +102,7 @@
-   return new Plugin({
-     props: {
-       handleKeyDown: function handleKeyDown(view, event) {
--        for (var name = event.code || keyCodes[event.keyCode]; name; name = reduce[name]) {
-+        for (var name = keyCodes[event.keyCode]; name; name = reduce[name]) {
-           var bound = map[modifiers(name, event)]
-           if (bound && bound(view.state, view.props.onAction, view)) return true
-         }
+ Context.prototype.serialize = function serialize (node, offset) {
+   var dom = this.serializer.serializeNodeAndMarks(node, this)
+-  if (dom.nodeType != 1 || dom.contentEditable == "false") {
++  if (dom.nodeType != 1) {
+     var wrap = document.createElement(node.isInline ? "span" : "div")
+     wrap.appendChild(dom)
+     dom = wrap
+@@ -131,6 +131,7 @@
+   dom.setAttribute("pm-size", node.nodeSize)
+   dom.setAttribute("pm-offset", offset)
+   if (node.isTextblock) { adjustTrailingHacks(this.serializer, dom, node) }
++  if (node.type && node.type.spec.readonly) dom.setAttribute("contenteditable", "false")
+   return dom
+ };
 
