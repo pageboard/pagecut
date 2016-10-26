@@ -50,8 +50,7 @@ CoedHandler.prototype.event = function(view, e) {
 };
 
 CoedHandler.prototype.click = function(view, pos, e) {
-	var cpos = this.coed.parents(view.state.doc.resolve(pos)).pos;
-	this.focus(view, cpos.root);
+	this.focus(view, view.state.doc.resolve(pos));
 };
 
 CoedHandler.prototype.action = function(action) {
@@ -59,27 +58,31 @@ CoedHandler.prototype.action = function(action) {
 	if (this.dragging) return;
 	var sel = action.selection;
 	if (!sel.empty) return;
-	var cpos = this.coed.parents(sel.$from).pos;
-	this.focus(this.coed.view, cpos.root);
+	this.focus(this.coed.view, sel.$from);
 };
 
-CoedHandler.prototype.focus = function(view, pos) {
-	var dom = posToNode(this.coed, view, pos);
-	if (this.focused && this.focused != dom && dom !== false) {
-		var fparent = this.focused;
-		while (fparent && fparent.nodeType == Node.ELEMENT_NODE) {
-			if (dom && isParentOf(fparent, dom)) {
-				// do not remove attribute
-			} else {
-				fparent.removeAttribute('block-focused');
-			}
-			fparent = fparent.parentNode;
+CoedHandler.prototype.focus = function(view, $pos) {
+	var parents = this.coed.parents($pos);
+	var pos = parents.pos.root;
+	var node = parents.node.root;
+	var me = this;
+	var dom = node && posToNode(this.coed, view, pos);
+	var flist = [];
+	var foc;
+	var fitems = this.coed.view.content.querySelectorAll('[block-focused]');
+	for (var i=0; i < fitems.length; i++) {
+		foc = fitems.item(i);
+		if (!dom || !isParentOf(foc, dom)) {
+			foc.removeAttribute('block-focused');
+			flist.push(foc);
 		}
-		delete this.focused;
 	}
+	flist.forEach(function(foc) {
+		me.coed.refresh(foc);
+	});
 	if (dom) {
-		dom.setAttribute("block-focused", 1);
-		this.focused = dom;
+		dom.setAttribute('block-focused', '');
+		this.coed.refresh(dom);
 	}
 };
 
@@ -146,8 +149,10 @@ function posToNode(coed, view, pos) {
 }
 
 function isParentOf(parent, node) {
-	while (node = node.parentNode) {
+	if (!node) return false;
+	while (node) {
 		if (parent == node) return true;
+		node = node.parentNode;
 	}
 	return false;
 }
