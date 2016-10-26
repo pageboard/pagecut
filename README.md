@@ -163,7 +163,9 @@ template's root DOM node `class` attribute and its initial default value.
   a component must set this attribute on non-editable nodes that can be used
   for dragging a block.
 - block-focused  
-  this attribute is set on a block when it is focused.
+  this attribute is set on a block root dom when it is focused.
+- block-type  
+  this attribute is set on a block root dom to store its component type name.
 
 
 Link Component
