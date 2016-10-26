@@ -1,4 +1,5 @@
-module.exports = defineSpecs;
+exports.define = defineSpecs;
+exports.rootAttributes = rootAttributes;
 
 function defineSpecs(coed, component, schemaSpecs, dom) {
 	var content = [];
@@ -71,13 +72,7 @@ function createRootSpec(coed, component, dom) {
 		parseDOM: [{
 			tag: defaultAttrs.tag,
 			getAttrs: function(dom) {
-				var attrs = tagAttrs(dom);
-				var data;
-				if (coed.importer) data = coed.importer(component, dom);
-				if (data == null) data = component.from(dom);
-				for (var k in data) {
-					attrs['data-' + k] = data[k];
-				}
+				var attrs = rootAttributes(coed, component, dom);
 				prepareDom(component, dom);
 				return attrs;
 			}
@@ -105,6 +100,17 @@ function createRootSpec(coed, component, dom) {
 			}
 		}
 	};
+}
+
+function rootAttributes(coed, component, dom) {
+	var attrs = tagAttrs(dom);
+	var data;
+	if (coed.importer) data = coed.importer(component, dom);
+	if (data == null) data = component.from(dom);
+	for (var k in data) {
+		attrs['data-' + k] = data[k];
+	}
+	return attrs;
 }
 
 function createWrapSpec(component, dom) {

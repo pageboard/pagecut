@@ -16,7 +16,7 @@ var listSchema = require("prosemirror-schema-list");
 
 
 var CreateCoedPlugin = require("./plugin");
-var defineSpecs = require("./specs");
+var Specs = require("./specs");
 
 var nodesSpec = baseSchema.nodeSpec.remove('image');
 nodesSpec = listSchema.addListNodes(nodesSpec, "paragraph block*", "block");
@@ -80,7 +80,7 @@ function Editor(config) {
 
 	opts.plugins.push(CreateCoedPlugin(this, opts));
 	opts.components.forEach(function(component) {
-		defineSpecs(me, component, opts.spec, component.to({}));
+		Specs.define(me, component, opts.spec, component.to({}));
 		if (component.plugin) {
 			opts.plugins.push(new State.Plugin(component.plugin(me)));
 		}
@@ -208,13 +208,7 @@ Editor.prototype.refresh = function(dom) {
 	if (!component) {
 		throw new Error("No component matching dom node was found");
 	}
-
-	var data = component.from(dom);
-	var attrs = {};
-	for (var k in data) {
-		attrs['data-' + k] = data[k];
-	}
-	// set nodetype to null because of https://github.com/ProseMirror/prosemirror/issues/478
+	var attrs = Specs.rootAttributes(this, component, dom);
 	this.view.updateState(this.view.state.applyAction({
 		type: "transform",
 		transform: tr.setNodeType(pos, null, attrs)
