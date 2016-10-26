@@ -87,6 +87,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			to.appendChild(coed.get());
 			differ.apply(from, differ.diff(from, to));
 		},
+		change: function(coed, block) {
+			console.log(block);
+		},
 		content: contentNode
 	});
 	//coed.set(contentNode);
