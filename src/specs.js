@@ -43,7 +43,11 @@ function defineSpecs(coed, component, schemaSpecs, dom) {
 
 function createRootSpec(coed, component, dom) {
 	var defaultAttrs = tagAttrs(dom);
-	var defaultSpecAttrs = specAttrs(Object.assign({id: ""}, defaultAttrs));
+	var defaultSpecAttrs = specAttrs(Object.assign({
+		id: null,
+		block_focused: null,
+		block_type: component.name
+	}, defaultAttrs));
 
 	return {
 		coedType: "root",
@@ -58,7 +62,7 @@ function createRootSpec(coed, component, dom) {
 				if (typeof specVal == "string") {
 					attOpt.default = specVal;
 				} else {
-					attOpt.default = specVal.default || "";
+					attOpt.default = specVal.default || null;
 				}
 				attrs['data-' + k] = attOpt;
 			}
@@ -74,8 +78,6 @@ function createRootSpec(coed, component, dom) {
 				for (var k in data) {
 					attrs['data-' + k] = data[k];
 				}
-				dom.coedType = "root";
-				dom.coedName = component.name;
 				prepareDom(component, dom);
 				return attrs;
 			}
@@ -98,7 +100,8 @@ function createRootSpec(coed, component, dom) {
 				ex = coed.toBlock(node);
 				dom = component.to(ex.data);
 				prepareDom(component, dom);
-				return [dom.nodeName, nodeAttrs(dom), 0];
+				var attrs = Object.assign(domAttrs(node.attrs), nodeAttrs(dom));
+				return [dom.nodeName, attrs, 0];
 			}
 		}
 	};
@@ -195,7 +198,7 @@ function prepareDom(component, dom) {
 function domAttrs(attrs) {
 	var obj = {};
 	Object.keys(attrs).forEach(function(k) {
-		if (k == 'tag' || k == 'html') return;
+		if (k == 'tag' || k == 'html' || k.indexOf('data-') == 0) return;
 		obj[k.replace(/_/g, '-')] = attrs[k];
 	});
 	return obj;
