@@ -231,14 +231,14 @@ Editor.prototype.parents = function(rpos, all) {
 			obj.node[type] = node;
 		}
 		if (type == "root") {
+			if (!all) break;
 			ret.push(obj);
 			obj = null;
-			if (!all) break;
 		}
 		level--;
 	}
 	if (all) return ret;
-	else return ret.shift();
+	else return obj;
 };
 
 function actionAncestorBlock(coed, action) {
