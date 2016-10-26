@@ -106,6 +106,10 @@ function Editor(config) {
 		domSerializer: Model.DOMSerializer.fromSchema(opts.schema),
 		onAction: function(action) {
 			if (!opts.action || !opts.action(me, action)) {
+				if (opts.change) {
+					var changedBlock = actionAncestorBlock(coed, action);
+					if (changedBlock) opts.change(me, changedBlock);
+				}
 				view.updateState(view.state.applyAction(action));
 			}
 		}
@@ -216,3 +220,94 @@ Editor.prototype.refresh = function(component, dom) {
 		transform: tr.setNodeType(pos.pos, null, attrs)
 	}));
 };
+
+Editor.prototype.parents = function(rpos, all) {
+	var node, type, pos, obj, level = rpos.depth, ret = [];
+	while (level >= 0) {
+		if (!obj) obj = {pos: {}, node: {}};
+		node = rpos.node(level);
+		type = node.type && node.type.spec.coedType;
+		if (type) {
+			obj.pos[type] = rpos.before(level);
+			obj.node[type] = node;
+		}
+		if (type == "root") {
+			ret.push(obj);
+			obj = null;
+			if (!all) break;
+		}
+		level--;
+	}
+	if (all) return ret;
+	else return ret.shift();
+};
+
+function actionAncestorBlock(coed, action) {
+	// returns the ancestor block modified by this action
+	if (action.type != "transform") return;
+	var steps = action.transform.steps;
+	var roots = [];
+	steps.forEach(function(step) {
+		var parents = coed.parents(coed.view.state.doc.resolve(step.from), true);
+		parents.forEach(function(obj) {
+			var root = obj.node.root;
+			if (!root) return;
+			var found = false;
+			for (var i=0; i < roots.length; i++) {
+				if (roots[i].root == root) {
+					roots[i].count++;
+					found = true;
+					break;
+				}
+			}
+			if (!found) roots.push({
+				count: 1,
+				root: root
+			});
+		});
+	});
+	for (var i=0; i < roots.length; i++) {
+		if (roots[i].count == steps.length) return wrapBlockNode(coed, roots[i].root);
+	}
+}
+
+function wrapBlockNode(coed, node) {
+	var type = node.type.name.substring(5);
+	return {
+		get data() {
+			return coed.toBlock(node).data;
+		},
+		get content() {
+			return coed.toBlock(node, true).content;
+		},
+		type: type,
+		node: node
+	};
+}
+
+Editor.prototype.toBlock = function(node, content) {
+	var data = {};
+	for (var k in node.attrs) {
+		if (k.indexOf('data-') == 0) {
+			data[k.substring(5)] = node.attrs[k];
+		}
+	}
+	return {
+		data: data,
+		content: content ? collectContent(this.view, node) : null
+	};
+};
+
+function collectContent(view, node, content) {
+	var type = node.type.spec.coedType;
+	if (type == "content") {
+		content[node.attrs.block_content] = view.props.domSerializer.serializeNode(node);
+	} else if (type != "root" || !content) {
+		if (!content) content = {};
+		node.forEach(function(child) {
+			collectContent(view, child, content);
+		});
+	}
+	return content;
+}
+

@@ -52,7 +52,7 @@ CoedHandler.prototype.event = function(view, e) {
 };
 
 CoedHandler.prototype.click = function(view, pos, e) {
-	var cpos = nodeParents(view.state.doc.resolve(pos)).pos;
+	var cpos = this.coed.parents(view.state.doc.resolve(pos)).pos;
 	this.focus(view, cpos.root);
 };
 
@@ -61,7 +61,7 @@ CoedHandler.prototype.action = function(state, action) {
 	if (this.dragging) return;
 	var sel = action.selection;
 	if (!sel.empty) return;
-	var cpos = nodeParents(sel.$from).pos;
+	var cpos = this.coed.parents(sel.$from).pos;
 	this.focus(this.coed.view, cpos.root);
 };
 
@@ -94,7 +94,7 @@ CoedHandler.prototype.mousedown = function(view, e) {
 		console.info(ex);
 		return;
 	}
-	var cpos = nodeParents(view.state.tr.doc.resolve(pos.pos)).pos;
+	var cpos = this.coed.parents(view.state.tr.doc.resolve(pos.pos)).pos;
 	if (cpos.root == null || cpos.content != null || cpos.wrap != null) {
 		return;
 	}
@@ -129,22 +129,6 @@ CoedHandler.prototype.mouseup = function(view, e) {
 		}
 	}
 };
-
-function nodeParents(rpos) {
-	var level = rpos.depth, node, type, pos;
-	var obj = {pos: {}, node: {}};
-	while (level >= 0) {
-		node = rpos.node(level);
-		type = node.type && node.type.spec.coedType;
-		if (type) {
-			obj.pos[type] = rpos.before(level);
-			obj.node[type] = node;
-		}
-		if (type == "root") break;
-		level--;
-	}
-	return obj;
-}
 
 function posToNode(coed, view, pos) {
 	if (pos == null) return;

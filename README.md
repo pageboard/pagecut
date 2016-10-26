@@ -71,6 +71,9 @@ Methods
   merges contents object by filling nodes matching `block-content` attribute name.
 - coed.refresh(component, dom)  
   refresh data collected from a DOM node and synchronize the editor.
+- coed.toBlock(node, withoutContent)  
+  returns a block from an editor node (not a DOM node).  
+  The `withoutContent` boolean argument prevents it from collecting contents.
 
 `selection` parameter is a prosemirror's Selection instance.
 
@@ -101,6 +104,8 @@ Coed.Editor options.
 - action(coed, action): called upon each action  
   if it returns true, the action is not applied to the editor view.  
   This gives a way to override underlying editor onAction event.
+- change(coed, block): called when a block has changed  
+  the ancestor block, if any, in which the current action is applied.
 
 `Coed.defaults` stores some useful default values:
 - spec: a default, mutable, schema spec

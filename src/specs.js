@@ -83,7 +83,7 @@ function createRootSpec(coed, component, dom) {
 		toDOM: function(node) {
 			var dom, ex;
 			if (coed.exporter) {
-				ex = exportNode(coed.view, node, true);
+				ex = coed.toBlock(node, true);
 				if (component.output) {
 					dom = component.output(coed, ex.data, ex.content);
 				} else {
@@ -95,7 +95,7 @@ function createRootSpec(coed, component, dom) {
 				}
 				return dom;
 			} else {
-				ex = exportNode(coed.view, node);
+				ex = coed.toBlock(node);
 				dom = component.to(ex.data);
 				prepareDom(component, dom);
 				return [dom.nodeName, nodeAttrs(dom), 0];
@@ -174,19 +174,6 @@ function createHoldSpec(component, dom) {
 	};
 }
 
-function exportNode(view, node, content) {
-	var data = {};
-	for (var k in node.attrs) {
-		if (k.indexOf('data-') == 0) {
-			data[k.substring(5)] = node.attrs[k];
-		}
-	}
-	return {
-		data: data,
-		content: content ? collectContent(view, node) : null
-	};
-}
-
 function prepareDom(component, dom) {
 	var name;
 	for (var i=0, child; i < dom.childNodes.length; i++) {
@@ -203,19 +190,6 @@ function prepareDom(component, dom) {
 			child.coedType = "hold";
 		}
 	}
-}
-
-function collectContent(view, node, content) {
-	var type = node.type.spec.coedType;
-	if (type == "content") {
-		content[node.attrs.block_content] = view.props.domSerializer.serializeNode(node);
-	} else if (type != "root" || !content) {
-		if (!content) content = {};
-		node.forEach(function(child) {
-			collectContent(view, child, content);
-		});
-	}
-	return content;
 }
 
 function domAttrs(attrs) {
