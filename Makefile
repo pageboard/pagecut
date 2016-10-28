@@ -3,10 +3,12 @@ BUNDLEDOM = $(shell node -p 'require.resolve("bundledom/bin/bundledom.js")')
 FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
-all: clean dev predist
-	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js coed.min.js --css coed.min.css --ignore agent.js --ignore diffDOM.js --ignore .
+.PHONY: build
+build: dist/coed.js dist/coed-link.js
 
-dev: dist/coed.js dist/coed-link.js
+.PHONY: dist
+dist: clean build predist
+	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js coed.min.js --css coed.min.css --ignore agent.js --ignore diffDOM.js --ignore .
 
 clean:
 	rm -f dist/*
