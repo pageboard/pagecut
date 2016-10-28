@@ -2,30 +2,38 @@ module.exports = CoLink;
 
 var UrlRegex = require('url-regex');
 
-function CoLink(options) {
-	this.name = "link";
-	this.dataSpec = {
-		id: "",
-		originalType: "none",
-		type:  "none",
-		url: "",
-		description: "",
-		icon: "",
-		thumbnail: "",
-		size: "",
-		width: "",
-		height: "",
-		duration: "",
-		site: "",
-		html: ""
-	};
-	this.contentSpec = {
-		title: "inline<_>*",
-		content: "block+"
-	};
+var StringType = {
+	type: 'string'
+};
 
+function CoLink(options) {
 	if (options.inspector) this.inspector = options.inspector;
 }
+
+CoLink.prototype.name = "link";
+
+CoLink.prototype.group = "block";
+
+CoLink.prototype.data = {
+	id: StringType,
+	originalType: Object.assign({default: "none"}, StringType),
+	type:  Object.assign({default: "none"}, StringType),
+	url: StringType,
+	description: StringType,
+	icon: StringType,
+	thumbnail: StringType,
+	size: StringType,
+	width: StringType,
+	height: StringType,
+	duration: StringType,
+	site: StringType,
+	html: StringType
+};
+
+CoLink.prototype.content = {
+	title: "inline<_>*",
+	content: "block+"
+};
 
 CoLink.prototype.plugin = function(coed) {
 	var me = this;
