@@ -118,26 +118,28 @@ Coed.Editor options.
 Components
 ----------
 
-A component is an object that must expose the properties and methods defined
-below.
+A component is an class that must expose the static properties and instance
+methods defined below.
 
-A component instance must also call `coed.refresh(dom)` when
-something else than the editor changed its DOM.
+> a component prototype must have default values for the properties
+
+> A component instance must also call `coed.refresh(dom)` when
+> something else than the editor changed its DOM.
 
 ### Properties
 
 - name  
   the component name as seen by ProseMirror.
-- dataSpec  
-  an object mapping data names with default values or validation functions,
-  tells ProseMirror what data can be stored on the component instance.
-- contentSpec  
+- group  
+  the prosemirror group, defaults to 'block'
+- data  
+  an object mapping data names to json schema,
+  tells ProseMirror what data can be stored on the component instance.  
+  By default only the default value of the schema is actually useful.
+- content  
   an object mapping content node names to ProseMirror schemaSpec.
 
-Data values are typically (but not necessarily all) merged in the DOM instance
-of the component. They are distinct from the attributes defined by a component
-template root DOM node, for example `dataSpec.class` won't override the
-template's root DOM node `class` attribute and its initial default value.
+> do not confuse root dom node attributes and component data
 
 
 ### Methods
