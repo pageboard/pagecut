@@ -13,8 +13,8 @@ function defineSpecs(coed, component, schemaSpecs, dom) {
 		recursive = true;
 	} else if (contentName) {
 		spec = createContentSpec(component, dom);
-		spec.content = component.contentSpec[contentName];
-		if (!spec.content) throw new Error("Missing component.contentSpec[" + contentName + "]");
+		spec.content = component.content[contentName];
+		if (!spec.content) throw new Error("Missing component.content[" + contentName + "]");
 		typeName = "content_" + component.name + component.index++;
 		specName = typeName + '[block_content="' + contentName + '"]';
 	} else if (dom.querySelector('[block-content]')) {
@@ -52,22 +52,10 @@ function createRootSpec(coed, component, dom) {
 
 	return {
 		coedType: "root",
-		group: component.group || "block",
-		inline: component.inline || false,
+		group: component.group,
+		inline: !!component.inline,
 		attrs: (function() {
-			var dataSpec = component.dataSpec, specVal, attOpt;
-			var attrs = {};
-			for (var k in dataSpec) {
-				specVal = dataSpec[k];
-				attOpt = {};
-				if (typeof specVal == "string") {
-					attOpt.default = specVal;
-				} else {
-					attOpt.default = specVal.default || null;
-				}
-				attrs['data-' + k] = attOpt;
-			}
-			return Object.assign({}, defaultSpecAttrs, attrs);
+			return Object.assign({}, defaultSpecAttrs, specAttrs(component.data, "data-"));
 		})(),
 		parseDOM: [{
 			tag: defaultAttrs.tag,
@@ -216,11 +204,16 @@ function tagAttrs(dom) {
 	return obj;
 }
 
-function specAttrs(atts) {
+function specAttrs(atts, prefix) {
 	var obj = {};
+	prefix = prefix || "";
+	var val;
 	for (var k in atts) {
-		obj[k] = {
-			'default': atts[k]
+		val = atts[k];
+		if (val && val.default !== undefined) val = val.default;
+		else if (typeof val != "string") val = null;
+		obj[prefix + k] = {
+			'default': val
 		};
 	}
 	return obj;
