@@ -2,10 +2,6 @@ module.exports = CoLink;
 
 var UrlRegex = require('url-regex');
 
-var StringType = {
-	type: 'string'
-};
-
 function CoLink(options) {
 	if (options.inspector) this.inspector = options.inspector;
 }
@@ -14,20 +10,28 @@ CoLink.prototype.name = "link";
 
 CoLink.prototype.group = "block";
 
+
+var StringType = {
+	type: 'string'
+};
+var OptStringType = {
+	type: ['string', 'null']
+};
+
 CoLink.prototype.data = {
-	id: StringType,
+	id: OptStringType,
 	originalType: Object.assign({default: "none"}, StringType),
 	type:  Object.assign({default: "none"}, StringType),
 	url: StringType,
-	description: StringType,
-	icon: StringType,
-	thumbnail: StringType,
-	size: StringType,
-	width: StringType,
-	height: StringType,
-	duration: StringType,
-	site: StringType,
-	html: StringType
+	description: OptStringType,
+	icon: OptStringType,
+	thumbnail: OptStringType,
+	size: OptStringType,
+	width: OptStringType,
+	height: OptStringType,
+	duration: OptStringType,
+	site: OptStringType,
+	html: OptStringType
 };
 
 CoLink.prototype.content = {
