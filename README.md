@@ -132,11 +132,14 @@ methods defined below.
   the component name as seen by ProseMirror.
 - group  
   the prosemirror group, defaults to 'block'
-- data  
-  an object mapping data names to json schema,
+- properties  
+  an object mapping properties names to json schema,
   tells ProseMirror what data can be stored on the component instance.  
   By default only the default value of the schema is actually useful.
-- content  
+- required  
+  reserved, not implemented.  
+  an array of required properties, as in json schema.  
+- specs  
   an object mapping content node names to ProseMirror schemaSpec.
 
 > do not confuse root dom node attributes and component data

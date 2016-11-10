@@ -13,8 +13,8 @@ function defineSpecs(coed, component, schemaSpecs, dom) {
 		recursive = true;
 	} else if (contentName) {
 		spec = createContentSpec(component, dom);
-		spec.content = component.content[contentName];
-		if (!spec.content) throw new Error("Missing component.content[" + contentName + "]");
+		spec.content = component.specs[contentName];
+		if (!spec.content) throw new Error("Missing component.specs[" + contentName + "]");
 		typeName = "content_" + component.name + component.index++;
 		specName = typeName + '[block_content="' + contentName + '"]';
 	} else if (dom.querySelector('[block-content]')) {
@@ -55,7 +55,7 @@ function createRootSpec(coed, component, dom) {
 		group: component.group,
 		inline: !!component.inline,
 		attrs: (function() {
-			return Object.assign({}, defaultSpecAttrs, specAttrs(component.data, "data-"));
+			return Object.assign({}, defaultSpecAttrs, specAttrs(component.properties, "data-"));
 		})(),
 		parseDOM: [{
 			tag: defaultAttrs.tag,

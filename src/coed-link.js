@@ -18,7 +18,7 @@ var OptStringType = {
 	type: ['string', 'null']
 };
 
-CoLink.prototype.data = {
+CoLink.prototype.properties = {
 	id: OptStringType,
 	originalType: Object.assign({default: "none"}, StringType),
 	type:  Object.assign({default: "none"}, StringType),
@@ -34,7 +34,9 @@ CoLink.prototype.data = {
 	html: OptStringType
 };
 
-CoLink.prototype.content = {
+CoLink.prototype.required = ['url'];
+
+CoLink.prototype.specs = {
 	title: "inline<_>*",
 	content: "block+"
 };
