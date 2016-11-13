@@ -6,8 +6,9 @@ FONTELLO_HOST ?= http://fontello.com
 .PHONY: build
 build: dist/coed.js dist/coed-link.js
 
-.PHONY: dist
-dist: clean build predist
+.PHONY: all
+all: clean build predist
+
 	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js coed.min.js --css coed.min.css --ignore agent.js --ignore diffDOM.js --ignore .
 
 clean:
