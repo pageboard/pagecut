@@ -4,15 +4,15 @@
  
  Context.prototype.serialize = function serialize (node, offset) {
    var dom = this.serializer.serializeNodeAndMarks(node, this)
--  if (dom.nodeType != 1 || dom.contentEditable == "false") {
-+  if (dom.nodeType != 1) {
+-  if (dom.nodeType != 1 || dom.contentEditable == "false" || (node.isBlock && node.isLeaf && !dom.hasChildNodes())) {
++  if (dom.nodeType != 1 || (node.isBlock && node.isLeaf && !dom.hasChildNodes())) {
      var wrap = document.createElement(node.isInline ? "span" : "div")
      wrap.appendChild(dom)
      dom = wrap
 @@ -131,6 +131,7 @@
    dom.setAttribute("pm-size", node.nodeSize)
    dom.setAttribute("pm-offset", offset)
-   if (node.isTextblock) { adjustTrailingHacks(this.serializer, dom, node) }
+   if (node.isTextblock) { addTrailingHacks(dom) }
 +  if (node.type && node.type.spec.readonly) dom.setAttribute("contenteditable", "false")
    return dom
  };
