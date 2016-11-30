@@ -57,7 +57,7 @@ function CreateSetupPlugin(coed, options) {
 
 Editor.spec = schemaSpec;
 Editor.plugins = [];
-Editor.components = [];
+Editor.components = global.Coed && global.Coed.components || [];
 Editor.menu = defaultMenu;
 
 function Editor(config, componentsConfig) {

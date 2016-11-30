@@ -2,7 +2,10 @@ module.exports = CoLink;
 
 var UrlRegex = require('url-regex');
 
-if (global.Coed && global.Coed.components) global.Coed.components.push(CoLink);
+if (!global.Coed) global.Coed = {
+	components: []
+};
+global.Coed.components.push(CoLink);
 
 function CoLink(options) {
 	if (options.inspector) this.inspector = options.inspector;

@@ -124,7 +124,13 @@ Components
 A component is a class that exposes the static properties and instance methods
 defined below.
 
-A component must add itself to Coed.components array.
+A component must add itself to Coed.components array and create it if it is
+missing:
+```
+if (!global.Coed) global.Coed = { components: [] };
+global.Coed.components.push(CoLink);
+```
+
 Options are passed to component instances in the second argument of Coed
 constructor.
 
