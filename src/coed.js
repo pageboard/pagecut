@@ -27,14 +27,7 @@ var schemaSpec = {
 	marks: baseSchema.markSpec
 };
 
-exports.defaults = {
-	spec: schemaSpec,
-	plugins: [],
-	components: [],
-	menu: defaultMenu
-};
-
-exports.Editor = Editor;
+module.exports = Editor;
 
 function defaultMenu(coed, items) {
 	return items.fullMenu;
@@ -62,7 +55,12 @@ function CreateSetupPlugin(coed, options) {
 	});
 }
 
-function Editor(config) {
+Editor.spec = schemaSpec;
+Editor.plugins = [];
+Editor.components = [];
+Editor.menu = defaultMenu;
+
+function Editor(config, componentsConfig) {
 	var me = this;
 	this.Model = Model;
 	this.State = State;
@@ -71,18 +69,19 @@ function Editor(config) {
 	this.Commands = Commands;
 	this.Pos = dompos;
 	this.keymap = keymap;
+	this.instances = {};
 
-	var opts = Object.assign({}, exports.defaults, config);
-
-	if (!opts.components) opts.components = [];
-
-	this.components = opts.components;
+	var opts = Object.assign({}, Editor, config);
 
 	opts.plugins.push(CreateCoedPlugin(this, opts));
-	opts.components.forEach(function(component) {
-		Specs.define(me, component, opts.spec, component.to({}));
-		if (component.plugin) {
-			opts.plugins.push(new State.Plugin(component.plugin(me)));
+
+	opts.components.forEach(function(Component) {
+		var name = Component.prototype.name;
+		var inst = new Component(componentsConfig[name]);
+		me.instances[name] = inst;
+		Specs.define(me, inst, opts.spec, inst.to({}));
+		if (inst.plugin) {
+			opts.plugins.push(new State.Plugin(inst.plugin(me)));
 		}
 	});
 
@@ -94,8 +93,9 @@ function Editor(config) {
 	opts.plugins.push(CreateSetupPlugin(me, opts));
 
 	var domParser = Model.DOMParser.fromSchema(opts.schema);
+	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
-	var menuBarView = new Menu.MenuBarEditorView(opts.place, {
+	var menuBarView = new Menu.MenuBarEditorView(place, {
 		state: State.EditorState.create({
 			schema: opts.schema,
 			plugins: opts.plugins,
@@ -204,7 +204,7 @@ Editor.prototype.refresh = function(dom) {
 		console.info(ex);
 		return;
 	}
-	var component = getComponentByName(this.components, dom.getAttribute('block-type'));
+	var component = this.instances[dom.getAttribute('block-type')];
 	if (!component) {
 		throw new Error("No component matching dom node was found");
 	}
@@ -235,12 +235,6 @@ Editor.prototype.parents = function(rpos, all) {
 	if (all) return ret;
 	else return obj;
 };
-
-function getComponentByName(list, name) {
-	for (var i=0; i < list.length; i++) {
-		if (list[i].name == name) return list[i];
-	}
-}
 
 function actionAncestorBlock(coed, action) {
 	// returns the ancestor block modified by this action

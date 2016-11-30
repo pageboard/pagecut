@@ -20,25 +20,28 @@ Usage
 Simply add dist/coed.min.css, dist/coed.min.js to a web page and initialize the editor:
 
 ```
-document.addEventListener('DOMContentLoaded', function() {
-	var inspectorBase = "https://inspector.eda.sarl";
+document.addEventListener('DOMContentLoaded', function() {	
+	function inspectorCallback(info, cb) {
+		// info is mutable
+		var node = info.fragment && info.fragment.firstChild;
+		if (node && node.nodeName == "IFRAME") {
+			info.title = info.url = node.src;
+		}
+		// url-inspector-daemon@1.5.0 has right properties names
+		GET("https://inspector.eda.sarl/inspector", {
+			url: info.url
+		}, cb);
+	}
 
-	var coLink = new Coed.Link({
-		inspector: function(info, cb) {
-			// info is mutable
-			var node = info.fragment && info.fragment.firstChild;
-			if (node && node.nodeName == "IFRAME") {
-				info.title = info.url = node.src;
-			}
-			// url-inspector-daemon@1.5.0 has right properties names
-			GET(inspectorBase + "/inspector", {url: info.url}, cb);
+	var coed = new Coed({
+		place: "#editor", // can also be a DOM Node
+		components: [Coed.link]
+	}, {
+		link: {
+			inspector: inspectorCallback
 		}
 	});
-
-	var coed = new Coed.Editor({
-		place: document.querySelector("#editor"),
-		components: [coLink]
-	});
+	
 	var domContent = document.querySelector("#content");
 	coed.set(domContent);
 	domContent.hidden = true;
@@ -49,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
 Methods
 -------
 
-- new Coed.Editor(opts)  
+- new Coed(opts, componentsOpts)  
   returns an editor instance,
   options are documented below in Defaults section.
 - coed.set(dom, fn)  
@@ -100,17 +103,17 @@ A block is
 Options
 -------
 
-Coed.Editor options.
+Coed options.
 - action(coed, action): called upon each action  
   if it returns true, the action is not applied to the editor view.  
   This gives a way to override underlying editor onAction event.
 - change(coed, block): called when a block has changed  
   the ancestor block, if any, in which the current action is applied.
 
-`Coed.defaults` stores some useful default values:
+Coed global variable stores some useful default values:
 - spec: a default, mutable, schema spec
 - plugins: array of plugins for ProseMirror
-- components: array of components like Coed-Link
+- components: array of self-registered components like CoedLink
 - menu: function(coed, items) { return items.fullMenu; }
 - content: a DOM node, similar to a call to `coed.set`
 
@@ -118,8 +121,12 @@ Coed.Editor options.
 Components
 ----------
 
-A component is an class that must expose the static properties and instance
-methods defined below.
+A component is a class that exposes the static properties and instance methods
+defined below.
+
+A component must add itself to Coed.components array.
+Options are passed to component instances in the second argument of Coed
+constructor.
 
 > a component prototype must have default values for the properties
 
@@ -191,8 +198,12 @@ parse it and insert it into the edited document.
 ProseMirror customization
 -------------------------
 
-`Coed.defaults` contains `spec`, the schema specification that will be used to
-initialize ProseMirror, and `plugins`, the list of prosemirror plugins needed
-by Coed. Otherwise options passed to `Coed.init` are passed to ProseMirror
-constructor.
+`Coed.spec` is the schema specification that will be used to
+initialize ProseMirror, and `Coed.plugins`, the list of prosemirror plugins
+needed by Coed.
+These options are passed to ProseMirror constructor:
+- place
+- schema
+- plugins
+- content
 

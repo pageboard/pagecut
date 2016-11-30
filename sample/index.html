@@ -44,20 +44,17 @@ document.addEventListener('DOMContentLoaded', function() {
 	if (/github\.io/.test(document.location.hostname)) {
 		document.body.insertAdjacentHTML('afterbegin', '<iframe src="https://ghbtns.com/github-btn.html?user=kapouer&repo=coed&type=star" frameborder="0" scrolling="0" width="170px" height="20px"></iframe>');
 	}
-	var inspectorBase = "https://inspector.eda.sarl";
 
-	var coLink = new Coed.Link({
-		inspector: function(info, cb) {
-			var node = info.fragment && info.fragment.firstChild;
-			if (node && node.nodeName == "IFRAME") {
-				info.title = info.url = node.src;
-			} else {
-				node = null;
-			}
-			// url-inspector-daemon@1.5.0 has right properties names
-			GET(inspectorBase + "/inspector", {url: info.url}, cb);
+	function inspectorCallback(info, cb) {
+		var node = info.fragment && info.fragment.firstChild;
+		if (node && node.nodeName == "IFRAME") {
+			info.title = info.url = node.src;
+		} else {
+			node = null;
 		}
-	});
+		// url-inspector-daemon@1.5.0 has right properties names
+		GET("https://inspector.eda.sarl/inspector", {url: info.url}, cb);
+	}
 
 	var differ = new diffDOM({
 		filterOuterDiff: function(from, to, diffs) {
@@ -68,8 +65,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	var contentNode = document.getElementById("content");
-	// expose coed for debug purpose only
-	window.coed = new Coed.Editor({
+	// expose coed instance for debug purpose only
+	window.coed = new Coed({
 		menu: function(coed, items) {
 			return [
 				[items.toggleStrong, items.toggleEm, items.toggleCode],
@@ -77,8 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				[coed.Menu.undoItem, coed.Menu.redoItem],
 			];
 		},
-		place: document.querySelector("#editor"),
-		components: [coLink],
+		place: "#editor",
 		action: function(coed, action) {
 			if (action.type != "transform") return;
 			setTimeout(function() {
@@ -93,6 +89,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			console.log(block);
 		},
 		content: contentNode
+	}, {
+		link: {
+			inspector: inspectorCallback
+		}
 	});
 	//coed.set(contentNode);
 	contentNode.hidden = true;

@@ -1,6 +1,6 @@
 {
   "name": "coed",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Editor with Components",
   "main": "dist/coed.js",
   "scripts": {
