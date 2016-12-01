@@ -54,6 +54,7 @@ function createRootSpec(coed, component, nodeViews, dom) {
 		coedType: "root",
 		group: component.group,
 		inline: !!component.inline,
+		defining: true,
 		attrs: (function() {
 			return Object.assign({}, defaultSpecAttrs, specAttrs(component.properties, "data-"));
 		})(),
@@ -154,7 +155,7 @@ function createHoldSpec(component, nodeViews, dom) {
 		typeName: "hold_" + component.name + component.index++,
 		coedType: "hold",
 		selectable: false,
-		readonly: true,
+		isLeaf: true, // replaces readonly patch
 		attrs: defaultSpecAttrs,
 		parseDOM: [{ tag: sel, getAttrs: function(dom) {
 			if (dom.coedName != component.name || dom.coedType != "hold") return false;
@@ -169,6 +170,7 @@ function createHoldSpec(component, nodeViews, dom) {
 			var elem = div.querySelector('*');
 			if (!elem) throw new Error("Wrong html on HoldType", node, defaultAttrs);
 			if (defaultSpecAttrs.block_handle) elem.setAttribute('block-handle', '');
+			elem.setAttribute('contenteditable', 'false');
 			return elem;
 		}
 	};
