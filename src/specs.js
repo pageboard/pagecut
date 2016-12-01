@@ -1,29 +1,28 @@
 exports.define = defineSpecs;
 exports.rootAttributes = rootAttributes;
 
-function defineSpecs(coed, component, schemaSpecs, dom) {
+function defineSpecs(coed, component, schemaSpecs, nodeViews, dom) {
 	var content = [];
 	var typeName, type;
 	var contentName = dom.getAttribute('block-content');
 	var specName, spec, recursive = false;
 	if (!component.index) {
 		component.index = 1;
-		spec = createRootSpec(coed, component, dom);
-		specName = typeName = "root_" + component.name;
+		spec = createRootSpec(coed, component, nodeViews, dom);
+		specName = spec.typeName;
 		recursive = true;
 	} else if (contentName) {
-		spec = createContentSpec(component, dom);
+		spec = createContentSpec(component, nodeViews, dom);
 		spec.content = component.specs[contentName];
 		if (!spec.content) throw new Error("Missing component.specs[" + contentName + "]");
-		typeName = "content_" + component.name + component.index++;
-		specName = typeName + '[block_content="' + contentName + '"]';
+		specName = spec.typeName + '[block_content="' + contentName + '"]';
 	} else if (dom.querySelector('[block-content]')) {
-		specName = typeName = "wrap_" + component.name + component.index++;
-		spec = createWrapSpec(component, dom);
+		spec = createWrapSpec(component, nodeViews, dom);
+		specName = spec.typeName;
 		recursive = true;
 	} else {
-		specName = typeName = "hold_" + component.name + component.index++;
-		spec = createHoldSpec(component, dom);
+		spec = createHoldSpec(component, nodeViews, dom);
+		specName = spec.typeName;
 	}
 
 	var content = [];
@@ -32,17 +31,17 @@ function defineSpecs(coed, component, schemaSpecs, dom) {
 		for (var i=0, child; i < childs.length; i++) {
 			child = childs.item(i);
 			if (child.nodeType != Node.ELEMENT_NODE) continue;
-			content.push(defineSpecs(coed, component, schemaSpecs, child));
+			content.push(defineSpecs(coed, component, schemaSpecs, nodeViews, child));
 		}
 		if (content.length) spec.content = content.join(" ");
 	}
 	if (spec) {
-		schemaSpecs.nodes = schemaSpecs.nodes.addToEnd(typeName, spec);
+		schemaSpecs.nodes = schemaSpecs.nodes.addToEnd(spec.typeName, spec);
 	}
 	return specName;
 }
 
-function createRootSpec(coed, component, dom) {
+function createRootSpec(coed, component, nodeViews, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(Object.assign({
 		id: null,
@@ -51,6 +50,7 @@ function createRootSpec(coed, component, dom) {
 	}, defaultAttrs));
 
 	return {
+		typeName: "root_" + component.name,
 		coedType: "root",
 		group: component.group,
 		inline: !!component.inline,
@@ -101,11 +101,12 @@ function rootAttributes(coed, component, dom) {
 	return attrs;
 }
 
-function createWrapSpec(component, dom) {
+function createWrapSpec(component, nodeViews, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
+		typeName: "wrap_" + component.name + component.index++,
 		coedType: "wrap",
 		attrs: defaultSpecAttrs,
 		parseDOM: [{
@@ -121,11 +122,12 @@ function createWrapSpec(component, dom) {
 	};
 }
 
-function createContentSpec(component, dom) {
+function createContentSpec(component, nodeViews, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
+		typeName: "content_" + component.name + component.index++,
 		coedType: "content",
 		attrs: defaultSpecAttrs,
 		parseDOM: [{
@@ -141,7 +143,7 @@ function createContentSpec(component, dom) {
 	};
 }
 
-function createHoldSpec(component, dom) {
+function createHoldSpec(component, nodeViews, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var sel = domSelector(defaultAttrs);
 	var defaultSpecAttrs = specAttrs(Object.assign(defaultAttrs, {
@@ -149,6 +151,7 @@ function createHoldSpec(component, dom) {
 	}));
 
 	return {
+		typeName: "hold_" + component.name + component.index++,
 		coedType: "hold",
 		selectable: false,
 		readonly: true,
