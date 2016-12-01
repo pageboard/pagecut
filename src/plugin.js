@@ -90,12 +90,12 @@ CoedHandler.prototype.mousedown = function(view, e) {
 	this.dragging = true;
 	var dom = e.target;
 	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
-	var pos;
-	try { pos = this.coed.Pos.posFromDOM(dom); } catch(ex) {
-		console.info(ex);
+	var pos = this.coed.posFromDOM(dom);
+	if (pos === false) {
 		return;
 	}
-	var cpos = this.coed.parents(view.state.tr.doc.resolve(pos)).pos;
+	var cobj = this.coed.parents(view.state.tr.doc.resolve(pos));
+	var cpos = cobj.pos;
 	if (cpos.root == null || cpos.content != null || cpos.wrap != null) {
 		return;
 	}
@@ -134,7 +134,7 @@ CoedHandler.prototype.mouseup = function(view, e) {
 function posToNode(coed, view, pos) {
 	if (pos == null) return;
 	try {
-		var fromPos = coed.Pos.DOMFromPos(view, pos);
+		var fromPos = coed.view.docView.domFromPos(pos);
 		if (fromPos) {
 			var dom = fromPos.node;
 			var offset = fromPos.offset;
@@ -158,6 +158,4 @@ function isParentOf(parent, node) {
 }
 
 module.exports = CreateCoedPlugin;
-
-
 

@@ -8,7 +8,6 @@ var Input = require("prosemirror-inputrules");
 var keymap = require("prosemirror-keymap").keymap;
 var Commands = require("prosemirror-commands");
 var history = require("prosemirror-history").history;
-var dompos = require("prosemirror-view/dist/dompos");
 
 var baseSchema = require("prosemirror-schema-basic").schema;
 var listSchema = require("prosemirror-schema-list");
@@ -67,7 +66,6 @@ function Editor(config, componentsConfig) {
 	this.Transform = Transform;
 	this.Menu = Menu;
 	this.Commands = Commands;
-	this.Pos = dompos;
 	this.keymap = keymap;
 	this.instances = {};
 
@@ -75,11 +73,13 @@ function Editor(config, componentsConfig) {
 
 	opts.plugins.push(CreateCoedPlugin(this, opts));
 
+	var nodeViews = {};
+
 	opts.components.forEach(function(Component) {
 		var name = Component.prototype.name;
 		var inst = new Component(componentsConfig[name]);
 		me.instances[name] = inst;
-		Specs.define(me, inst, opts.spec, inst.to({}));
+		Specs.define(me, inst, opts.spec, nodeViews, inst.to({}));
 		if (inst.plugin) {
 			opts.plugins.push(new State.Plugin(inst.plugin(me)));
 		}
@@ -111,7 +111,8 @@ function Editor(config, componentsConfig) {
 				}
 				view.updateState(view.state.applyAction(action));
 			}
-		}
+		},
+		nodeViews: nodeViews
 	});
 	var view = this.view = menuBarView.editor;
 }
@@ -159,7 +160,9 @@ Editor.prototype.parse = function(dom, sel) {
 	var $context = sel.$from || sel.$anchor;
 	var frag = dom.ownerDocument.createDocumentFragment();
 	frag.appendChild(dom);
-	return parser.parseInContext($context, frag).content; // parseInContext returns a Slice
+	return parser.parseSlice(frag, {
+		// TODO topNode: ???
+	}).content;
 };
 
 Editor.prototype.replace = function(fragment, regexp, replacer) {
@@ -199,11 +202,8 @@ Editor.prototype.merge = function(dom, content) {
 
 Editor.prototype.refresh = function(dom) {
 	var tr = new this.Transform.Transform(this.view.state.tr.doc);
-	var pos;
-	try { pos = this.Pos.posFromDOM(dom); } catch(ex) {
-		console.info(ex);
-		return;
-	}
+	var pos = this.posFromDOM(dom);
+	if (pos === false) return;
 	var component = this.instances[dom.getAttribute('block-type')];
 	if (!component) {
 		throw new Error("No component matching dom node was found");
@@ -213,6 +213,20 @@ Editor.prototype.refresh = function(dom) {
 		type: "transform",
 		transform: tr.setNodeType(pos, null, attrs)
 	}));
+};
+
+Editor.prototype.posFromDOM = function(dom) {
+	var offset = 0, sib = dom;
+	while (sib = sib.previousSibling) offset++;
+
+	var pos;
+	try {
+		pos = this.view.docView.posFromDOM(dom.parentNode, offset, 0);
+	} catch(ex) {
+		console.info(ex);
+		pos = false;
+	}
+	return pos;
 };
 
 Editor.prototype.parents = function(rpos, all) {
