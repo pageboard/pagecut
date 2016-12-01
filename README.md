@@ -52,6 +52,8 @@ document.addEventListener('DOMContentLoaded', function() {
 Methods
 -------
 
+External usage
+
 - new Coed(opts, componentsOpts)  
   returns an editor instance,
   options are documented below in Defaults section.
@@ -62,6 +64,9 @@ Methods
   gets editor content DOM.  
   Optional fn(component, dom, data, content) is called right after dom is
   returned by output.
+
+
+Internal usage
 
 - coed.insert(dom, selection?)  
   replace selection or current selection with dom node.
@@ -77,6 +82,8 @@ Methods
 - coed.toBlock(node, withoutContent)  
   returns a block from an editor node (not a DOM node).  
   The `withoutContent` boolean argument prevents it from collecting contents.
+- coed.posFromDOM(dom)  
+  Wrapper function, returns an internal prosemirror position of the given dom node.
 
 `selection` parameter is a prosemirror's Selection instance.
 
