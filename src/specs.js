@@ -55,9 +55,7 @@ function createRootSpec(coed, component, nodeViews, dom) {
 		group: component.group,
 		inline: !!component.inline,
 		defining: true,
-		attrs: (function() {
-			return Object.assign({}, defaultSpecAttrs, specAttrs(component.properties, "data-"));
-		})(),
+		attrs: Object.assign({}, defaultSpecAttrs, specAttrs(component.properties, "data-")),
 		parseDOM: [{
 			tag: defaultAttrs.tag,
 			getAttrs: function(dom) {
