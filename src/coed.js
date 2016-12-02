@@ -89,6 +89,14 @@ function Editor(config, componentsConfig) {
 		opts.schema = new Model.Schema(opts.spec);
 		delete opts.spec;
 	}
+	Object.keys(me.instances).forEach(function(name) {
+		var type = opts.schema.nodes['root_' + name];
+		Object.defineProperty(type, 'isLeaf', {
+			get: function() {
+				return !!me.exporter;
+			}
+		});
+	});
 
 	opts.plugins.push(CreateSetupPlugin(me, opts));
 
