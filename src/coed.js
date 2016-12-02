@@ -148,7 +148,7 @@ Editor.prototype.insert = function(dom, sel) {
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
 	var action = tr.replaceWith(start, end, this.parse(dom, sel)).action();
-	view.updateState(view.state.applyAction(action));
+	view.props.onAction(action);
 };
 
 Editor.prototype.delete = function(sel) {
@@ -158,7 +158,7 @@ Editor.prototype.delete = function(sel) {
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
 	var action = tr.delete(start, end).action();
-	view.updateState(view.state.applyAction(action));
+	view.props.onAction(action);
 };
 
 Editor.prototype.parse = function(dom, sel) {
@@ -217,10 +217,10 @@ Editor.prototype.refresh = function(dom) {
 		throw new Error("No component matching dom node was found");
 	}
 	var attrs = Specs.rootAttributes(this, component, dom);
-	this.view.updateState(this.view.state.applyAction({
+	this.view.props.onAction({
 		type: "transform",
 		transform: tr.setNodeType(pos, null, attrs)
-	}));
+	});
 };
 
 Editor.prototype.posFromDOM = function(dom) {
