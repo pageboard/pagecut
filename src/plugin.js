@@ -1,21 +1,21 @@
-function CreateCoedPlugin(coed, options) {
-	var coedHandler = new CoedHandler(coed, options);
-	return new coed.State.Plugin({
+function CreatePlugin(main, options) {
+	var handler = new Handler(main, options);
+	return new main.State.Plugin({
 		props: {
-			handleClick: coedHandler.click,
-			handleDOMEvent: coedHandler.event
+			handleClick: handler.click,
+			handleDOMEvent: handler.event
 		},
 		state: {
 			init: function(config, state) {
 				return {};
 			},
-			applyAction: coedHandler.action
+			applyAction: handler.action
 		}
 	});
 }
 
-function CoedHandler(coed, options) {
-	this.coed = coed;
+function Handler(main, options) {
+	this.main = main;
 
 	this.event = this.event.bind(this);
 	this.action = this.action.bind(this);
@@ -23,16 +23,16 @@ function CoedHandler(coed, options) {
 
 	this.command = this.command.bind(this);
 
-	options.plugins.unshift(coed.keymap({
+	options.plugins.unshift(main.keymap({
 		Enter: this.command
 	}));
 }
 
-CoedHandler.prototype.command = function(state, onAction, view) {
+Handler.prototype.command = function(state, onAction, view) {
 	var bef = state.tr.selection.$to.nodeBefore;
 
 	if (bef && bef.type.name == "hard_break") {
-		this.coed.Commands.deleteCharBefore(state, onAction);
+		this.main.Commands.deleteCharBefore(state, onAction);
 		// just let other plugins split the block properly
 		return false;
 	} else {
@@ -41,7 +41,7 @@ CoedHandler.prototype.command = function(state, onAction, view) {
 	}
 };
 
-CoedHandler.prototype.event = function(view, e) {
+Handler.prototype.event = function(view, e) {
 	if (e.type == "mousedown") {
 		return this.mousedown(view, e);
 	} else if (e.type == "mouseup" || e.type == "drop") {
@@ -49,27 +49,27 @@ CoedHandler.prototype.event = function(view, e) {
 	}
 };
 
-CoedHandler.prototype.click = function(view, pos, e) {
+Handler.prototype.click = function(view, pos, e) {
 	this.focus(view, view.state.doc.resolve(pos));
 };
 
-CoedHandler.prototype.action = function(action) {
+Handler.prototype.action = function(action) {
 	if (action.type != "selection") return;
 	if (this.dragging) return;
 	var sel = action.selection;
 	if (!sel.empty) return;
-	this.focus(this.coed.view, sel.$from);
+	this.focus(this.main.view, sel.$from);
 };
 
-CoedHandler.prototype.focus = function(view, $pos) {
-	var parents = this.coed.parents($pos);
+Handler.prototype.focus = function(view, $pos) {
+	var parents = this.main.parents($pos);
 	var pos = parents.pos.root;
 	var node = parents.node.root;
-	var me = this;
-	var dom = node && posToNode(this.coed, view, pos);
+	var main = this.main;
+	var dom = node && posToNode(main, view, pos);
 	var flist = [];
 	var foc;
-	var fitems = this.coed.view.content.querySelectorAll('[block-focused]');
+	var fitems = main.view.content.querySelectorAll('[block-focused]');
 	for (var i=0; i < fitems.length; i++) {
 		foc = fitems.item(i);
 		if (!dom || !isParentOf(foc, dom)) {
@@ -78,23 +78,23 @@ CoedHandler.prototype.focus = function(view, $pos) {
 		}
 	}
 	flist.forEach(function(foc) {
-		me.coed.refresh(foc);
+		main.refresh(foc);
 	});
 	if (dom) {
 		dom.setAttribute('block-focused', '');
-		this.coed.refresh(dom);
+		main.refresh(dom);
 	}
 };
 
-CoedHandler.prototype.mousedown = function(view, e) {
+Handler.prototype.mousedown = function(view, e) {
 	this.dragging = true;
 	var dom = e.target;
 	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
-	var pos = this.coed.posFromDOM(dom);
+	var pos = this.main.posFromDOM(dom);
 	if (pos === false) {
 		return;
 	}
-	var cobj = this.coed.parents(view.state.tr.doc.resolve(pos));
+	var cobj = this.main.parents(view.state.tr.doc.resolve(pos));
 	var cpos = cobj.pos;
 	if (cpos.root == null || cpos.content != null || cpos.wrap != null) {
 		return;
@@ -103,10 +103,10 @@ CoedHandler.prototype.mousedown = function(view, e) {
 
 	var $root = view.state.tr.doc.resolve(cpos.root);
 
-	var action = view.state.tr.setSelection(new this.coed.State.NodeSelection($root)).action();
+	var action = view.state.tr.setSelection(new this.main.State.NodeSelection($root)).action();
 	view.updateState(view.state.applyAction(action));
 
-	var dom = posToNode(this.coed, view, cpos.root);
+	var dom = posToNode(this.main, view, cpos.root);
 	if (dom) dom = dom.querySelector('[block-handle]');
 	if (dom) {
 		dom.draggable = true;
@@ -116,7 +116,8 @@ CoedHandler.prototype.mousedown = function(view, e) {
 	}
 };
 
-CoedHandler.prototype.mouseup = function(view, e) {
+Handler.prototype.mouseup = function(view, e) {
+	var main = this.main;
 	if (this.dragging) {
 		this.dragging = false;
 		if (this.dragTarget) {
@@ -124,17 +125,17 @@ CoedHandler.prototype.mouseup = function(view, e) {
 			delete this.dragTarget;
 			// this is a workaround
 			setTimeout(function() {
-				var action = view.state.tr.setSelection(new coed.State.TextSelection(view.state.tr.selection.$from)).action();
+				var action = view.state.tr.setSelection(new main.State.TextSelection(view.state.tr.selection.$from)).action();
 				view.updateState(view.state.applyAction(action));
 			});
 		}
 	}
 };
 
-function posToNode(coed, view, pos) {
+function posToNode(main, view, pos) {
 	if (pos == null) return;
 	try {
-		var fromPos = coed.view.docView.domFromPos(pos);
+		var fromPos = main.view.docView.domFromPos(pos);
 		if (fromPos) {
 			var dom = fromPos.node;
 			var offset = fromPos.offset;
@@ -157,5 +158,5 @@ function isParentOf(parent, node) {
 	return false;
 }
 
-module.exports = CreateCoedPlugin;
+module.exports = CreatePlugin;
 

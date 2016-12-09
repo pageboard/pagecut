@@ -1,30 +1,30 @@
 {
-  "name": "coed",
-  "version": "0.4.1",
-  "description": "Editor with Components",
-  "main": "dist/coed.js",
+  "name": "pagecut",
+  "version": "0.1.0",
+  "description": "Extensible web content editor",
+  "main": "dist/pagecut.js",
   "scripts": {
     "prepublish": "make all",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kapouer/coed.git"
+    "url": "git+https://github.com/kapouer/pagecut.git"
   },
   "keywords": [
-    "editor",
-    "inspector",
+    "edit",
     "component",
+    "element",
     "cms",
     "content",
-    "asset"
+    "write"
   ],
   "author": "Jérémy Lal <kapouer@melix.org>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kapouer/coed/issues"
+    "url": "https://github.com/kapouer/pagecut/issues"
   },
-  "homepage": "https://github.com/kapouer/coed#readme",
+  "homepage": "https://github.com/kapouer/pagecut#readme",
   "devDependencies": {
     "browserify": "^13.1.1",
     "bundledom": "^1.5.0",

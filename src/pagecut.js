@@ -13,8 +13,9 @@ var baseSchema = require("prosemirror-schema-basic").schema;
 var listSchema = require("prosemirror-schema-list");
 // var tableSchema = require("prosemirror-schema-table");
 
+var UrlRegex = require('url-regex');
 
-var CreateCoedPlugin = require("./plugin");
+var CreatePlugin = require("./plugin");
 var Specs = require("./specs");
 
 var nodesSpec = baseSchema.nodeSpec.remove('image');
@@ -28,11 +29,11 @@ var schemaSpec = {
 
 module.exports = Editor;
 
-function defaultMenu(coed, items) {
+function defaultMenu(main, items) {
 	return items.fullMenu;
 }
 
-function CreateSetupPlugin(coed, options) {
+function CreateSetupPlugin(main, options) {
 	var deps = [
 		Input.inputRules({
 			rules: Input.allInputRules.concat(Setup.buildInputRules(options.schema))
@@ -41,7 +42,7 @@ function CreateSetupPlugin(coed, options) {
 		keymap(Commands.baseKeymap)
 	];
 	if (options.history !== false) deps.push(history());
-	var menu = options.menu(coed, Setup.buildMenuItems(options.schema));
+	var menu = options.menu(main, Setup.buildMenuItems(options.schema));
 
 	return new State.Plugin({
 		props: {
@@ -55,52 +56,58 @@ function CreateSetupPlugin(coed, options) {
 }
 
 Editor.spec = schemaSpec;
-Editor.plugins = [];
-Editor.components = global.Coed && global.Coed.components || [];
+Editor.resolvers = global.Pagecut && global.Pagecut.resolvers || [];
+Editor.elements = global.Pagecut && global.Pagecut.elements || [];
 Editor.menu = defaultMenu;
 
-function Editor(config, componentsConfig) {
-	var me = this;
+function Editor(opts, shared) {
+	var main = this;
 	this.Model = Model;
 	this.State = State;
 	this.Transform = Transform;
 	this.Menu = Menu;
 	this.Commands = Commands;
 	this.keymap = keymap;
-	this.instances = {};
+	this.elements = {};
+	this.shared = shared;
 
-	var opts = Object.assign({}, Editor, config);
-
-	opts.plugins.push(CreateCoedPlugin(this, opts));
+	opts = Object.assign({plugins: []}, Editor, opts);
+	this.resolvers = opts.resolvers;
 
 	var nodeViews = {};
 
-	opts.components.forEach(function(Component) {
-		var name = Component.prototype.name;
-		var inst = new Component(componentsConfig[name]);
-		me.instances[name] = inst;
-		Specs.define(me, inst, opts.spec, nodeViews, inst.to({}));
-		if (inst.plugin) {
-			opts.plugins.push(new State.Plugin(inst.plugin(me)));
-		}
+	opts.elements.forEach(function(el) {
+		main.elements[name] = el;
+		Specs.define(main, el, opts.spec, nodeViews, el.render(main, { data: {}, content: {} }));
 	});
+
+	var schema;
 
 	if (opts.spec) {
 		opts.schema = new Model.Schema(opts.spec);
-		delete opts.spec;
+	} if (!opts.schema) {
+		throw new Error("Either 'spec' or 'schema' must be specified");
 	}
-	Object.keys(me.instances).forEach(function(name) {
-		var type = opts.schema.nodes['root_' + name];
+	// this is a trick to be able to serialize to DOM/r and bypass pm schema leaf check
+	// là encore, un DOMSerializer basé sur la fonction de rendu "read" résoudrait le pb ?
+	// même pas sûr car
+	opts.elements.forEach(function(el) {
+		var type = opts.schema.nodes['root_' + el.name];
 		Object.defineProperty(type, 'isLeaf', {
 			get: function() {
-				return !!me.exporter;
+				return !!main.exporter;
 			}
 		});
 	});
 
-	opts.plugins.push(CreateSetupPlugin(me, opts));
+	opts.plugins.push(
+		CreatePlugin(main, opts),
+		CreateSetupPlugin(main, opts),
+		CreateResolversPlugin(main, opts)
+	);
 
 	var domParser = Model.DOMParser.fromSchema(opts.schema);
+
 	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
 	var menuBarView = new Menu.MenuBarEditorView(place, {
@@ -112,10 +119,10 @@ function Editor(config, componentsConfig) {
 		domParser: domParser,
 		domSerializer: Model.DOMSerializer.fromSchema(opts.schema),
 		onAction: function(action) {
-			if (!opts.action || !opts.action(me, action)) {
+			if (!opts.action || !opts.action(main, action)) {
 				if (opts.change) {
-					var changedBlock = actionAncestorBlock(coed, action);
-					if (changedBlock) opts.change(me, changedBlock);
+					var changedBlock = actionAncestorBlock(main, action);
+					if (changedBlock) opts.change(main, changedBlock);
 				}
 				view.updateState(view.state.applyAction(action));
 			}
@@ -173,30 +180,6 @@ Editor.prototype.parse = function(dom, sel) {
 	}).content;
 };
 
-Editor.prototype.replace = function(fragment, regexp, replacer) {
-	var list = [];
-	var child, node, start, end, pos, m, str;
-	for (var i = 0; i < fragment.childCount; i++) {
-		child = fragment.child(i);
-		if (child.isText) {
-			pos = 0;
-			while (m = regexp.exec(child.text)) {
-				start = m.index;
-				end = start + m[0].length;
-				if (start > 0) list.push(child.copy(child.text.slice(pos, start)));
-				str = child.text.slice(start, end);
-				node = replacer(str) || "";
-				list.push(node);
-				pos = end;
-			}
-			if (pos < child.text.length) list.push(child.copy(child.text.slice(pos)));
-		} else {
-			list.push(child.copy(this.replace(child.content, regexp, replacer)));
-		}
-	}
-	return Model.Fragment.fromArray(list);
-};
-
 Editor.prototype.merge = function(dom, content) {
 	Object.keys(content).forEach(function(name) {
 		var contentNode = dom.querySelector('[block-content="'+name+'"]');
@@ -212,15 +195,48 @@ Editor.prototype.refresh = function(dom) {
 	var tr = new this.Transform.Transform(this.view.state.tr.doc);
 	var pos = this.posFromDOM(dom);
 	if (pos === false) return;
-	var component = this.instances[dom.getAttribute('block-type')];
-	if (!component) {
-		throw new Error("No component matching dom node was found");
+	var element = this.elements[dom.getAttribute('block-type')];
+	if (!element) {
+		throw new Error("No element matching dom node was found");
 	}
-	var attrs = Specs.rootAttributes(this, component, dom);
+	var attrs = Specs.rootAttributes(this, element, dom);
 	this.view.props.onAction({
 		type: "transform",
 		transform: tr.setNodeType(pos, null, attrs)
 	});
+};
+
+Editor.prototype.select = function(dom) {
+	var pos = this.posFromDOM(dom);
+	if (pos === false) return false;
+	var $pos = this.view.state.doc.resolve(pos);
+	return new this.State.NodeSelection($pos);
+};
+
+Editor.prototype.replace = function(src, dst) {
+	var sel = this.select(src);
+	if (!sel) return false;
+	if (!(dst instanceof Node)) {
+		dst = this.render(dst);
+	}
+	this.insert(dst, sel);
+	return true;
+};
+
+Editor.prototype.render = function(block) {
+	var type = block.type;
+	if (!type) throw new Exception("Missing block type");
+	var el = this.elements[type];
+	if (!el) throw new Exception("Missing element " + type);
+	var node = el.render(this, block);
+	if (block.id) node.setAttribute('id', block.id);
+	return node;
+};
+
+Editor.prototype.remove = function(dom) {
+	var sel = this.select(dom);
+	if (!sel) return false;
+	return this.delete(sel);
 };
 
 Editor.prototype.posFromDOM = function(dom) {
@@ -242,7 +258,7 @@ Editor.prototype.parents = function(rpos, all) {
 	while (level >= 0) {
 		if (!obj) obj = {pos: {}, node: {}};
 		node = rpos.node(level);
-		type = node.type && node.type.spec.coedType;
+		type = node.type && node.type.spec.typeName;
 		if (type) {
 			obj.pos[type] = rpos.before(level);
 			obj.node[type] = node;
@@ -258,13 +274,13 @@ Editor.prototype.parents = function(rpos, all) {
 	else return obj;
 };
 
-function actionAncestorBlock(coed, action) {
+function actionAncestorBlock(main, action) {
 	// returns the ancestor block modified by this action
 	if (action.type != "transform") return;
 	var steps = action.transform.steps;
 	var roots = [];
 	steps.forEach(function(step) {
-		var parents = coed.parents(coed.view.state.doc.resolve(step.from), true);
+		var parents = main.parents(main.view.state.doc.resolve(step.from), true);
 		parents.forEach(function(obj) {
 			var root = obj.node.root;
 			if (!root) return;
@@ -283,18 +299,18 @@ function actionAncestorBlock(coed, action) {
 		});
 	});
 	for (var i=0; i < roots.length; i++) {
-		if (roots[i].count == steps.length) return wrapBlockNode(coed, roots[i].root);
+		if (roots[i].count == steps.length) return wrapBlockNode(main, roots[i].root);
 	}
 }
 
-function wrapBlockNode(coed, node) {
+function wrapBlockNode(main, node) {
 	var type = node.type.name.substring(5);
 	return {
 		get data() {
-			return coed.toBlock(node).data;
+			return main.toBlock(node).data;
 		},
 		get content() {
-			return coed.toBlock(node, true).content;
+			return main.toBlock(node, true).content;
 		},
 		type: type,
 		node: node
@@ -314,8 +330,20 @@ Editor.prototype.toBlock = function(node, content) {
 	};
 };
 
+Editor.prototype.resolve = function(thing) {
+	var obj = {};
+	if (typeof thing == "string") obj.url = thing;
+	else obj.node = thing;
+	var block;
+	for (var i=0; i < this.resolvers.length; i++) {
+		block = this.resolvers[i](this, obj);
+		if (block) break;
+	}
+	return block;
+};
+
 function collectContent(view, node, content) {
-	var type = node.type.spec.coedType;
+	var type = node.type.spec.typeName;
 	if (type == "content") {
 		content[node.attrs.block_content] = view.props.domSerializer.serializeNode(node);
 	} else if (type != "root" || !content) {
@@ -325,5 +353,56 @@ function collectContent(view, node, content) {
 		});
 	}
 	return content;
+}
+
+function fragmentReplace(fragment, regexp, replacer) {
+	var list = [];
+	var child, node, start, end, pos, m, str;
+	for (var i = 0; i < fragment.childCount; i++) {
+		child = fragment.child(i);
+		if (child.isText) {
+			pos = 0;
+			while (m = regexp.exec(child.text)) {
+				start = m.index;
+				end = start + m[0].length;
+				if (start > 0) list.push(child.copy(child.text.slice(pos, start)));
+				str = child.text.slice(start, end);
+				node = replacer(str) || "";
+				list.push(node);
+				pos = end;
+			}
+			if (pos < child.text.length) list.push(child.copy(child.text.slice(pos)));
+		} else {
+			list.push(child.copy(resolveFragment(child.content, regexp, replacer)));
+		}
+	}
+	return Model.Fragment.fromArray(list);
+}
+
+function CreateResolversPlugin(main, opts) {
+	var readSpec = {
+		nodes: opts.schema.nodeSpec,
+		marks: opts.schema.markSpec
+	};
+	Specs.defineResolvers(main, readSpec, function(dom) {
+		var block = main.resolve(dom);
+		if (block) {
+			var node = main.render(block);
+			console.log("might not work at all");
+			dom.parentNode.replaceChild(node, dom);
+		}
+	});
+
+	return new State.Plugin({
+		props: {
+			transformPasted: function(pslice) {
+				return fragmentReplace(pslice, UrlRegex(), function(str) {
+					var block = main.resolve(str);
+					if (block) return main.parse(main.render(block)).firstChild;
+				});
+			},
+			clipboardParser: Model.DOMParser.fromSchema(new Model.Schema(readSpec))
+		}
+	});
 }
 

@@ -1,28 +1,28 @@
 exports.define = defineSpecs;
 exports.rootAttributes = rootAttributes;
+exports.defineResolvers = defineResolvers;
 
-function defineSpecs(coed, component, schemaSpecs, nodeViews, dom) {
+function defineSpecs(main, element, schemaSpecs, nodeViews, dom) {
 	var content = [];
-	var typeName, type;
 	var contentName = dom.getAttribute('block-content');
 	var specName, spec, recursive = false;
-	if (!component.index) {
-		component.index = 1;
-		spec = createRootSpec(coed, component, nodeViews, dom);
-		specName = spec.typeName;
+	if (!element.index) {
+		element.index = 1;
+		spec = createRootSpec(main, element, nodeViews, dom);
+		specName = spec.specName;
 		recursive = true;
 	} else if (contentName) {
-		spec = createContentSpec(component, nodeViews, dom);
-		spec.content = component.specs[contentName];
-		if (!spec.content) throw new Error("Missing component.specs[" + contentName + "]");
-		specName = spec.typeName + '[block_content="' + contentName + '"]';
+		spec = createContentSpec(element, nodeViews, dom);
+		spec.content = element.specs[contentName];
+		if (!spec.content) throw new Error("Missing element.specs[" + contentName + "]");
+		specName = spec.specName + '[block_content="' + contentName + '"]';
 	} else if (dom.querySelector('[block-content]')) {
-		spec = createWrapSpec(component, nodeViews, dom);
-		specName = spec.typeName;
+		spec = createWrapSpec(element, nodeViews, dom);
+		specName = spec.specName;
 		recursive = true;
 	} else {
-		spec = createHoldSpec(component, nodeViews, dom);
-		specName = spec.typeName;
+		spec = createHoldSpec(element, nodeViews, dom);
+		specName = spec.specName;
 	}
 
 	var content = [];
@@ -31,57 +31,69 @@ function defineSpecs(coed, component, schemaSpecs, nodeViews, dom) {
 		for (var i=0, child; i < childs.length; i++) {
 			child = childs.item(i);
 			if (child.nodeType != Node.ELEMENT_NODE) continue;
-			content.push(defineSpecs(coed, component, schemaSpecs, nodeViews, child));
+			content.push(defineSpecs(main, element, schemaSpecs, nodeViews, child));
 		}
 		if (content.length) spec.content = content.join(" ");
 	}
 	if (spec) {
-		schemaSpecs.nodes = schemaSpecs.nodes.addToEnd(spec.typeName, spec);
+		schemaSpecs.nodes = schemaSpecs.nodes.addToEnd(spec.specName, spec);
 	}
 	return specName;
 }
 
-function createRootSpec(coed, component, nodeViews, dom) {
+function defineResolvers(main, schemaSpecs, fn) {
+	schemaSpecs.nodes = schemaSpecs.nodes.addToStart("dom-importer", {
+		parseDOM: [{
+			tag: '*',
+			getAttrs: function(dom) {
+				fn(dom);
+				return false;
+			}
+		}]
+	});
+}
+
+function createRootSpec(main, element, nodeViews, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(Object.assign({
 		id: null,
 		block_focused: null,
-		block_type: component.name
+		block_type: element.name
 	}, defaultAttrs));
 
 	return {
-		typeName: "root_" + component.name,
-		coedType: "root",
-		group: component.group,
-		inline: !!component.inline,
+		specName: "root_" + element.name,
+		typeName: "root",
+		group: element.group,
+		inline: !!element.inline,
 		defining: true,
-		attrs: Object.assign({}, defaultSpecAttrs, specAttrs(component.properties, "data-")),
+		attrs: Object.assign({}, defaultSpecAttrs, specAttrs(element.properties, "data-")),
 		parseDOM: [{
 			tag: defaultAttrs.tag,
 			getAttrs: function(dom) {
-				var attrs = rootAttributes(coed, component, dom);
-				prepareDom(component, dom);
+				var attrs = rootAttributes(main, element, dom);
+				prepareDom(element, dom);
 				return attrs;
 			}
 		}],
 		toDOM: function(node) {
 			var dom, ex;
-			if (coed.exporter) {
-				ex = coed.toBlock(node, true);
-				if (component.output) {
-					dom = component.output(coed, ex.data, ex.content);
+			if (main.exporter) {
+				ex = main.toBlock(node, true);
+				if (element.output) {
+					dom = element.output(main, ex.data, ex.content);
 				} else {
-					dom = component.to(ex.data);
-					coed.merge(dom, ex.content);
+					dom = element.to(ex.data);
+					main.merge(dom, ex.content);
 				}
-				if (coed.exporter !== true) {
-					coed.exporter(component, dom, ex.data, ex.content);
+				if (main.exporter !== true) {
+					main.exporter(element, dom, ex.data, ex.content);
 				}
 				return dom;
 			} else {
-				ex = coed.toBlock(node);
-				dom = component.to(ex.data);
-				prepareDom(component, dom);
+				ex = main.toBlock(node);
+				dom = main.render(ex);
+				prepareDom(element, dom);
 				var attrs = Object.assign(domAttrs(node.attrs), nodeAttrs(dom));
 				return [dom.nodeName, attrs, 0];
 			}
@@ -89,29 +101,27 @@ function createRootSpec(coed, component, nodeViews, dom) {
 	};
 }
 
-function rootAttributes(coed, component, dom) {
+function rootAttributes(main, element, dom) {
 	var attrs = tagAttrs(dom);
-	var data;
-	if (coed.importer) data = coed.importer(component, dom);
-	if (data == null) data = component.from(dom);
-	for (var k in data) {
+	var data = main.resolve(dom);
+	if (data) for (var k in data) {
 		attrs['data-' + k] = data[k];
 	}
 	return attrs;
 }
 
-function createWrapSpec(component, nodeViews, dom) {
+function createWrapSpec(element, nodeViews, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
-		typeName: "wrap_" + component.name + component.index++,
-		coedType: "wrap",
+		specName: "wrap_" + element.name + element.index++,
+		typeName: "wrap",
 		attrs: defaultSpecAttrs,
 		parseDOM: [{
 			tag: domSelector(defaultAttrs),
 			getAttrs: function(dom) {
-				if (dom.coedName != component.name || dom.coedType != "wrap") return false;
+				if (!dom.pagecut || dom.pagecut.name != element.name || dom.pagecut.type != "wrap") return false;
 				return tagAttrs(dom);
 			}
 		}],
@@ -121,18 +131,18 @@ function createWrapSpec(component, nodeViews, dom) {
 	};
 }
 
-function createContentSpec(component, nodeViews, dom) {
+function createContentSpec(element, nodeViews, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
-		typeName: "content_" + component.name + component.index++,
-		coedType: "content",
+		specName: "content_" + element.name + element.index++,
+		typeName: "content",
 		attrs: defaultSpecAttrs,
 		parseDOM: [{
 			tag: defaultAttrs.tag + '[block-content="'+defaultAttrs.block_content+'"]',
 			getAttrs: function(dom) {
-				if (dom.coedName != component.name || dom.coedType != "content") return false;
+				if (!dom.pagecut || dom.pagecut.name != element.name || dom.pagecut.type != "content") return false;
 				return tagAttrs(dom);
 			}
 		}],
@@ -142,7 +152,7 @@ function createContentSpec(component, nodeViews, dom) {
 	};
 }
 
-function createHoldSpec(component, nodeViews, dom) {
+function createHoldSpec(element, nodeViews, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var sel = domSelector(defaultAttrs);
 	var defaultSpecAttrs = specAttrs(Object.assign(defaultAttrs, {
@@ -150,13 +160,13 @@ function createHoldSpec(component, nodeViews, dom) {
 	}));
 
 	return {
-		typeName: "hold_" + component.name + component.index++,
-		coedType: "hold",
+		specName: "hold_" + element.name + element.index++,
+		typeName: "hold",
 		selectable: false,
 		isLeaf: true, // replaces readonly patch
 		attrs: defaultSpecAttrs,
 		parseDOM: [{ tag: sel, getAttrs: function(dom) {
-			if (dom.coedName != component.name || dom.coedType != "hold") return false;
+			if (!dom.pagecut || dom.pagecut.name != element.name || dom.pagecut.type != "hold") return false;
 			var attrs = tagAttrs(dom);
 			attrs.html = dom.outerHTML;
 			if (defaultSpecAttrs.block_handle) dom.setAttribute('block-handle', '');
@@ -174,20 +184,21 @@ function createHoldSpec(component, nodeViews, dom) {
 	};
 }
 
-function prepareDom(component, dom) {
+function prepareDom(element, dom) {
 	var name;
 	for (var i=0, child; i < dom.childNodes.length; i++) {
 		child = dom.childNodes.item(i);
 		if (child.nodeType != Node.ELEMENT_NODE) continue;
-		child.coedName = component.name;
 		name = child.getAttribute('block-content');
+		if (!child.pagecut) child.pagecut = {};
+		child.pagecut.name = element.name;
 		if (name) {
-			child.coedType = "content";
+			child.pagecut.type = "content";
 		} else if (child.querySelector('[block-content]')) {
-			child.coedType = "wrap";
-			prepareDom(component, child);
+			child.pagecut.type = "wrap";
+			prepareDom(element, child);
 		} else {
-			child.coedType = "hold";
+			child.pagecut.type = "hold";
 		}
 	}
 }

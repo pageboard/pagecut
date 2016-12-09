@@ -4,12 +4,11 @@ FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
 .PHONY: build
-build: dist/coed.js dist/coed-link.js
+build: dist/pagecut.js dist/pagecut-inspector.js
 
 .PHONY: all
 all: clean build predist
-
-	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js coed.min.js --css coed.min.css --ignore agent.js --ignore diffDOM.js --ignore .
+	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js pagecut.min.js --css pagecut.min.css --ignore agent.js --ignore diffDOM.js --ignore .
 
 clean:
 	rm -f dist/*
@@ -17,12 +16,11 @@ clean:
 predist:
 	cp src/prosemirror*.css dist/
 
-dist/coed-link.js: src/coed-link.js
-	$(BROWSERIFY) --outfile $@ src/coed-link.js
+dist/pagecut-inspector.js: src/pagecut-inspector.js
+	$(BROWSERIFY) --outfile $@ src/pagecut-inspector.js
 
-dist/coed.js: src/*
-	#-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
-	$(BROWSERIFY) --standalone Coed --outfile $@ src/coed.js
+dist/pagecut.js: src/*
+	$(BROWSERIFY) --standalone Pagecut --outfile $@ src/pagecut.js
 
 fontopen:
 	@if test ! `which curl` ; then \
