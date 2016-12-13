@@ -2,28 +2,29 @@ exports.define = defineSpecs;
 exports.rootAttributes = rootAttributes;
 exports.defineResolvers = defineResolvers;
 
-function defineSpecs(main, element, schemaSpecs, nodeViews, dom) {
+var index;
+
+function defineSpecs(main, element, schemaSpecs, rendererName, dom) {
 	var content = [];
-	var contentName = dom.getAttribute('block-content');
+	var contentName = dom && dom.getAttribute('block-content');
 	var specName, spec, recursive = false;
-	if (!element.index) {
-		element.index = 1;
-		spec = createRootSpec(main, element, nodeViews, dom);
-		specName = spec.specName;
+	if (!dom) {
+		index = 0;
+		dom = main.render(rendererName, { type: element.name });
+		spec = createRootSpec(main, element, main.nodeViews, rendererName, dom);
 		recursive = true;
 	} else if (contentName) {
-		spec = createContentSpec(element, nodeViews, dom);
+		spec = createContentSpec(element, main.nodeViews, dom);
 		spec.content = element.specs[contentName];
 		if (!spec.content) throw new Error("Missing element.specs[" + contentName + "]");
 		specName = spec.specName + '[block_content="' + contentName + '"]';
 	} else if (dom.querySelector('[block-content]')) {
-		spec = createWrapSpec(element, nodeViews, dom);
-		specName = spec.specName;
+		spec = createWrapSpec(element, main.nodeViews, dom);
 		recursive = true;
 	} else {
-		spec = createHoldSpec(element, nodeViews, dom);
-		specName = spec.specName;
+		spec = createHoldSpec(element, main.nodeViews, dom);
 	}
+	if (!specName) specName = spec.specName;
 
 	var content = [];
 	if (recursive) {
@@ -31,11 +32,12 @@ function defineSpecs(main, element, schemaSpecs, nodeViews, dom) {
 		for (var i=0, child; i < childs.length; i++) {
 			child = childs.item(i);
 			if (child.nodeType != Node.ELEMENT_NODE) continue;
-			content.push(defineSpecs(main, element, schemaSpecs, nodeViews, child));
+			content.push(defineSpecs(main, element, schemaSpecs, rendererName, child));
 		}
 		if (content.length) spec.content = content.join(" ");
 	}
 	if (spec) {
+		// use original specName here
 		schemaSpecs.nodes = schemaSpecs.nodes.addToEnd(spec.specName, spec);
 	}
 	return specName;
@@ -53,7 +55,7 @@ function defineResolvers(main, schemaSpecs, fn) {
 	});
 }
 
-function createRootSpec(main, element, nodeViews, dom) {
+function createRootSpec(main, element, nodeViews, rendererName, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(Object.assign({
 		id: null,
@@ -77,26 +79,11 @@ function createRootSpec(main, element, nodeViews, dom) {
 			}
 		}],
 		toDOM: function(node) {
-			var dom, ex;
-			if (main.exporter) {
-				ex = main.toBlock(node, true);
-				if (element.output) {
-					dom = element.output(main, ex.data, ex.content);
-				} else {
-					dom = element.to(ex.data);
-					main.merge(dom, ex.content);
-				}
-				if (main.exporter !== true) {
-					main.exporter(element, dom, ex.data, ex.content);
-				}
-				return dom;
-			} else {
-				ex = main.toBlock(node);
-				dom = main.render(ex);
-				prepareDom(element, dom);
-				var attrs = Object.assign(domAttrs(node.attrs), nodeAttrs(dom));
-				return [dom.nodeName, attrs, 0];
-			}
+			var ex = main.toBlock(node);
+			var dom = main.render(rendererName, ex);
+			prepareDom(element, dom);
+			var attrs = Object.assign(domAttrs(node.attrs), nodeAttrs(dom));
+			return [dom.nodeName, attrs, 0];
 		}
 	};
 }
@@ -115,7 +102,7 @@ function createWrapSpec(element, nodeViews, dom) {
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
-		specName: "wrap_" + element.name + element.index++,
+		specName: "wrap_" + element.name + index++,
 		typeName: "wrap",
 		attrs: defaultSpecAttrs,
 		parseDOM: [{
@@ -136,7 +123,7 @@ function createContentSpec(element, nodeViews, dom) {
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
-		specName: "content_" + element.name + element.index++,
+		specName: "content_" + element.name + index++,
 		typeName: "content",
 		attrs: defaultSpecAttrs,
 		parseDOM: [{
@@ -160,7 +147,7 @@ function createHoldSpec(element, nodeViews, dom) {
 	}));
 
 	return {
-		specName: "hold_" + element.name + element.index++,
+		specName: "hold_" + element.name + index++,
 		typeName: "hold",
 		selectable: false,
 		isLeaf: true, // replaces readonly patch

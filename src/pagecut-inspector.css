@@ -1,6 +1,6 @@
 @import './pagecut-inspector-font.css';
 
-co-link {
+div[block-type="link"] {
 	display:inline-flex;
 	white-space: nowrap;
 	position:relative;
@@ -11,21 +11,21 @@ co-link {
 	max-width:100%;
 	margin:1px;
 }
-co-link [hidden] {
+div[block-type="link"] [hidden] {
 	display:none !important;
 }
-co-link[block-focused] {
+div[block-type="link"][block-focused] {
 	max-height:none;
 	box-shadow:1px 1px 1px #999;
 	border-color:#555;
 }
 
-co-link > header.ProseMirror-selectednode,
-co-link > aside.ProseMirror-selectednode {
+div[block-type="link"] > header.ProseMirror-selectednode,
+div[block-type="link"] > aside.ProseMirror-selectednode {
 	outline: 1px solid red; /* debugging purpose - should never happen */
 }
 
-co-link > header {
+div[block-type="link"] > header {
 	cursor:move;
 	background:#888;
 	flex: 0 0 auto;
@@ -37,15 +37,15 @@ co-link > header {
 	display:flex;
 	flex-direction:column;
 }
-co-link a[href] > * {
+div[block-type="link"] a[href] > * {
 	pointer-events: none;
 }
 
-co-link.ProseMirror-selectednode > header {
+div[block-type="link"].ProseMirror-selectednode > header {
 	background-color:#555;
 }
 
-co-link > header > [name]:after {
+div[block-type="link"] > header > [name]:after {
 	font-family: "component-font";
 	speak: none;
 	display: inline-block;
@@ -60,7 +60,7 @@ co-link > header > [name]:after {
 	color:white;
 	padding-top:.1em;
 }
-@keyframes co-link-spin {
+@keyframes block-link-spin {
 	0% {
 		transform: rotate(0deg);
 	}
@@ -69,34 +69,34 @@ co-link > header > [name]:after {
 	}
 }
 
-co-link[type="none"] > header > [name="type"]:after {
+div[block-type="link"][type="none"] > header > [name="type"]:after {
 	content: '\e832';
-	animation: co-link-spin 2s infinite linear;
+	animation: block-link-spin 2s infinite linear;
 }
-co-link[type=""] > header > [name="type"]:after { content: '\e832'; }
-co-link[type="video"] > header > [name="type"]:after { content: '\e800'; }
-co-link[type="link"] > header > [name="type"]:after { content: '\e801'; }
-co-link[type="image"] > header > [name="type"]:after { content: '\e802'; }
-co-link[type="audio"] > header > [name="type"]:after { content: '\e803'; }
-co-link[type="embed"] > header > [name="type"]:after { content: '\f10e'; }
+div[block-type="link"][type=""] > header > [name="type"]:after { content: '\e832'; }
+div[block-type="link"][type="video"] > header > [name="type"]:after { content: '\e800'; }
+div[block-type="link"][type="link"] > header > [name="type"]:after { content: '\e801'; }
+div[block-type="link"][type="image"] > header > [name="type"]:after { content: '\e802'; }
+div[block-type="link"][type="audio"] > header > [name="type"]:after { content: '\e803'; }
+div[block-type="link"][type="embed"] > header > [name="type"]:after { content: '\f10e'; }
 
-co-link[block-focused] > header > [name="preview"] {
+div[block-type="link"][block-focused] > header > [name="preview"] {
 	flex: 1 1 auto;
 	flex-direction:column;
 	justify-content:flex-end;
 	display:flex;
 }
-co-link[block-focused] > header > [name="preview"]:after {
+div[block-type="link"][block-focused] > header > [name="preview"]:after {
 	content: '\f082';
 	left:0.2em;
 	width:1.2em;
 	display:block;
 	padding-bottom:.2em;
 }
-co-link > header > [title] {
+div[block-type="link"] > header > [title] {
 	display:block;
 }
-co-link > header > [title] > img {
+div[block-type="link"] > header > [title] > img {
 	max-width:1.2em;
 	display:inline-block;
 	margin:0 auto;
@@ -106,7 +106,7 @@ co-link > header > [title] > img {
 	margin-bottom:.2em;
 }
 
-co-link > aside {
+div[block-type="link"] > aside {
 	background-color:#666;
 	flex: 0 2 auto;
 	display:flex;
@@ -116,7 +116,7 @@ co-link > aside {
 	cursor:pointer;
 }
 
-co-link > aside > figure {
+div[block-type="link"] > aside > figure {
 	flex: 1 1 auto;
 	min-height:0;
 	min-width:66%;
@@ -124,17 +124,17 @@ co-link > aside > figure {
 	display:flex;
 	margin:0;
 }
-co-link > aside > figure:empty {
+div[block-type="link"] > aside > figure:empty {
 	display:none;
 }
 
-co-link > aside > figure > img {
+div[block-type="link"] > aside > figure > img {
 	width: 100%;
 	align-self:center;
 	max-height:8em;
 	box-shadow:0px 0px 3px white;
 }
-co-link > aside > div > p {
+div[block-type="link"] > aside > div > p {
 	white-space: normal;
 	color:#eee;
 	margin: 0 0.3em;
@@ -145,7 +145,7 @@ co-link > aside > div > p {
 	text-align:left;
 	padding:.3em;
 }
-co-link > aside > div {
+div[block-type="link"] > aside > div {
 	flex: 1 1 auto;
 	font-family: monospace;
 	white-space: normal;
@@ -153,10 +153,10 @@ co-link > aside > div {
 	min-width:50%;
 	color:#eee;
 }
-co-link > aside > div:empty {
+div[block-type="link"] > aside > div:empty {
 	display:none;
 }
-co-link > aside > div > div {
+div[block-type="link"] > aside > div > div {
 	float:right;
 	margin-right:0.15em;
 	background-color:#444;
@@ -164,19 +164,19 @@ co-link > aside > div > div {
 	border-bottom-left-radius:.3em;
 	padding:.1em;
 }
-co-link > aside > div > div > span {
+div[block-type="link"] > aside > div > div > span {
 	float:right;
 	clear:both;
 	padding-left:0.2em;
 }
 
-co-link > div {
+div[block-type="link"] > div {
 	flex: 1 1 auto;
 	padding-top:.1em;
 	background:#eee;
 	padding-right:.1em;
 }
-co-link > div > div[block-content] {
+div[block-type="link"] > div > div[block-content] {
 	display: block;
 	overflow:hidden;
 	text-overflow:ellipsis;
@@ -188,56 +188,56 @@ co-link > div > div[block-content] {
 	font-size:.95em;
 	margin-top:0.1em;
 }
-co-link[block-focused] > div > div[block-content] {
+div[block-type="link"][block-focused] > div > div[block-content] {
 	white-space: pre-wrap;
 }
 
-co-link[block-focused] > div {
+div[block-type="link"][block-focused] > div {
 	background:#fff;
 }
 
-co-link > div > div[block-content]:before {
+div[block-type="link"] > div > div[block-content]:before {
 	color:grey;
 	font-family:sans-serif;
 	letter-spacing:-1px;
 	font-size:0.8em;
 }
 
-co-link > div > div[block-content="title"]:before {
+div[block-type="link"] > div > div[block-content="title"]:before {
 	content: 'Title: ';
 }
-co-link > div > div[block-content="content"] {
+div[block-type="link"] > div > div[block-content="content"] {
 	display:none;
 }
 
 /* image type */
 
-co-link[type="image"] > div > div[block-content="content"] {
+div[block-type="link"][type="image"] > div > div[block-content="content"] {
 	display:inline-block;
 }
-co-link[type="image"] > div > div[block-content="content"]:before {
+div[block-type="link"][type="image"] > div > div[block-content="content"]:before {
 	content: 'Credit: ';
 }
 
 
 /* link type */
-co-link[type="link"] > header > [name="preview"],
-co-link:not([block-focused])[type="link"] > header > [name="type"] {
+div[block-type="link"][type="link"] > header > [name="preview"],
+div[block-type="link"]:not([block-focused])[type="link"] > header > [name="type"] {
 	display:none;
 }
-co-link:not([block-focused])[type="link"] {
+div[block-type="link"]:not([block-focused])[type="link"] {
 	height:1.4em;
 }
-co-link[type="link"]:not([block-focused]) > header {
+div[block-type="link"][type="link"]:not([block-focused]) > header {
 	display:flex;
 	align-items:center;
 }
-co-link:not([block-focused])[type="link"]> header > img {
+div[block-type="link"]:not([block-focused])[type="link"]> header > img {
 	margin:0;
 }
-co-link[type="link"] > div > div[block-content="content"] {
+div[block-type="link"][type="link"] > div > div[block-content="content"] {
 	display:block;
 }
-co-link[type="link"] > div > div[block-content="content"]:before {
+div[block-type="link"][type="link"] > div > div[block-content="content"]:before {
 	content: 'Content: ';
 }

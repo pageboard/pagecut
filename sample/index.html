@@ -54,6 +54,23 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	var contentNode = document.getElementById("content");
+
+	Pagecut.cache.set("https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale", {
+		type: 'link',
+		url: "https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale",
+		data: {
+			mime: 'text/html; charset=UTF-8',
+			type: 'link',
+			title: 'SESAM-Vitale — Wikipédia',
+			icon: 'https://fr.wikipedia.org/static/favicon/wikipedia.ico',
+			size: 140064,
+			site: 'fr.wikipedia.org',
+			ext: 'html',
+			html: '<a href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale">SESAM-Vitale — Wikipédia</a>'
+		},
+		content: {}
+	});
+
 	// expose pagecut instance for debug purpose only
 	window.pagecut = new Pagecut({
 		menu: function(me, items) {
@@ -70,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				var from = document.getElementById('preview');
 				var to = document.createElement('div');
 				to.id = 'preview';
-				to.appendChild(me.get());
+				to.appendChild(me.get('view'));
 				differ.apply(from, differ.diff(from, to));
 			});
 		},
@@ -98,7 +115,7 @@ Pagecut demo.
 
 <div id="content">
 <p>a</p>
-<co-link type="link">
+<div data-type="link" block-type="link" block-url="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale">
 	<header>
 		<a name="type"></a>
 		<a title="fr.wikipedia.org" target="_blank" href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale"><img src="https://fr.wikipedia.org/static/favicon/wikipedia.ico"></a>
@@ -107,7 +124,7 @@ Pagecut demo.
 	<div>
 		<div block-content="title"><span>SESdAM-Vitale — Wikipédia</span></div>
 		<div block-content="content"><p><span>Ceci est un lien qui contient une image</span></p>
-			<co-link type="image">
+			<div block-type="link" data-type="image">
 				<header>
 					<a name="type"></a>
 					<a title="pixabay.com" target="_blank" href="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg"><img src="https://pixabay.com/favicon-32x32.png"></a>
@@ -147,7 +164,7 @@ Pagecut demo.
 	<script type="text/html"><a href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale">SESAM-Vitale — Wikipédia</a></script>
 </co-link>
 <p>hahaha</p>
-<co-link type="image">
+<!--co-link type="image">
 	<header>
 		<a name="type"></a>
 		<a title="drscdn.500px.org" href="https://drscdn.500px.org/photo/168419471/q%3D80_m%3D1500/aa9b735cd1e6df5297ee7efc9eacca97" target="_blank">
@@ -202,7 +219,7 @@ Pagecut demo.
 
 <p>a</p>
 <co-link type="link"><header><a name="type"></a><a title="fr.wikipedia.org" target="_blank" href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale"><img src="https://fr.wikipedia.org/static/favicon/wikipedia.ico"></a><a name="preview"></a></header><div><div block-content="title">SESAM-Vitale — Wikipédia</div><div block-content="content"><p></p></div></div><aside><div><div><span title="dimensions"></span><span title="duration"></span><span title="size"></span></div><p></p></div><figure></figure></aside><script type="text/html"><a href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale">SESAM-Vitale — Wikipédia</a></script></co-link>
-<p>e</p>
+<p>e</p-->
 </div>
 
 <div id="preview"></div>

@@ -35,32 +35,30 @@ Inspector.specs = {
 	content: "block+"
 };
 
-function inspectorResolver(main, obj) {
-	if (!obj.url) return;
-	var id = 'id-' + Date.now();
-	(main.config.inspector || defaultInspector)(obj.url, function(err, info) {
-		var oldDom = document.getElementById(id);
-		if (!oldDom) {
-			return;
-		}
-		if (err) {
-			console.error(err);
-			main.remove(oldDom);
-		} else {
-			main.replace(oldDom, {
-				type: 'link',
-				data: info,
-				content: {
-					title: info.title
-				}
-			});
-		}
+function inspectorResolver(main, obj, cb) {
+	var url = obj.url || obj.node && obj.node.getAttribute('block-url');
+	if (!url) return;
+	var block = main.cache.get(url);
+	if (block) return block;
+	console.log("inspectorResolver", url);
+	(main.shared.inspector || defaultInspector)(url, function(err, info) {
+		if (err) return cb(err);
+		var block = {
+			type: 'link',
+			url: url,
+			data: info,
+			content: {
+				title: info.title
+			}
+		};
+		main.cache.set(url, block);
+		cb(null, block);
 	});
 	return {
 		type: 'link',
-		id: id,
+		url: url,
 		data: {
-			url: url
+			type: 'none'
 		},
 		content: {
 			title: url
@@ -70,21 +68,16 @@ function inspectorResolver(main, obj) {
 
 function defaultInspector(url, cb) {
 	setTimeout(function() {
-		cb(null, {
-			type: 'link',
-			data: {
-				url: url
-			},
-			content: {
-				title: url
-			}
-		});
+		cb(null, {url: url, title: url});
 	});
 }
 
-Inspector.editAs = function(main, block) {
+Inspector.editRender = function(main, block) {
+	console.log(block);
 	var data = block.data;
-	var node = document.createElement('co-link');
+	var node = document.createElement('div');
+	if (block.type) node.setAttribute('block-type', block.type);
+	if (block.url) node.setAttribute('block-url', block.url);
 	node.innerHTML = '<header block-handle><a name="type"></a><a title="" target="_blank"></a><a name="preview"></a></header><div>\
 <div block-content="title"></div><div block-content="content"></div>\
 </div><aside><div><div></div><p></p></div><figure></figure></aside><script type="text/html"></script>';
@@ -118,14 +111,15 @@ Inspector.editAs = function(main, block) {
 	return node;
 };
 
-Inspector.publishAs = function(main, block) {
+Inspector.viewRender = function(main, block) {
 	var data = block.data;
 	var content = block.content;
 	if (data.type == "link") {
 		var anchor = document.createElement('a');
 		anchor.href = data.url;
-		anchor.setAttribute('title', content.title.innerHTML);
-		anchor.innerHTML = content.content.innerHTML;
+		if (content.title) anchor.setAttribute('title', content.title.innerHTML);
+		else anchor.removeAttribute('title');
+		anchor.innerHTML = content.content && content.content.innerHTML || '';
 		return anchor;
 	} else if (data.html) {
 		var div = document.createElement('div');
@@ -136,7 +130,7 @@ Inspector.publishAs = function(main, block) {
 		div.innerHTML = data.html;
 		return div;
 	} else {
-		return Inspector.render(main, block);
+		return Inspector.editRender(main, block);
 	}
 };
 
