@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	var contentNode = document.getElementById("content");
 
-	Pagecut.cache.set("https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale", {
+	Pagecut.cache.set([{
 		type: 'link',
 		url: "https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale",
 		data: {
@@ -67,9 +67,23 @@ document.addEventListener('DOMContentLoaded', function() {
 			site: 'fr.wikipedia.org',
 			ext: 'html',
 			html: '<a href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale">SESAM-Vitale — Wikipédia</a>'
-		},
-		content: {}
-	});
+		}
+	}, {
+		type: "link",
+		url: "https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg",
+		data: {
+			mime: 'image/jpeg',
+			type: 'image',
+			size: 38173,
+			title: 'cat-1551783__340.jpg',
+			ext: 'jpg',
+			width: 513,
+			height: 340,
+			site: 'pixabay.com',
+			html: '<img src="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg" alt="cat-1551783__340.jpg" />',
+			icon: 'https://pixabay.com/favicon-32x32.png'
+		}
+	}]);
 
 	// expose pagecut instance for debug purpose only
 	window.pagecut = new Pagecut({
@@ -124,29 +138,7 @@ Pagecut demo.
 	<div>
 		<div block-content="title"><span>SESdAM-Vitale — Wikipédia</span></div>
 		<div block-content="content"><p><span>Ceci est un lien qui contient une image</span></p>
-			<div block-type="link" data-type="image">
-				<header>
-					<a name="type"></a>
-					<a title="pixabay.com" target="_blank" href="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg"><img src="https://pixabay.com/favicon-32x32.png"></a>
-					<a name="preview"></a>
-				</header>
-				<div>
-					<div block-content="title"><span>cat-1551783__340.jpg</span></div>
-					<div block-content="content">@monauteur.com</div>
-				</div>
-				<aside>
-					<div>
-						<div>
-							<span title="dimensions">513x340</span>
-							<span title="duration"></span>
-							<span title="size">38KB</span>
-						</div>
-						<p></p>
-					</div>
-					<figure><img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"></figure>
-				</aside>
-				<script type="text/html"><img src="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg" alt="cat-1551783__340.jpg" /></script>
-			</co-link>
+			<div block-type="link" block-url="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg"></div>
 			<p><span>et avec du texte en dessous aussi</span></p>
 		</div>
 	</div>
@@ -162,7 +154,7 @@ Pagecut demo.
 		<figure></figure>
 	</aside>
 	<script type="text/html"><a href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale">SESAM-Vitale — Wikipédia</a></script>
-</co-link>
+</div>
 <p>hahaha</p>
 <!--co-link type="image">
 	<header>

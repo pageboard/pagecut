@@ -56,7 +56,6 @@ function inspectorResolver(main, obj, cb) {
 	});
 	return {
 		type: 'link',
-		url: url,
 		data: {
 			type: 'none'
 		},

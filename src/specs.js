@@ -60,6 +60,7 @@ function createRootSpec(main, element, nodeViews, rendererName, dom) {
 	var defaultSpecAttrs = specAttrs(Object.assign({
 		id: null,
 		block_focused: null,
+		block_url: null,
 		block_type: element.name
 	}, defaultAttrs));
 

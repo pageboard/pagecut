@@ -316,6 +316,7 @@ Editor.prototype.toBlock = function(node, content) {
 		}
 	}
 	return {
+		url: node.attrs.block_url,
 		type: node.attrs.block_type,
 		data: data,
 		content: content ? collectContent(this.view, node) : null
@@ -332,9 +333,7 @@ Editor.prototype.resolve = function(thing) {
 		syncBlock = this.resolvers[i](main, obj, function(err, block) {
 			// no scope issue because syncBlock won't change
 			var oldDom = document.getElementById(syncBlock.id);
-			if (!oldDom) {
-				return;
-			}
+			if (!oldDom) return;
 			if (err) {
 				console.error(err);
 				main.remove(oldDom);
@@ -344,7 +343,7 @@ Editor.prototype.resolve = function(thing) {
 		});
 		if (syncBlock) break;
 	}
-	if (syncBlock) syncBlock.id = 'id-' + Date.now();
+	if (syncBlock && !syncBlock.url) syncBlock.id = "id-" + Date.now();
 	return syncBlock;
 };
 
