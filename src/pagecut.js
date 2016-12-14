@@ -185,11 +185,7 @@ Editor.prototype.refresh = function(dom) {
 	var tr = new this.Transform.Transform(this.view.state.tr.doc);
 	var pos = this.posFromDOM(dom);
 	if (pos === false) return;
-	var element = this.elements[dom.getAttribute('block-type')];
-	if (!element) {
-		throw new Error("No element matching dom node was found");
-	}
-	var attrs = Specs.rootAttributes(this, element, dom);
+	var attrs = Specs.rootAttributes(this, dom);
 	this.view.props.onAction({
 		type: "transform",
 		transform: tr.setNodeType(pos, null, attrs)
@@ -303,30 +299,14 @@ function wrapBlockNode(main, node) {
 	var type = node.type.name.substring(5);
 	return {
 		get data() {
-			return main.toBlock(node).data;
+			return Specs.nodeToData(node);
 		},
 		get content() {
-			return main.toBlock(node, true).content;
+			return Specs.nodeToContent(main, node);
 		},
-		type: type,
-		node: node
+		type: type
 	};
 }
-
-Editor.prototype.toBlock = function(node, content) {
-	var data = {};
-	for (var k in node.attrs) {
-		if (k.indexOf('data-') == 0) {
-			data[k.substring(5)] = node.attrs[k];
-		}
-	}
-	return {
-		url: node.attrs.block_url,
-		type: node.attrs.block_type,
-		data: data,
-		content: content ? collectContent(this.view, node) : null
-	};
-};
 
 Editor.prototype.resolve = function(thing) {
 	var obj = {};
@@ -352,18 +332,6 @@ Editor.prototype.resolve = function(thing) {
 	return syncBlock;
 };
 
-function collectContent(view, node, content) {
-	var type = node.type.spec.typeName;
-	if (type == "content") {
-		content[node.attrs.block_content] = view.props.domSerializer.serializeNode(node);
-	} else if (type != "root" || !content) {
-		if (!content) content = {};
-		node.forEach(function(child) {
-			collectContent(view, child, content);
-		});
-	}
-	return content;
-}
 
 function fragmentReplace(fragment, regexp, replacer) {
 	var list = [];

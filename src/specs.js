@@ -1,5 +1,7 @@
 exports.define = defineSpecs;
 exports.rootAttributes = rootAttributes;
+exports.nodeToData = nodeToData;
+exports.nodeToContent = nodeToContent;
 
 var index;
 
@@ -59,16 +61,25 @@ function createRootSpec(main, element, nodeViews, rendererName, dom) {
 		defining: true,
 		attrs: Object.assign({}, defaultSpecAttrs, specAttrs(element.properties, "data-")),
 		parseDOM: [{
-			tag: defaultAttrs.tag,
+			tag: rootSelector(defaultAttrs),
 			getAttrs: function(dom) {
-				var attrs = rootAttributes(main, element, dom);
+				var attrs = rootAttributes(main, dom);
 				prepareDom(element, dom);
 				return attrs;
 			}
 		}],
 		toDOM: function(node) {
-			var ex = main.toBlock(node);
-			var dom = main.render(rendererName, ex);
+			var view = rendererName == "view";
+			var type = node.type.typeName;
+			if (view) return main.render(rendererName, {
+				type: node.attrs.block_type,
+				data: nodeToData(node),
+				content: nodeToContent(main, node)
+			});
+			var dom = main.render(rendererName, {
+				type: node.attrs.block_type,
+				data: nodeToData(node)
+			});
 			prepareDom(element, dom);
 			var attrs = Object.assign(domAttrs(node.attrs), nodeAttrs(dom));
 			return [dom.nodeName, attrs, 0];
@@ -76,12 +87,38 @@ function createRootSpec(main, element, nodeViews, rendererName, dom) {
 	};
 }
 
-function rootAttributes(main, element, dom) {
-	var attrs = tagAttrs(dom);
-	var data = main.resolve(dom);
-	if (data) for (var k in data) {
-		attrs['data-' + k] = data[k];
+function nodeToData(node) {
+	var data = {};
+	for (var k in node.attrs) {
+		if (k.indexOf('data-') == 0) {
+			data[k.substring(5)] = node.attrs[k];
+		}
 	}
+	return data;
+}
+
+function nodeToContent(main, node, content) {
+	var type = node.type.spec.typeName;
+	if (type == "content") {
+		content[node.attrs.block_content] = main.serializers.view.serializeNode(node);
+	} else if (type != "root" || !content) {
+		if (!content) content = {};
+		node.forEach(function(child) {
+			nodeToContent(main, child, content);
+		});
+	}
+	return content;
+}
+
+function rootAttributes(main, dom) {
+	var attrs = tagAttrs(dom);
+	var block = main.resolve(dom);
+	if (block) {
+		for (var k in block.data) {
+			attrs['data-' + k] = block.data[k];
+		}
+	}
+	console.log("rootAttributes", attrs);
 	return attrs;
 }
 
@@ -225,5 +262,10 @@ function domSelector(attrs) {
 	var sel = attrs.tag;
 	var className = attrs.class;
 	if (className) sel += "." + className.split(' ').join('.');
+	return sel;
+}
+
+function rootSelector(attrs) {
+	var sel = attrs.tag + '[block-type="'+attrs.block_type+'"]';
 	return sel;
 }
