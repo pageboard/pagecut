@@ -316,7 +316,7 @@ Editor.prototype.resolve = function(thing) {
 	var main = this;
 	for (var i=0; i < this.resolvers.length; i++) {
 		syncBlock = this.resolvers[i](main, obj, function(err, block) {
-			// no scope issue because syncBlock won't change
+			// no scope issue because syncBlock won't change after break
 			var oldDom = document.getElementById(syncBlock.id);
 			if (!oldDom) return;
 			if (err) {
