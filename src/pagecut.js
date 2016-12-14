@@ -73,6 +73,10 @@ function Editor(opts, shared) {
 	});
 	*/
 
+	this.parsers = {
+		edit: Model.DOMParser.fromSchema(editSchema)
+	};
+
 	opts.plugins.push(
 		CreatePlugin(main, opts),
 		Input.inputRules({
@@ -85,10 +89,6 @@ function Editor(opts, shared) {
 		CreateResolversPlugin(main, opts),
 		DropCursor(opts)
 	);
-
-	this.parsers = {
-		edit: Model.DOMParser.fromSchema(editSchema)
-	};
 
 	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
