@@ -107,8 +107,9 @@ Handler.prototype.mousedown = function(view, e) {
 
 	var $root = view.state.tr.doc.resolve(cpos.root);
 
-	var action = view.state.tr.setSelection(new this.main.State.NodeSelection($root)).action();
-	view.updateState(view.state.applyAction(action));
+	view.props.onAction(
+		view.state.tr.setSelection(new this.main.State.NodeSelection($root)).action()
+	);
 
 	var dom = posToNode(this.main, view, cpos.root);
 	if (dom) dom = dom.querySelector('[block-handle]');
@@ -130,7 +131,7 @@ Handler.prototype.mouseup = function(view, e) {
 			// this is a workaround
 			setTimeout(function() {
 				var action = view.state.tr.setSelection(new main.State.TextSelection(view.state.tr.selection.$from)).action();
-				view.updateState(view.state.applyAction(action));
+				view.props.onAction(action);
 			});
 		}
 	}
