@@ -75,7 +75,13 @@ function Editor(opts, shared) {
 
 	opts.plugins.push(
 		CreatePlugin(main, opts),
-		CreateSetupPlugin(main, opts, editSchema),
+		Input.inputRules({
+			rules: Input.allInputRules.concat(Setup.buildInputRules(editSchema))
+		}),
+		keymap(Setup.buildKeymap(editSchema, opts.mapKeys)),
+		keymap(Commands.baseKeymap),
+		history(),
+		CreateMenuPlugin(main, opts, editSchema),
 		CreateResolversPlugin(main, opts),
 		DropCursor(opts)
 	);
@@ -419,23 +425,17 @@ function defaultMenu(main, items) {
 	return items.fullMenu;
 }
 
-function CreateSetupPlugin(main, options, editSchema) {
-	var deps = [
-		Input.inputRules({
-			rules: Input.allInputRules.concat(Setup.buildInputRules(editSchema))
-		}),
-		keymap(Setup.buildKeymap(editSchema, options.mapKeys)),
-		keymap(Commands.baseKeymap)
-	];
-	if (options.history !== false) deps.push(history());
-	var menu = options.menu(main, Setup.buildMenuItems(editSchema));
+function CreateMenuPlugin(main, opts, editSchema) {
+	var menu = opts.menu(main, Setup.buildMenuItems(editSchema)).map(function(group) {
+		return group.filter(function(x) {
+			// remove undefined items
+			return !!x;
+		});
+	});
 
 	return new State.Plugin({
 		props: {
-			menuContent: menu.map(function(group) { return group.filter(function(x) {
-				// remove undefined items
-				return !!x;
-			}); }),
+			menuContent: menu,
 			floatingMenu: true
 		}
 	});
