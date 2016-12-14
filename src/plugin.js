@@ -29,14 +29,17 @@ function Handler(main, options) {
 }
 
 Handler.prototype.command = function(state, onAction, view) {
-	var bef = state.tr.selection.$to.nodeBefore;
-
+	var sel = state.tr.selection;
+	var bef = sel.$to.nodeBefore;
 	if (bef && bef.type.name == "hard_break") {
-		this.main.Commands.deleteCharBefore(state, onAction);
-		// just let other plugins split the block properly
+		if (sel.empty) {
+			onAction(state.tr.delete(sel.$to.pos - 1, sel.$to.pos).scrollAction());
+		}
+		// fall through
 		return false;
 	} else {
-		onAction(state.tr.replaceSelection(state.schema.nodes.hard_break.create()).scrollAction());
+		onAction(state.tr.replaceSelectionWith(state.schema.nodes.hard_break.create()).scrollAction());
+		// stop here
 		return true;
 	}
 };
