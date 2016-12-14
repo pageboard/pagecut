@@ -83,9 +83,10 @@ Handler.prototype.focus = function(view, $pos) {
 	flist.forEach(function(foc) {
 		main.refresh(foc);
 	});
-	if (dom) {
+	if (dom && !dom.hasAttribute('block-focused')) {
 		dom.setAttribute('block-focused', '');
 		main.refresh(dom);
+		return false;
 	}
 };
 
