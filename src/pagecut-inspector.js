@@ -115,7 +115,7 @@ Inspector.viewRender = function(main, block) {
 	var content = block.content;
 	if (data.type == "link") {
 		var anchor = document.createElement('a');
-		anchor.href = data.url;
+		anchor.href = block.url;
 		if (content.title) anchor.setAttribute('title', content.title.innerHTML);
 		else anchor.removeAttribute('title');
 		anchor.innerHTML = content.content && content.content.innerHTML || '';
