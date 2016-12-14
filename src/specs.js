@@ -1,6 +1,5 @@
 exports.define = defineSpecs;
 exports.rootAttributes = rootAttributes;
-exports.defineResolvers = defineResolvers;
 
 var index;
 
@@ -41,18 +40,6 @@ function defineSpecs(main, element, schemaSpecs, rendererName, dom) {
 		schemaSpecs.nodes = schemaSpecs.nodes.addToEnd(spec.specName, spec);
 	}
 	return specName;
-}
-
-function defineResolvers(main, schemaSpecs, fn) {
-	schemaSpecs.nodes = schemaSpecs.nodes.addToStart("dom-importer", {
-		parseDOM: [{
-			tag: '*',
-			getAttrs: function(dom) {
-				fn(dom);
-				return false;
-			}
-		}]
-	});
 }
 
 function createRootSpec(main, element, nodeViews, rendererName, dom) {

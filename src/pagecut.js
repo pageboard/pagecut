@@ -391,19 +391,6 @@ function fragmentReplace(fragment, regexp, replacer) {
 }
 
 function CreateResolversPlugin(main, opts) {
-	var readSpec = {
-		nodes: opts.nodeSpec,
-		marks: opts.markSpec
-	};
-	Specs.defineResolvers(main, readSpec, function(dom) {
-		var block = main.resolve(dom);
-		if (block) {
-			var node = main.render('edit', block);
-			console.log("might not work at all");
-			dom.parentNode.replaceChild(node, dom);
-		}
-	});
-
 	return new State.Plugin({
 		props: {
 			transformPasted: function(pslice) {
@@ -415,8 +402,7 @@ function CreateResolversPlugin(main, opts) {
 					if (block) return main.parse(main.render('edit', block)).firstChild;
 				});
 				return new Model.Slice(frag, pslice.openLeft, pslice.openRight);
-			},
-			clipboardParser: Model.DOMParser.fromSchema(new Model.Schema(readSpec))
+			}
 		}
 	});
 }
