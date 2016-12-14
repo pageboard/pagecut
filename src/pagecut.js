@@ -123,7 +123,6 @@ function getRendererSchema(main, opts, rendererName) {
 		main.elements[el.name] = el;
 		Specs.define(main, el, spec, rendererName);
 	});
-	console.log(spec);
 
 	return new Model.Schema(spec);
 }

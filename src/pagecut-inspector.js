@@ -40,7 +40,6 @@ function inspectorResolver(main, obj, cb) {
 	if (!url) return;
 	var block = main.cache.get(url);
 	if (block) return block;
-	console.log("inspectorResolver", url);
 	(main.shared.inspector || defaultInspector)(url, function(err, info) {
 		if (err) return cb(err);
 		var block = {
@@ -72,7 +71,6 @@ function defaultInspector(url, cb) {
 }
 
 Inspector.editRender = function(main, block) {
-	console.log(block);
 	var data = block.data;
 	var node = document.createElement('div');
 	if (block.type) node.setAttribute('block-type', block.type);
