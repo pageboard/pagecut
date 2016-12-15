@@ -1,7 +1,7 @@
 exports.define = defineSpecs;
-exports.rootAttributes = rootAttributes;
 exports.nodeToData = nodeToData;
 exports.nodeToContent = nodeToContent;
+exports.blockToAttr = blockToAttr;
 
 var index;
 
@@ -63,9 +63,16 @@ function createRootSpec(main, element, nodeViews, rendererName, dom) {
 		parseDOM: [{
 			tag: rootSelector(defaultAttrs),
 			getAttrs: function(dom) {
-				var attrs = rootAttributes(main, dom);
+				var block = main.resolve(dom);
+				var newDom = main.render(rendererName, block);
+				while (dom.firstChild) dom.removeChild(dom.firstChild);
+				while (newDom.firstChild) dom.appendChild(newDom.firstChild);
+				for (var k in newDom.attributes) {
+					var att = newDom.attributes[k];
+					dom.setAttribute(att.name, att.value);
+				}
 				prepareDom(element, dom);
-				return attrs;
+				return blockToAttr(block);
 			}
 		}],
 		toDOM: function(node) {
@@ -73,15 +80,19 @@ function createRootSpec(main, element, nodeViews, rendererName, dom) {
 			var type = node.type.typeName;
 			if (view) return main.render(rendererName, {
 				type: node.attrs.block_type,
+				url: node.attrs.block_url,
 				data: nodeToData(node),
 				content: nodeToContent(main, node)
 			});
 			var dom = main.render(rendererName, {
 				type: node.attrs.block_type,
+				url: node.attrs.block_url,
 				data: nodeToData(node)
 			});
 			prepareDom(element, dom);
 			var attrs = Object.assign(domAttrs(node.attrs), nodeAttrs(dom));
+			if (attrs.block_focused) dom.setAttribute('block-focused', '');
+			else if (dom.hasAttribute('block-focused')) dom.removeAttribute('block-focused');
 			return [dom.nodeName, attrs, 0];
 		}
 	};
@@ -110,15 +121,18 @@ function nodeToContent(main, node, content) {
 	return content;
 }
 
-function rootAttributes(main, dom) {
-	var attrs = tagAttrs(dom);
-	var block = main.resolve(dom);
-	if (block) {
-		for (var k in block.data) {
-			attrs['data-' + k] = block.data[k];
-		}
+function parseRoot(dom) {
+
+}
+
+function blockToAttr(block) {
+	var attrs = {};
+	for (var k in block.data) {
+		attrs['data-' + k] = block.data[k];
 	}
-	console.log("rootAttributes", attrs);
+	attrs.block_type = block.type;
+	attrs.block_url = block.url;
+	attrs.block_focused = block.focused;
 	return attrs;
 }
 

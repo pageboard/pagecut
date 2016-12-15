@@ -185,10 +185,11 @@ Editor.prototype.refresh = function(dom) {
 	var tr = new this.Transform.Transform(this.view.state.tr.doc);
 	var pos = this.posFromDOM(dom);
 	if (pos === false) return;
-	var attrs = Specs.rootAttributes(this, dom);
+	var block = this.resolve(dom);
+	if (!block) return;
 	this.view.props.onAction({
 		type: "transform",
-		transform: tr.setNodeType(pos, null, attrs)
+		transform: tr.setNodeType(pos, null, Specs.blockToAttr(block))
 	});
 };
 
@@ -323,15 +324,19 @@ Editor.prototype.resolve = function(thing) {
 				console.error(err);
 				main.remove(oldDom);
 			} else {
+				if (syncBlock.focused) block.focused = true;
+				else delete block.focused;
 				main.replace(oldDom, block);
 			}
 		});
 		if (syncBlock) break;
 	}
-	if (syncBlock && !syncBlock.url) syncBlock.id = "id-" + Date.now();
+	if (!syncBlock) return;
+	if (!syncBlock.url) syncBlock.id = "id-" + Date.now();
+	if (obj.node && obj.node.hasAttribute('block-focused')) syncBlock.focused = true;
+	else delete syncBlock.focused;
 	return syncBlock;
 };
-
 
 function fragmentReplace(fragment, regexp, replacer) {
 	var list = [];
@@ -361,11 +366,8 @@ function CreateResolversPlugin(main, opts) {
 	return new State.Plugin({
 		props: {
 			transformPasted: function(pslice) {
-				console.log("paste");
 				var frag = fragmentReplace(pslice.content, UrlRegex(), function(str) {
-					console.log("pasted url", str);
 					var block = main.resolve(str);
-					console.log("resolved to", block);
 					if (block) return main.parse(main.render('edit', block)).firstChild;
 				});
 				return new Model.Slice(frag, pslice.openLeft, pslice.openRight);
