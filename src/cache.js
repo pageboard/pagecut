@@ -5,7 +5,9 @@ function Cache() {
 }
 
 Cache.prototype.get = function(url) {
-	return this.store[url];
+	var data = this.store[url];
+	data.url = url;
+	return data;
 };
 
 Cache.prototype.set = function(data) {
