@@ -210,6 +210,33 @@ Editor.prototype.replace = function(src, dst) {
 	return true;
 };
 
+Editor.prototype.resolve = function(thing) {
+	var obj = {};
+	if (typeof thing == "string") obj.url = thing;
+	else obj.node = thing;
+	var syncBlock;
+	var main = this;
+	for (var i=0; i < this.resolvers.length; i++) {
+		syncBlock = this.resolvers[i](main, obj, function(err, block) {
+			// no scope issue because syncBlock won't change after break
+			var oldDom = document.getElementById(syncBlock.id);
+			if (!oldDom) return;
+			if (err) {
+				console.error(err);
+				main.remove(oldDom);
+			} else {
+				if (syncBlock.focused) block.focused = true;
+				else delete block.focused;
+				main.replace(oldDom, block);
+			}
+		});
+		if (syncBlock) break;
+	}
+	if (!syncBlock) return;
+	if (!syncBlock.url) syncBlock.id = "id-" + Date.now();
+	return syncBlock;
+};
+
 Editor.prototype.render = function(renderer, block) {
 	var type = block.type;
 	if (!type) throw new Error("Missing block type");
@@ -308,35 +335,6 @@ function wrapBlockNode(main, node) {
 		type: type
 	};
 }
-
-Editor.prototype.resolve = function(thing) {
-	var obj = {};
-	if (typeof thing == "string") obj.url = thing;
-	else obj.node = thing;
-	var syncBlock;
-	var main = this;
-	for (var i=0; i < this.resolvers.length; i++) {
-		syncBlock = this.resolvers[i](main, obj, function(err, block) {
-			// no scope issue because syncBlock won't change after break
-			var oldDom = document.getElementById(syncBlock.id);
-			if (!oldDom) return;
-			if (err) {
-				console.error(err);
-				main.remove(oldDom);
-			} else {
-				if (syncBlock.focused) block.focused = true;
-				else delete block.focused;
-				main.replace(oldDom, block);
-			}
-		});
-		if (syncBlock) break;
-	}
-	if (!syncBlock) return;
-	if (!syncBlock.url) syncBlock.id = "id-" + Date.now();
-	if (obj.node && obj.node.hasAttribute('block-focused')) syncBlock.focused = true;
-	else delete syncBlock.focused;
-	return syncBlock;
-};
 
 function fragmentReplace(fragment, regexp, replacer) {
 	var list = [];
