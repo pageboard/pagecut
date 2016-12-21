@@ -53,6 +53,7 @@ Handler.prototype.event = function(view, e) {
 };
 
 Handler.prototype.click = function(view, pos, e) {
+	this.dragging = false;
 	this.focus(view, view.state.doc.resolve(pos));
 };
 
