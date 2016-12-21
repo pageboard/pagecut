@@ -96,7 +96,7 @@ Handler.prototype.focus = function(view, $pos) {
 		}
 	}
 
-	if (node) {
+	if (node && !node.attrs.block_focused) {
 		// TODO focus possible parent roots of this root
 		// typically when using left key on keyboard one can focus a child root directly
 		focusRoot(view, parents.pos.root, node, true);
