@@ -91,8 +91,11 @@ function createRootSpec(main, element, nodeViews, rendererName, dom) {
 			});
 			prepareDom(element, dom);
 			var attrs = Object.assign(domAttrs(node.attrs), nodeAttrs(dom));
-			if (attrs.block_focused) dom.setAttribute('block-focused', '');
-			else if (dom.hasAttribute('block-focused')) dom.removeAttribute('block-focused');
+			if (attrs.block_focused) {
+				dom.setAttribute('block-focused', 'true');
+			}	else if (dom.hasAttribute('block-focused')) {
+				dom.removeAttribute('block-focused');
+			}
 			return [dom.nodeName, attrs, 0];
 		}
 	};
@@ -132,7 +135,7 @@ function blockToAttr(block) {
 	}
 	attrs.block_type = block.type;
 	attrs.block_url = block.url;
-	attrs.block_focused = block.focused;
+	attrs.block_focused = block.focused ? 'true' : null;
 	return attrs;
 }
 

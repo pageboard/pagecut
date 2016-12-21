@@ -61,32 +61,44 @@ Handler.prototype.action = function(action) {
 	if (this.dragging) return;
 	var sel = action.selection;
 	if (!sel.empty) return;
-	this.focus(this.main.view, sel.$from);
+	var me = this;
+	setTimeout(function() {
+		// or else current action overwrites view.state.tr - probably a prosemirror bug here
+		me.focus(me.main.view, sel.$to);
+	});
 };
+
+function focusRoot(view, pos, node, focus) {
+	var attrs = Object.assign({}, node.attrs);
+	if (focus) attrs.block_focused = true;
+	else delete attrs.block_focused;
+
+	view.props.onAction({
+		type: "transform",
+		transform: view.state.tr.setNodeType(pos, null, attrs)
+	});
+}
 
 Handler.prototype.focus = function(view, $pos) {
 	var parents = this.main.parents($pos);
-	var pos = parents.pos.root;
 	var node = parents.node.root;
-	var main = this.main;
-	var dom = node && posToNode(main, view, pos);
-	var flist = [];
-	var foc;
-	var fitems = main.view.content.querySelectorAll('[block-focused]');
-	for (var i=0; i < fitems.length; i++) {
-		foc = fitems.item(i);
-		if (!dom || !isParentOf(foc, dom)) {
-			foc.removeAttribute('block-focused');
-			flist.push(foc);
+	var dom = node && posToNode(this.main, view, parents.pos.root);
+	var existing = view.content.querySelectorAll('[block-focused]');
+	var blurs = [];
+	// reverse on purpose here
+	for (var i = existing.length - 1; i >= 0; i--) {
+		var blur = existing.item(i);
+		if (!dom || !isParentOf(blur, dom)) {
+			var posBlur = this.main.posFromDOM(blur);
+			var nodeBlur = view.state.tr.doc.resolve(posBlur).nodeAfter;
+			focusRoot(view, posBlur, nodeBlur, false);
 		}
 	}
-	flist.forEach(function(foc) {
-		main.refresh(foc);
-	});
-	if (dom && !dom.hasAttribute('block-focused')) {
-		dom.setAttribute('block-focused', '');
-		main.refresh(dom);
-		return false;
+
+	if (node) {
+		// TODO focus possible parent roots of this root
+		// typically when using left key on keyboard one can focus a child root directly
+		focusRoot(view, parents.pos.root, node, true);
 	}
 };
 
