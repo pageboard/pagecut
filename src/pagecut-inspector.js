@@ -1,4 +1,17 @@
-var Inspector = {};
+var Inspector = module.exports = {
+	store: {},
+	get: function(url) {
+		var data = this.store[url];
+		data.url = url;
+		return data;
+	},
+	set: function(data) {
+		if (data && data.url) data = [data];
+		for (var i = 0; i < data.length; i++) {
+			this.store[data[i].url] = data[i];
+		}
+	}
+};
 global.Pagecut.elements.push(Inspector);
 global.Pagecut.resolvers.push(inspectorResolver);
 
@@ -38,7 +51,7 @@ Inspector.specs = {
 function inspectorResolver(main, obj, cb) {
 	var url = obj.url || obj.node && obj.node.getAttribute('block-url');
 	if (!url) return;
-	var block = main.cache.get(url);
+	var block = Inspector.get(url);
 	if (block) return block;
 	(main.shared.inspector || defaultInspector)(url, function(err, info) {
 		if (err) return cb(err);
@@ -50,7 +63,7 @@ function inspectorResolver(main, obj, cb) {
 				title: info.title
 			}
 		};
-		main.cache.set(url, block);
+		Inspector.set(block);
 		cb(null, block);
 	});
 	return {

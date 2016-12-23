@@ -18,9 +18,6 @@ var UrlRegex = require('url-regex');
 
 var CreatePlugin = require("./plugin");
 var Specs = require("./specs");
-var Cache = require("./cache");
-
-Editor.cache = new Cache();
 
 Editor.nodeSpec = baseSchema.nodeSpec.remove('image');
 Editor.nodeSpec = listSchema.addListNodes(Editor.nodeSpec, "paragraph block*", "block");
@@ -48,7 +45,6 @@ function Editor(opts, shared) {
 
 	opts = Object.assign({plugins: []}, Editor, opts);
 
-	this.cache = opts.cache;
 	this.resolvers = opts.resolvers;
 
 	var editSchema = getRendererSchema(main, opts, 'edit');
@@ -58,20 +54,6 @@ function Editor(opts, shared) {
 		edit: Model.DOMSerializer.fromSchema(editSchema),
 		view: Model.DOMSerializer.fromSchema(viewSchema)
 	};
-
-		// this is a trick to be able to serialize to DOM/r and bypass pm schema leaf check
-	// là encore, un DOMSerializer basé sur la fonction de rendu "read" résoudrait le pb ?
-	// même pas sûr car
-	/*
-	opts.elements.forEach(function(el) {
-		var type = opts.schema.nodes['root_' + el.name];
-		Object.defineProperty(type, 'isLeaf', {
-			get: function() {
-				return !!main.exporter;
-			}
-		});
-	});
-	*/
 
 	this.parsers = {
 		edit: Model.DOMParser.fromSchema(editSchema)
