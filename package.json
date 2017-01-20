@@ -41,7 +41,7 @@
     "prosemirror-schema-table": "^0.17.0",
     "prosemirror-state": "^0.17.0",
     "prosemirror-transform": "^0.17.0",
-    "prosemirror-view": "^0.17.2",
+    "prosemirror-view": "^0.17.3",
     "url-regex": "^3.2.0"
   }
 }
