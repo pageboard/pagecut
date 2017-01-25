@@ -1,59 +1,32 @@
-var Inspector = module.exports = {
-	store: {},
-	get: function(url) {
-		var data = this.store[url];
-		data.url = url;
-		return data;
-	},
-	set: function(data) {
-		if (data && data.url) data = [data];
-		for (var i = 0; i < data.length; i++) {
-			this.store[data[i].url] = data[i];
-		}
+var Inspector = require('./schema');
+
+module.exports = InspectorModule;
+
+function InspectorModule(resolvers, elements) {
+	elements.link = Inspector;
+	resolvers.inspector = InspectorResolver;
+}
+
+// this is exposed for clients, pagecut does not know about this interface
+InspectorModule.store = {};
+InspectorModule.get = function(url) {
+	var data = this.store[url];
+	data.url = url;
+	return data;
+};
+InspectorModule.set = function(data) {
+	if (data && data.url) data = [data];
+	for (var i = 0; i < data.length; i++) {
+		this.store[data[i].url] = data[i];
 	}
 };
-global.Pagecut.elements.push(Inspector);
-global.Pagecut.resolvers.push(inspectorResolver);
 
-Inspector.name = "link";
-Inspector.group = "block";
-
-var StringType = {
-	type: 'string'
-};
-var OptStringType = {
-	type: ['string', 'null']
-};
-
-Inspector.properties = {
-	id: OptStringType,
-	originalType: Object.assign({default: "none"}, StringType),
-	type:  Object.assign({default: "none"}, StringType),
-	url: StringType,
-	description: OptStringType,
-	icon: OptStringType,
-	thumbnail: OptStringType,
-	size: OptStringType,
-	width: OptStringType,
-	height: OptStringType,
-	duration: OptStringType,
-	site: OptStringType,
-	html: OptStringType
-};
-
-Inspector.required = ['url'];
-
-Inspector.specs = {
-	title: "inline<_>*",
-	content: "block+"
-};
-
-function inspectorResolver(main, obj, cb) {
+function InspectorResolver(main, obj, cb) {
 	var url = obj.url || obj.node && obj.node.getAttribute('block-url');
 	if (!url) return;
-	var block = Inspector.get(url);
+	var block = InspectorModule.get(url);
 	if (block) return block;
-	(main.shared.inspector || defaultInspector)(url, function(err, info) {
+	(InspectorModule.inspector || defaultInspector)(url, function(err, info) {
 		if (err) return cb(err);
 		var block = {
 			type: 'link',
@@ -63,7 +36,7 @@ function inspectorResolver(main, obj, cb) {
 				title: info.title
 			}
 		};
-		Inspector.set(block);
+		InspectorModule.set(block);
 		cb(null, block);
 	});
 	return {
@@ -83,7 +56,7 @@ function defaultInspector(url, cb) {
 	});
 }
 
-Inspector.editRender = function(main, block) {
+Inspector.edit = function(main, block) {
 	var data = block.data;
 	var node = document.createElement('div');
 	if (block.type) node.setAttribute('block-type', block.type);
@@ -121,7 +94,7 @@ Inspector.editRender = function(main, block) {
 	return node;
 };
 
-Inspector.viewRender = function(main, block) {
+Inspector.view = function(main, block) {
 	var data = block.data;
 	var content = block.content;
 	if (data.type == "link") {
@@ -140,7 +113,7 @@ Inspector.viewRender = function(main, block) {
 		div.innerHTML = data.html;
 		return div;
 	} else {
-		return Inspector.editRender(main, block);
+		return Inspector.edit(main, block);
 	}
 };
 

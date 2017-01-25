@@ -3,13 +3,17 @@ function CreatePlugin(main, options) {
 	return new main.State.Plugin({
 		props: {
 			handleClick: handler.click,
-			handleDOMEvent: handler.event
+			handleDOMEvents: {
+				mousedown: handler.mousedown.bind(handler),
+				mouseup: handler.mouseup.bind(handler),
+				drop: handler.mouseup.bind(handler)
+			}
 		},
 		state: {
 			init: function(config, state) {
 				return {};
 			},
-			applyAction: handler.action
+			apply: handler.action
 		}
 	});
 }
@@ -17,7 +21,6 @@ function CreatePlugin(main, options) {
 function Handler(main, options) {
 	this.main = main;
 
-	this.event = this.event.bind(this);
 	this.action = this.action.bind(this);
 	this.click = this.click.bind(this);
 
@@ -32,23 +35,15 @@ Handler.prototype.command = function(state, onAction, view) {
 	var sel = state.tr.selection;
 	var bef = sel.$to.nodeBefore;
 	if (bef && bef.type.name == "hard_break") {
-		if (sel.empty) {
-			onAction(state.tr.delete(sel.$to.pos - 1, sel.$to.pos).scrollAction());
+		if (sel.empty && onAction) {
+			onAction(state.tr.delete(sel.$to.pos - 1, sel.$to.pos).scrollIntoView());
 		}
 		// fall through
 		return false;
 	} else {
-		onAction(state.tr.replaceSelectionWith(state.schema.nodes.hard_break.create()).scrollAction());
+		if (onAction) onAction(state.tr.replaceSelectionWith(state.schema.nodes.hard_break.create()).scrollIntoView());
 		// stop here
 		return true;
-	}
-};
-
-Handler.prototype.event = function(view, e) {
-	if (e.type == "mousedown") {
-		return this.mousedown(view, e);
-	} else if (e.type == "mouseup" || e.type == "drop") {
-		return this.mouseup(view, e);
 	}
 };
 
@@ -74,10 +69,7 @@ function focusRoot(view, pos, node, focus) {
 	if (focus) attrs.block_focused = true;
 	else delete attrs.block_focused;
 
-	view.props.onAction({
-		type: "transform",
-		transform: view.state.tr.setNodeType(pos, null, attrs)
-	});
+	view.dispatch(view.state.tr.setNodeType(pos, null, attrs));
 }
 
 Handler.prototype.focus = function(view, $pos) {
@@ -122,11 +114,12 @@ Handler.prototype.mousedown = function(view, e) {
 
 	var $root = view.state.tr.doc.resolve(cpos.root);
 
-	view.props.onAction(
-		view.state.tr.setSelection(new this.main.State.NodeSelection($root)).action()
+	view.dispatch(
+		view.state.tr.setSelection(new this.main.State.NodeSelection($root))
 	);
 
 	var dom = posToNode(this.main, view, cpos.root);
+
 	if (dom) dom = dom.querySelector('[block-handle]');
 	if (dom) {
 		dom.draggable = true;
@@ -144,10 +137,13 @@ Handler.prototype.mouseup = function(view, e) {
 			this.dragTarget.draggable = false;
 			delete this.dragTarget;
 			// this is a workaround
-			setTimeout(function() {
-				var action = view.state.tr.setSelection(new main.State.TextSelection(view.state.tr.selection.$from)).action();
-				view.props.onAction(action);
-			});
+			//setTimeout(function() {
+			view.dispatch(
+				view.state.tr.setSelection(
+					new main.State.TextSelection(view.state.tr.selection.$from)
+				)
+			);
+			//});
 		}
 	}
 };

@@ -3,10 +3,10 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Sample editor</title>
-	<link href="../src/pagecut.css" rel="stylesheet" />
-	<link href="../src/pagecut-inspector.css" rel="stylesheet" />
-	<script src="../dist/pagecut.js"></script>
-	<script src="../dist/pagecut-inspector.js"></script>
+	<link href="../dist/pagecut.css" rel="stylesheet" />
+	<link href="../dist/inspector.css" rel="stylesheet" />
+	<script src="../dist/pagecut-editor.js"></script>
+	<script src="../dist/inspector.js"></script>
 	<script src="agent.js"></script>
 	<script src="diffDOM.js"></script>
 	<style>
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	var contentNode = document.getElementById("content");
 
-	Pagecut.cache.set([{
+	Pagecut.modules.inspector.set([{
 		type: 'link',
 		url: "https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale",
 		data: {
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}]);
 
 	// expose pagecut instance for debug purpose only
-	window.pagecut = new Pagecut({
+	Pagecut.sample = new Pagecut.Editor({
 		menu: function(me, items) {
 			return [
 				[items.toggleStrong, items.toggleEm, items.toggleCode],
@@ -100,8 +100,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			];
 		},
 		place: "#editor",
-		action: function(me, action) {
-			if (action.type != "transform") return;
+		update: function(me, transaction) {
+			if (!transaction.docChanged) return;
 			setTimeout(function() {
 				var from = document.getElementById('preview');
 				var to = document.createElement('div');
@@ -111,6 +111,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		},
 		change: function(me, block) {
+			// TODO update preview as above, but do it only for DOM nodes rendering
+			// that block
 			console.log(block);
 		},
 		content: contentNode

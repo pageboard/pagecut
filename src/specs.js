@@ -1,18 +1,17 @@
 exports.define = defineSpecs;
 exports.nodeToData = nodeToData;
-exports.nodeToContent = nodeToContent;
 exports.blockToAttr = blockToAttr;
 
 var index;
 
-function defineSpecs(main, element, schemaSpecs, rendererName, dom) {
+function defineSpecs(main, element, schemaSpecs, dom) {
 	var content = [];
 	var contentName = dom && dom.getAttribute('block-content');
 	var specName, spec, recursive = false;
 	if (!dom) {
 		index = 0;
-		dom = main.render(rendererName, { type: element.name });
-		spec = createRootSpec(main, element, main.nodeViews, rendererName, dom);
+		dom = main.render({ type: element.name }, true);
+		spec = createRootSpec(main, element, main.nodeViews, dom);
 		recursive = true;
 	} else if (contentName) {
 		spec = createContentSpec(element, main.nodeViews, dom);
@@ -33,7 +32,7 @@ function defineSpecs(main, element, schemaSpecs, rendererName, dom) {
 		for (var i=0, child; i < childs.length; i++) {
 			child = childs.item(i);
 			if (child.nodeType != Node.ELEMENT_NODE) continue;
-			content.push(defineSpecs(main, element, schemaSpecs, rendererName, child));
+			content.push(defineSpecs(main, element, schemaSpecs, child));
 		}
 		if (content.length) spec.content = content.join(" ");
 	}
@@ -44,7 +43,7 @@ function defineSpecs(main, element, schemaSpecs, rendererName, dom) {
 	return specName;
 }
 
-function createRootSpec(main, element, nodeViews, rendererName, dom) {
+function createRootSpec(main, element, nodeViews, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(Object.assign({
 		id: null,
@@ -64,7 +63,7 @@ function createRootSpec(main, element, nodeViews, rendererName, dom) {
 			tag: rootSelector(defaultAttrs),
 			getAttrs: function(dom) {
 				var block = main.resolve(dom);
-				var newDom = main.render(rendererName, block);
+				var newDom = main.render(block, true);
 				while (dom.firstChild) dom.removeChild(dom.firstChild);
 				while (newDom.firstChild) dom.appendChild(newDom.firstChild);
 				for (var k in newDom.attributes) {
@@ -76,25 +75,19 @@ function createRootSpec(main, element, nodeViews, rendererName, dom) {
 			}
 		}],
 		toDOM: function(node) {
-			var view = rendererName == "view";
-			var type = node.type.typeName;
-			if (view) return main.render(rendererName, {
-				type: node.attrs.block_type,
-				url: node.attrs.block_url,
-				data: nodeToData(node),
-				content: nodeToContent(main, node)
-			});
-			var dom = main.render(rendererName, {
+			var block = {
 				type: node.attrs.block_type,
 				url: node.attrs.block_url,
 				data: nodeToData(node)
-			});
+			};
+			var dom = main.render(block, true);
+			var attrs = nodeAttrs(dom);
 			prepareDom(element, dom);
-			var attrs = Object.assign(domAttrs(node.attrs), nodeAttrs(dom));
-			if (attrs.block_focused) {
-				dom.setAttribute('block-focused', 'true');
-			}	else if (dom.hasAttribute('block-focused')) {
-				dom.removeAttribute('block-focused');
+			// attrs = Object.assign(domAttrs(node.attrs), attrs); // unused
+			if (node.attrs.block_focused) {
+				attrs['block-focused'] = 'true';
+			}	else {
+				delete attrs['block-focused'];
 			}
 			return [dom.nodeName, attrs, 0];
 		}
@@ -109,23 +102,6 @@ function nodeToData(node) {
 		}
 	}
 	return data;
-}
-
-function nodeToContent(main, node, content) {
-	var type = node.type.spec.typeName;
-	if (type == "content") {
-		content[node.attrs.block_content] = main.serializers.view.serializeNode(node);
-	} else if (type != "root" || !content) {
-		if (!content) content = {};
-		node.forEach(function(child) {
-			nodeToContent(main, child, content);
-		});
-	}
-	return content;
-}
-
-function parseRoot(dom) {
-
 }
 
 function blockToAttr(block) {

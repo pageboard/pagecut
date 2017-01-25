@@ -18,6 +18,8 @@ var UrlRegex = require('url-regex');
 
 var CreatePlugin = require("./plugin");
 var Specs = require("./specs");
+var Viewer = require("./viewer")
+Object.assign(Editor.prototype, Viewer.prototype);
 
 Editor.nodeSpec = baseSchema.nodeSpec.remove('image');
 Editor.nodeSpec = listSchema.addListNodes(Editor.nodeSpec, "paragraph block*", "block");
@@ -25,11 +27,9 @@ Editor.nodeSpec = listSchema.addListNodes(Editor.nodeSpec, "paragraph block*", "
 
 Editor.markSpec = baseSchema.markSpec;
 
-module.exports = Editor;
-
 Editor.menu = defaultMenu;
-Editor.resolvers = global.Pagecut && global.Pagecut.resolvers || [];
-Editor.elements = global.Pagecut && global.Pagecut.elements || [];
+
+module.exports = Editor;
 
 function Editor(opts, shared) {
 	var main = this;
@@ -39,20 +39,68 @@ function Editor(opts, shared) {
 	this.Menu = Menu;
 	this.Commands = Commands;
 	this.keymap = keymap;
-	this.elements = {};
 	this.shared = shared;
 	this.nodeViews = {};
 
-	opts = Object.assign({plugins: []}, Editor, opts);
+	var viewer = new Viewer(opts);
+	Object.assign(this, viewer);
 
-	this.resolvers = opts.resolvers;
+	opts = Object.assign({
+		plugins: []
+	}, Editor, opts);
 
-	var editSchema = getRendererSchema(main, opts, 'edit');
-	var viewSchema = getRendererSchema(main, opts, 'view');
+	var spec = {
+		nodes: opts.nodeSpec,
+		marks: opts.markSpec
+	};
+	Object.keys(this.elements).forEach(function(k) {
+		Specs.define(main, main.elements[k], spec);
+	});
+
+	var editSchema = new Model.Schema(spec);
+
+	var viewNodes = spec.nodes;
+	spec.nodes.forEach(function(name, node) {
+		var vnode = Object.assign({}, node);
+		if (vnode.typeName == "root") {
+			vnode.toDOM = function(node) {
+				var type = node.type.typeName;
+				var block = {
+					type: node.attrs.block_type,
+					url: node.attrs.block_url,
+					data: Specs.nodeToData(node)
+				};
+				block.content = nodeToContent(main, node);
+				return main.render(block);
+			};
+		}
+		viewNodes = viewNodes.update(name, vnode);
+	});
+
+	var viewSchema = new Model.Schema({
+		nodes: viewNodes,
+		marks: spec.marks
+	});
 
 	this.serializers = {
 		edit: Model.DOMSerializer.fromSchema(editSchema),
 		view: Model.DOMSerializer.fromSchema(viewSchema)
+	};
+
+	this.serializers.view.renderStructure = function(structure, node, options) {
+		var ref = Model.DOMSerializer.renderSpec(options.document || window.document, structure);
+		var dom = ref.dom;
+		var contentDOM = ref.contentDOM;
+		if (node) {
+			if (contentDOM) {
+				if (options.onContent) {
+					options.onContent(node, contentDOM, options);
+				} else {
+					this.serializeFragment(node.content, options, contentDOM);
+				}
+			}
+		}
+		return dom
 	};
 
 	this.parsers = {
@@ -82,31 +130,18 @@ function Editor(opts, shared) {
 		}),
 		domParser: this.parsers.edit,
 		domSerializer: this.serializers.edit,
-		onAction: function(action) {
-			if (!opts.action || !opts.action(main, action)) {
+		dispatchTransaction: function(transaction) {
+			if (!opts.update || !opts.update(main, transaction)) {
 				if (opts.change) {
-					var changedBlock = actionAncestorBlock(main, action);
+					var changedBlock = actionAncestorBlock(main, transaction);
 					if (changedBlock) opts.change(main, changedBlock);
 				}
-				view.updateState(view.state.applyAction(action));
+				view.updateState(view.state.apply(transaction));
 			}
 		},
 		nodeViews: this.nodeViews
 	});
 	var view = this.view = menuBarView.editor;
-}
-
-function getRendererSchema(main, opts, rendererName) {
-	var spec = {
-		nodes: opts.nodeSpec,
-		marks: opts.markSpec
-	};
-	opts.elements.forEach(function(el) {
-		main.elements[el.name] = el;
-		Specs.define(main, el, spec, rendererName);
-	});
-
-	return new Model.Schema(spec);
 }
 
 Editor.prototype.set = function(dom, name) {
@@ -152,17 +187,6 @@ Editor.prototype.parse = function(dom) {
 	}).content;
 };
 
-Editor.prototype.merge = function(dom, content) {
-	if (content) Object.keys(content).forEach(function(name) {
-		var contentNode = dom.querySelector('[block-content="'+name+'"]');
-		if (!contentNode) return;
-		var val = content[name];
-		if (!val.nodeType) contentNode.innerHTML = val;
-		else contentNode.parentNode.replaceChild(val, contentNode);
-	});
-	return dom;
-};
-
 Editor.prototype.refresh = function(dom) {
 	var tr = new this.Transform.Transform(this.view.state.tr.doc);
 	var pos = this.posFromDOM(dom);
@@ -186,53 +210,10 @@ Editor.prototype.replace = function(src, dst) {
 	var sel = this.select(src);
 	if (!sel) return false;
 	if (!(dst instanceof Node)) {
-		dst = this.render('edit', dst);
+		dst = this.render(dst, true);
 	}
 	this.insert(dst, sel);
 	return true;
-};
-
-Editor.prototype.resolve = function(thing) {
-	var obj = {};
-	if (typeof thing == "string") obj.url = thing;
-	else obj.node = thing;
-	var syncBlock;
-	var main = this;
-	for (var i=0; i < this.resolvers.length; i++) {
-		syncBlock = this.resolvers[i](main, obj, function(err, block) {
-			// no scope issue because syncBlock won't change after break
-			var oldDom = document.getElementById(syncBlock.id);
-			if (!oldDom) return;
-			if (err) {
-				console.error(err);
-				main.remove(oldDom);
-			} else {
-				if (syncBlock.focused) block.focused = true;
-				else delete block.focused;
-				main.replace(oldDom, block);
-			}
-		});
-		if (syncBlock) break;
-	}
-	if (!syncBlock) return;
-	if (!syncBlock.url) syncBlock.id = "id-" + Date.now();
-	return syncBlock;
-};
-
-Editor.prototype.render = function(renderer, block) {
-	var type = block.type;
-	if (!type) throw new Error("Missing block type");
-	var el = this.elements[type];
-	if (!el) throw new Error("Missing element " + type);
-	var renderFn = el[renderer + 'Render'];
-	if (!renderFn) renderFn = el[this.renderers[0] + 'Render'];
-	if (!renderFn) throw new Error("No renderer for block type " + type);
-	block = Object.assign({}, block);
-	if (!block.data) block.data = {};
-	if (!block.content) block.content = {};
-	var node = renderFn.call(el, this, block);
-	if (block.id && node) node.setAttribute('id', block.id);
-	return node;
 };
 
 Editor.prototype.remove = function(dom) {
@@ -276,6 +257,19 @@ Editor.prototype.parents = function(rpos, all) {
 	else return obj;
 };
 
+function nodeToContent(main, node, content) {
+	var type = node.type.spec.typeName;
+	if (type == "content") {
+		content[node.attrs.block_content] = main.serializers.view.serializeNode(node);
+	} else if (type != "root" || !content) {
+		if (!content) content = {};
+		node.forEach(function(child) {
+			nodeToContent(main, child, content);
+		});
+	}
+	return content;
+}
+
 function actionAncestorBlock(main, action) {
 	// returns the ancestor block modified by this action
 	if (action.type != "transform") return;
@@ -312,7 +306,7 @@ function wrapBlockNode(main, node) {
 			return Specs.nodeToData(node);
 		},
 		get content() {
-			return Specs.nodeToContent(main, node);
+			return nodeToContent(main, node);
 		},
 		type: type
 	};
@@ -348,7 +342,7 @@ function CreateResolversPlugin(main, opts) {
 			transformPasted: function(pslice) {
 				var frag = fragmentReplace(pslice.content, UrlRegex(), function(str) {
 					var block = main.resolve(str);
-					if (block) return main.parse(main.render('edit', block)).firstChild;
+					if (block) return main.parse(main.render(block, true)).firstChild;
 				});
 				return new Model.Slice(frag, pslice.openLeft, pslice.openRight);
 			}

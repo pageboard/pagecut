@@ -4,23 +4,35 @@ FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
 .PHONY: build
-build: dist/pagecut.js dist/pagecut-inspector.js
+build: predist dist/pagecut-editor.js dist/pagecut-viewer.js dist/inspector.js
 
 .PHONY: all
-all: clean build predist
-	$(BUNDLEDOM) sample/index.html --html index.html --root dist/ --js pagecut.min.js --css pagecut.min.css --ignore agent.js --ignore diffDOM.js --ignore .
+all: clean build
+	$(BUNDLEDOM) sample/index.html \
+	--html index.html \
+	--root dist/ \
+	--js pagecut.min.js \
+	--css pagecut.min.css \
+	--ignore agent.js \
+	--ignore diffDOM.js \
+	--ignore .
 
 clean:
 	rm -f dist/*
 
 predist:
 	cp src/prosemirror*.css dist/
+	cp src/inspector/*.css dist/
+	cp src/*.css dist/
 
-dist/pagecut-inspector.js: src/pagecut-inspector.js
-	$(BROWSERIFY) --outfile $@ src/pagecut-inspector.js
+dist/inspector.js: src/inspector/inspector.js
+	$(BROWSERIFY) --standalone Pagecut.modules.inspector --outfile $@ src/inspector/inspector.js
 
-dist/pagecut.js: src/*
-	$(BROWSERIFY) --standalone Pagecut --outfile $@ src/pagecut.js
+dist/pagecut-editor.js: src/*.js
+	$(BROWSERIFY) --standalone Pagecut.Editor --outfile $@ src/editor.js
+
+dist/pagecut-viewer.js: src/viewer.js
+	$(BROWSERIFY) --standalone Pagecut.Viewer --outfile $@ src/viewer.js
 
 fontopen:
 	@if test ! `which curl` ; then \

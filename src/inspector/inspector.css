@@ -1,4 +1,4 @@
-@import './pagecut-inspector-font.css';
+@import './inspector-font.css';
 
 div[block-type="link"] {
 	display:inline-flex;
