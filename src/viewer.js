@@ -2,11 +2,12 @@ module.exports = Viewer;
 
 function Viewer(opts) {
 	var modules = global.Pagecut && global.Pagecut.modules || {};
-	var resolvers = this.resolvers = opts.resolvers || {};
-	var elements = this.elements = opts.elements || {};
+	this.resolvers = opts.resolvers || {};
+	this.elements = opts.elements || {};
+	this.modifiers = opts.modifiers || {};
 
 	Object.keys(modules).forEach(function(k) {
-		modules[k](resolvers, elements);
+		modules[k](this);
 	});
 }
 
@@ -31,6 +32,7 @@ Viewer.prototype.resolve = function(thing) {
 		});
 		if (syncBlock) return true;
 	});
+	// TODO fix this, we need an id to get back oldDom in the callback
 	if (syncBlock && !syncBlock.url) syncBlock.id = "id-" + Date.now();
 	return syncBlock;
 };
@@ -46,7 +48,9 @@ Viewer.prototype.render = function(block, edition) {
 	if (!block.data) block.data = {};
 	if (!block.content) block.content = {};
 	var node = renderFn.call(el, this, block);
-	if (block.id && node) node.setAttribute('id', block.id);
+	Object.keys(this.modifiers).forEach(function(k) {
+		main.modifiers[k](main, block, node);
+	});
 	return node;
 };
 

@@ -144,18 +144,14 @@ function Editor(opts, shared) {
 	var view = this.view = menuBarView.editor;
 }
 
-Editor.prototype.set = function(dom, name) {
+Editor.prototype.set = function(dom) {
 	var content = this.view.state.doc.content;
 	this.delete(new State.TextSelection(0, content.offsetAt(content.childCount)));
 	this.insert(dom, new State.NodeSelection(this.view.state.doc.resolve(0)));
 };
 
-Editor.prototype.get = function(name) {
-	if (!name) name = 'edit';
-	var serializer = this.serializers[name];
-	if (!serializer) throw new Error("No serializer with name " + name);
-	var view = this.view;
-	return serializer.serializeFragment(view.state.doc.content);
+Editor.prototype.get = function() {
+	return this.serializers.view.serializeFragment(this.view.state.doc.content);
 };
 
 Editor.prototype.insert = function(dom, sel) {

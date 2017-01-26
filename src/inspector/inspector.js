@@ -2,9 +2,9 @@ var Inspector = require('./schema');
 
 module.exports = InspectorModule;
 
-function InspectorModule(resolvers, elements) {
-	elements.link = Inspector;
-	resolvers.inspector = InspectorResolver;
+function InspectorModule(main) {
+	main.elements.link = Inspector;
+	main.resolvers.inspector = InspectorResolver;
 }
 
 // this is exposed for clients, pagecut does not know about this interface

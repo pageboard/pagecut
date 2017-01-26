@@ -67,9 +67,10 @@ The function exported by a module as `Pagecut.modules.<name>` can set up:
 
 Example:
 ```
-module.exports = function(elements, resolvers, modifiers) {
-	elements.video = VideoElement;
-	resolvers.youtube = YoutubeResolver;
+module.exports = function(main) {
+	main.elements.video = VideoElement;
+	main.resolvers.youtube = YoutubeResolver;
+	main.modifiers.oddity = MyOwnModifier;
 };
 ```
 and is typically exported using browserify:
@@ -131,9 +132,6 @@ DOM Nodes that have editable content.
 It can also place a `block-handle` boolean attribute on a DOM Node to facilitate
 selection and drag and drop of the block DOM representation.
 
-A `block-id` attribute can also be set on the root DOM node of the rendered block,
-so that a resolver can keep track of blocks.
-
 Only the edit method is mandatory, if the view method is not defined, it falls
 back to using the edit method (when rendering to DOM).
 
@@ -147,7 +145,7 @@ A simple object with:
 - content object
 
 and optionally, for internal use:
-- id
+// TODO this could be handled by a modifier
 - focused
 
 Application data should be stored in the data object, but the block object itself
@@ -159,7 +157,7 @@ The content object holds html content, which itself can be in two states:
 
 When serializing to blocks, it is essential to also get all the blocks that
 where (un)resolved by the resolvers, or else it's like getting a tree without
-its apples.
+its apples. See the "id module" below.
 
 
 Modifiers

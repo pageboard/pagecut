@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				var from = document.getElementById('preview');
 				var to = document.createElement('div');
 				to.id = 'preview';
-				to.appendChild(me.get('view'));
+				to.appendChild(me.get());
 				differ.apply(from, differ.diff(from, to));
 			});
 		},
