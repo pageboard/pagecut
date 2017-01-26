@@ -1,222 +1,229 @@
-coed -- Editor with Components
-==============================
+pagecut -- Extensible web content editor
+========================================
 
-[Demo](https://kapouer.github.io/coed/demo/index.html)
+[Demo](https://kapouer.github.io/pagecut/demo/index.html)
 
-Helps setting up editable components in [ProseMirror](https://prosemirror.net),
-with non-editable parts and named content with configurable schema.
-
-Use `coed` to augment the editor with stylable DOM components and customizable
-form inputs.
-
-It comes pre-bundled with a "link" component that makes use of
-[url-inspector](https://github.com/kapouer/url-inspector) for
-insertion as resource, embed, or anchors.
+An easy to setup and easy to extend html content editor built upon
+[ProseMirror](https://prosemirror.net).
 
 
-Usage
------
+Main concepts
+-------------
 
-Simply add dist/coed.min.css, dist/coed.min.js to a web page and initialize the editor:
+* Viewer  
+  renders blocks to DOM using resolvers and elements.
+
+* Editor  
+  transform blocks into internal editor representation and render them for edition.
+
+* Resolvers  
+  Return synchronously and/or asynchronously a block from a url or from a dom node.
+
+* Elements  
+  Blocks are instances of elements.  
+  An element comes in two parts:  
+  - its definition (name, group, specs, and json schema)
+  - its edit and view methods, with signatures (main, block).
+
+* Modules  
+  A simple extension system for defining resolvers and elements.
+  A module exports a function `Pagecut.modules.mymodulename(elements, resolvers)`.
+
+* Blocks  
+  The core data structure for holding elements instances, and persisting content.
+  A block has an type, content, data, and an optional id.
+
+A block can be rendered to DOM using `pagecut.render(block, forEdition)`.
+An editor instance can be rendered to DOM using `pagecut.get()`.
+
+
+Basic setup
+-----------
+
+Bunbled files are available as
+- dist/pagecut-editor.js (already containing the viewer)
+- dist/pagecut-viewer.js (for view-only purpose)
+- dist/pagecut.css (for editor)
+
+A basic editor setup without anything interesting:
 
 ```
-document.addEventListener('DOMContentLoaded', function() {	
-	function inspectorCallback(info, cb) {
-		// info is mutable
-		var node = info.fragment && info.fragment.firstChild;
-		if (node && node.nodeName == "IFRAME") {
-			info.title = info.url = node.src;
-		}
-		// url-inspector-daemon@1.5.0 has right properties names
-		GET("https://inspector.eda.sarl/inspector", {
-			url: info.url
-		}, cb);
-	}
-
-	var coed = new Coed({
-		place: "#editor", // can also be a DOM Node
-		components: [Coed.link]
-	}, {
-		link: {
-			inspector: inspectorCallback
-		}
-	});
-	
-	var domContent = document.querySelector("#content");
-	coed.set(domContent);
-	domContent.hidden = true;
+var pagecut = new Pagecut.Editor({
+	place: '#editable',
+	content: document.querySelector('.some.selector')	
 });
 ```
 
+Yet such a setup isn't really useful without modules.
 
-Methods
+
+Modules
 -------
 
-External usage
+The function exported by a module as `Pagecut.modules.<name>` can set up:
+- elements
+- resolvers
+- modifiers
 
-- new Coed(opts, componentsOpts)  
-  returns an editor instance,
-  options are documented below in Defaults section.
-- coed.set(dom, fn)  
-  sets editor content DOM.  
-  Optional fn(component, dom) can override `component.from` by returning block data.
-- coed.get(fn)  
-  gets editor content DOM.  
-  Optional fn(component, dom, data, content) is called right after dom is
-  returned by output.
+Example:
+```
+module.exports = function(elements, resolvers, modifiers) {
+	elements.video = VideoElement;
+	resolvers.youtube = YoutubeResolver;
+};
+```
+and is typically exported using browserify:
+```
+browserify --standalone Pagecut.modules.video modules/video.js
+```
 
-
-Internal usage
-
-- coed.insert(dom, selection?)  
-  replace selection or current selection with dom node.
-- coed.delete(selection?)  
-  delete selection or current selection.
-- coed.parse(dom, selection?)  
-  parse a dom node as if it was pasted into selection, useful for components,
-  and called by `insert`.
-- coed.merge(dom, contents)  
-  merges contents object by filling nodes matching `block-content` attribute name.
-- coed.refresh(dom)  
-  refresh data collected from a DOM node and synchronize the editor.
-- coed.toBlock(node, withoutContent)  
-  returns a block from an editor node (not a DOM node).  
-  The `withoutContent` boolean argument prevents it from collecting contents.
-- coed.posFromDOM(dom)  
-  Wrapper function, returns an internal prosemirror position of the given dom node.
-
-`selection` parameter is a prosemirror's Selection instance.
+The order of modules, and in particular, the order of resolvers or modifiers,
+should not change the result - be sure to define independent functions that
+can be run in any order.
 
 
-Properties
-----------
+Resolvers
+---------
 
-coed instance conveniently exposes underlying prosemirror editor modules:
-Menu, Commands, State, Transform, Model, Pos (from dompos), keymap.
+Elements convert blocks to DOM, and resolvers are there to do the reverse.
+
+A resolver is a `function(main, obj, cb)`,
+- that can return a block immediately. That block gets a unique `id` if it
+  doesn't already have one.
+- that can return a block asynchronously using `cb(err, block)`;
+- the synchronous block is automatically replaced by the asynchronous block
+
+obj can have obj.url or obj.node, depending on wether a url was pasted or a
+node is being processed.
+
+A typical module will use `block-id` DOM attribute to store the block id and
+keep track of its modifications, so it can later restore the original block.
+
+
+Elements
+--------
+
+As explained before, an element is a simple object with properties and methods.
+
+Properties:
+- name  
+  the element type name
+- group (optional)  
+  the group as defined by the prosemirror editor
+- properties  
+  a json schema object defining the format of block's data object,
+  but can actually only hold strings (empty string being the default value).
+- more json-schema stuff  
+  anything being optional at that level.
+- specs  
+  an object matching contents names to
+  [prosemirror content expression](http://prosemirror.net/guide/schema.html).
+
+Methods:
+- view(main, block)  
+  renders a block to DOM
+- edit(main, block)  
+  renders a block to editable DOM
+
+The `edit` method must return a DOM with `block-content` attributes placed on
+DOM Nodes that have editable content.
+
+It can also place a `block-handle` boolean attribute on a DOM Node to facilitate
+selection and drag and drop of the block DOM representation.
+
+A `block-id` attribute can also be set on the root DOM node of the rendered block,
+so that a resolver can keep track of blocks.
+
+Only the edit method is mandatory, if the view method is not defined, it falls
+back to using the edit method (when rendering to DOM).
 
 
 Blocks
 ------
 
-A block is an object representing a component instance. It is not explicitely
-used by `coed` but its the main concept of the editor.
+A simple object with:
+- type
+- data object
+- content object
 
-A block is
-- type: the component name that can handle that block
-- data: an object mapping names to values
-- content: an object mapping names to html content
+and optionally, for internal use:
+- id
+- focused
 
+Application data should be stored in the data object, but the block object itself
+can be used to store runtime variables like these.
 
-Options
--------
+The content object holds html content, which itself can be in two states:
+- serialized, as html text, with unresolved sub-blocks in it
+- parsed as DOM with resolved sub-blocks in it
 
-Coed options.
-- action(coed, action): called upon each action  
-  if it returns true, the action is not applied to the editor view.  
-  This gives a way to override underlying editor onAction event.
-- change(coed, block): called when a block has changed  
-  the ancestor block, if any, in which the current action is applied.
-
-Coed global variable stores some useful default values:
-- spec: a default, mutable, schema spec
-- plugins: array of plugins for ProseMirror
-- components: array of self-registered components like CoedLink
-- menu: function(coed, items) { return items.fullMenu; }
-- content: a DOM node, similar to a call to `coed.set`
+When serializing to blocks, it is essential to also get all the blocks that
+where (un)resolved by the resolvers, or else it's like getting a tree without
+its apples.
 
 
-Components
-----------
+Modifiers
+---------
 
-A component is a class that exposes the static properties and instance methods
-defined below.
+After an element renders a block, *modifiers* can act upon the returned DOM node.
+A modifier is a function(main, block, dom) {} that returns nothing.
 
-A component must add itself to Coed.components array and create it if it is
-missing:
-```
-if (!global.Coed) global.Coed = { components: [] };
-global.Coed.components.push(CoLink);
-```
-
-Options are passed to component instances in the second argument of Coed
-constructor.
-
-> a component prototype must have default values for the properties
-
-> A component instance must also call `coed.refresh(dom)` when
-> something else than the editor changed its DOM.
-
-### Properties
-
-- name  
-  the component name as seen by ProseMirror.
-- group  
-  the prosemirror group, defaults to 'block'
-- properties  
-  an object mapping properties names to json schema,
-  tells ProseMirror what data can be stored on the component instance.  
-  By default only the default value of the schema is actually useful.
-- required  
-  reserved, not implemented.  
-  an array of required properties, as in json schema.  
-- specs  
-  an object mapping content node names to ProseMirror schemaSpec.
-
-> do not confuse root dom node attributes and component data
+Typical modifiers:
+- add a block-id attribute if block.id is set
+- merge content automatically if block.content has properties
 
 
-### Methods
-
-- from(dom)  
-  returns block's data from a given DOM Node for edition.
-- to(data)  
-  returns DOM for edition from a block's data.  
-  Nodes with editable content must have a `block-content` attribute.
-- plugin(coed)  
-  returns a plugin object, optional.
-- output(coed, data, content)  
-  returns DOM for publication from block's data and content.  
-  Here `content[name]` is the node having the `block-content` attribute.
-
-
-### Attributes
-
-- block-content  
-  a component must set this attribute on editable nodes, with a name matching
-  contentSpec's component.
-- block-handle  
-  a component must set this attribute on non-editable nodes that can be used
-  for dragging a block.
-- block-focused  
-  this attribute is set on a block root dom when it is focused.
-- block-type  
-  this attribute is set on a block root dom to store its component type name.
-
-
-Link Component
+Pagecut.Editor
 --------------
 
-A component representing a resource of any kind (url or fragment).
-
-Plugin options:
-An `inspector` async function that receives an object with either url or fragment,
-mutable properties.
-Setting immediately the `title` property on that object will set the title of the
-loading block, and the callback should receive the properties listed above
-(which have the same format as url-inspector result).
-The properties returned by that function are then used to render the DOM node,
-parse it and insert it into the edited document.
+Pagecut main editor instance conveniently exposes underlying prosemirror editor
+modules: Menu, Commands, State, Transform, Model, Pos (from dompos), keymap.
 
 
-ProseMirror customization
--------------------------
+Pagecut.Editor options:
+- update(main, transaction): called upon each transaction  
+  if it returns true, the transaction is not applied to the editor view.  
+  This gives a way to override underlying editor dispatchTransaction event.
+- change(main, block): called when a block has changed  
+  the ancestor block, if any, in which the current action is applied.
 
-`Coed.spec` is the schema specification that will be used to
-initialize ProseMirror, and `Coed.plugins`, the list of prosemirror plugins
-needed by Coed.
-These options are passed to ProseMirror constructor:
-- place
-- schema
-- plugins
-- content
+Pagecut.Editor global variable holds some default options values:
+- markSpec, nodeSpec: the schema specifications
+- plugins: array of plugins for ProseMirror
+- menu: function(coed, items) { return items.fullMenu; }
+
+Pagecut.Editor methods:
+- set(dom) - sets the content of the editor using this dom
+- get() - gets the content of the editor for viewing
+
+
+Pagecut.Viewer
+--------------
+
+An instance of viewer is created by default by an instance of Pagecut.Editor.
+Its purpose it to keep track of elements and resolvers, and mainly to render
+blocks to DOM using `render` method.
+
+
+The id module
+-------------
+
+The id module provides
+- a resolver that maps block-id attributes values to blocks stored in a shared
+cache
+- a modifier that adds block-id attributes when block.id is defined
+- an export function that returns the shared cache of all blocks with the blocks
+in their contents replaced by a single `div block-id=xxx` tag.
+
+Though the edited document is not itself a block, it helps to think of it as
+a "document" block, so the export function can return:
+```
+{
+	id: 'document',
+	type: 'document',
+	content: {
+		document: 'the document content'
+	}
+}
+```
 
