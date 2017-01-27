@@ -210,6 +210,8 @@ The id module provides
 - a resolver that maps block-id attributes values to blocks stored in a shared
 cache
 - a modifier that adds block-id attributes when block.id is defined
+- an element to hold a temporary dom node, in case no block already exists in
+the IdModule store and IdResolver.fetch exists
 - an export function that returns the shared cache of all blocks with the blocks
 in their contents replaced by a single `div block-id=xxx` tag.
 
