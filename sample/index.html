@@ -7,6 +7,7 @@
 	<link href="../dist/inspector.css" rel="stylesheet" />
 	<script src="../dist/pagecut-editor.js"></script>
 	<script src="../dist/inspector.js"></script>
+	<script src="../dist/id.js"></script>
 	<script src="agent.js"></script>
 	<script src="diffDOM.js"></script>
 	<style>
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	var contentNode = document.getElementById("content");
 
 	Pagecut.modules.inspector.set([{
+		id: 1,
 		type: 'link',
 		url: "https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale",
 		data: {
@@ -73,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			content: '<p>Toto la praline</p><div block-type="link" block-url="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg"></div>'
 		}
 	}, {
+		id: 2,
 		type: "link",
 		url: "https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg",
 		data: {
