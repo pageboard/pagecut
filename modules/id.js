@@ -84,7 +84,6 @@ function IdResolver(main, obj, cb) {
 }
 
 function IdModifier(main, block, dom) {
-	console.log("id modifier", block.id, block)
 	if (block.id != null) dom.setAttribute('block-id', block.id);
 	else dom.removeAttribute('block-id');
 }
