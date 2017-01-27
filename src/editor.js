@@ -266,10 +266,10 @@ function nodeToContent(main, node, content) {
 	return content;
 }
 
-function actionAncestorBlock(main, action) {
-	// returns the ancestor block modified by this action
-	if (action.type != "transform") return;
-	var steps = action.transform.steps;
+function actionAncestorBlock(main, transaction) {
+	// returns the ancestor block modified by this transaction
+	if (!transaction.docChanged) return;
+	var steps = transaction.steps;
 	var roots = [];
 	steps.forEach(function(step) {
 		var parents = main.parents(main.view.state.doc.resolve(step.from), true);
