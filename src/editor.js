@@ -185,6 +185,7 @@ Editor.prototype.refresh = function(dom) {
 	if (pos === false) return;
 	var block = this.resolve(dom);
 	if (!block) return;
+	console.log("not sure this still works");
 	this.view.props.onAction({
 		type: "transform",
 		transform: tr.setNodeType(pos, null, Specs.blockToAttr(block))
@@ -288,7 +289,8 @@ function actionAncestorBlock(main, transaction) {
 	});
 	for (var i=0; i < roots.length; i++) {
 		if (roots[i].count == steps.length) {
-			var block = Specs.attrToBlock(roots[i].root.attrs);
+			var node = roots[i].root;
+			var block = Specs.attrToBlock(node.attrs);
 			block.content = nodeToContent(main, node);
 			return block;
 		}
