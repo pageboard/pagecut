@@ -4,7 +4,7 @@ FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
 .PHONY: build
-build: predist dist/pagecut-editor.js dist/pagecut-viewer.js dist/inspector.js
+build: predist dist/pagecut-editor.js dist/pagecut-viewer.js dist/inspector.js dist/id.js
 
 .PHONY: all
 all: clean build
@@ -22,11 +22,14 @@ clean:
 
 predist:
 	cp src/prosemirror*.css dist/
-	cp src/inspector/*.css dist/
+	cp modules/inspector/*.css dist/
 	cp src/*.css dist/
 
-dist/inspector.js: src/inspector/inspector.js
-	$(BROWSERIFY) --standalone Pagecut.modules.inspector --outfile $@ src/inspector/inspector.js
+dist/inspector.js: modules/inspector/index.js
+	$(BROWSERIFY) --standalone Pagecut.modules.inspector --outfile $@ modules/inspector/index.js
+
+dist/id.js: modules/id.js
+	$(BROWSERIFY) --standalone Pagecut.modules.id --outfile $@ modules/id.js
 
 dist/pagecut-editor.js: src/*.js
 	$(BROWSERIFY) --standalone Pagecut.Editor --outfile $@ src/editor.js
