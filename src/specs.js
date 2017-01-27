@@ -1,5 +1,5 @@
 exports.define = defineSpecs;
-exports.nodeToData = nodeToData;
+exports.attrToBlock = attrToBlock;
 exports.blockToAttr = blockToAttr;
 
 var index;
@@ -46,7 +46,7 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 function createRootSpec(main, element, nodeViews, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(Object.assign({
-		id: null,
+		block_id: null,
 		block_focused: null,
 		block_url: null,
 		block_type: element.name
@@ -75,11 +75,7 @@ function createRootSpec(main, element, nodeViews, dom) {
 			}
 		}],
 		toDOM: function(node) {
-			var block = {
-				type: node.attrs.block_type,
-				url: node.attrs.block_url,
-				data: nodeToData(node)
-			};
+			var block = attrToBlock(node.attrs);
 			var dom = main.render(block, true);
 			var attrs = nodeAttrs(dom);
 			prepareDom(element, dom);
@@ -94,25 +90,30 @@ function createRootSpec(main, element, nodeViews, dom) {
 	};
 }
 
-function nodeToData(node) {
-	var data = {};
-	for (var k in node.attrs) {
-		if (k.indexOf('data-') == 0) {
-			data[k.substring(5)] = node.attrs[k];
-		}
-	}
-	return data;
-}
-
 function blockToAttr(block) {
 	var attrs = {};
 	for (var k in block.data) {
 		attrs['data-' + k] = block.data[k];
 	}
-	attrs.block_type = block.type;
-	attrs.block_url = block.url;
-	attrs.block_focused = block.focused ? 'true' : null;
+	for (var k in block) {
+		if (k != 'data' && k != 'content' && block[k]) {
+			attrs['block_' + k] = block[k];
+		}
+	}
 	return attrs;
+}
+
+function attrToBlock(attrs) {
+	var block = {data: {}};
+	for (var k in attrs) {
+		if (!attrs[k]) continue;
+		if (k.indexOf('data-') == 0) {
+			block.data[k.substring(5)] = attrs[k];
+		} else if (k.indexOf('block_') == 0) {
+			block[k.substring(6)] = attrs[k];
+		}
+	}
+	return block;
 }
 
 function createWrapSpec(element, nodeViews, dom) {

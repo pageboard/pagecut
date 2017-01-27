@@ -65,11 +65,7 @@ function Editor(opts, shared) {
 		if (vnode.typeName == "root") {
 			vnode.toDOM = function(node) {
 				var type = node.type.typeName;
-				var block = {
-					type: node.attrs.block_type,
-					url: node.attrs.block_url,
-					data: Specs.nodeToData(node)
-				};
+				var block = Specs.attrToBlock(node.attrs);
 				block.content = nodeToContent(main, node);
 				return main.render(block);
 			};
@@ -291,21 +287,12 @@ function actionAncestorBlock(main, transaction) {
 		});
 	});
 	for (var i=0; i < roots.length; i++) {
-		if (roots[i].count == steps.length) return wrapBlockNode(main, roots[i].root);
+		if (roots[i].count == steps.length) {
+			var block = Specs.attrToBlock(roots[i].root.attrs);
+			block.content = nodeToContent(main, node);
+			return block;
+		}
 	}
-}
-
-function wrapBlockNode(main, node) {
-	var type = node.type.name.substring(5);
-	return {
-		get data() {
-			return Specs.nodeToData(node);
-		},
-		get content() {
-			return nodeToContent(main, node);
-		},
-		type: type
-	};
 }
 
 function fragmentReplace(fragment, regexp, replacer) {
