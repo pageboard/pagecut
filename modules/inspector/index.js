@@ -10,14 +10,12 @@ function InspectorModule(main) {
 // this is exposed for clients, pagecut does not know about this interface
 InspectorModule.store = {};
 InspectorModule.get = function(url) {
-	var data = this.store[url];
-	data.url = url;
-	return data;
+	return this.store[url];
 };
-InspectorModule.set = function(data) {
-	if (data && data.url) data = [data];
-	for (var i = 0; i < data.length; i++) {
-		this.store[data[i].url] = data[i];
+InspectorModule.set = function(blocks) {
+	if (blocks && blocks.data) blocks = [blocks];
+	for (var i = 0; i < blocks.length; i++) {
+		this.store[blocks[i].url] = blocks[i];
 	}
 };
 
@@ -41,6 +39,7 @@ function InspectorResolver(main, obj, cb) {
 	});
 	return {
 		type: 'link',
+		url: url,
 		data: {
 			type: 'none'
 		},
