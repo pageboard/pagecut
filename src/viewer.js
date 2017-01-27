@@ -5,9 +5,10 @@ function Viewer(opts) {
 	this.resolvers = opts.resolvers || {};
 	this.elements = opts.elements || {};
 	this.modifiers = opts.modifiers || {};
+	var main = this;
 
 	Object.keys(modules).forEach(function(k) {
-		modules[k](this);
+		modules[k](main);
 	});
 }
 
@@ -48,6 +49,7 @@ Viewer.prototype.render = function(block, edition) {
 	if (!block.data) block.data = {};
 	if (!block.content) block.content = {};
 	var node = renderFn.call(el, this, block);
+	var main = this;
 	Object.keys(this.modifiers).forEach(function(k) {
 		main.modifiers[k](main, block, node);
 	});
