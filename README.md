@@ -127,7 +127,11 @@ Methods:
   renders a block to editable DOM
 
 The `edit` method must return a DOM with `block-content` attributes placed on
-DOM Nodes that have editable content.
+DOM Nodes that have editable content, and does not need to actually merge the
+block content into it (it's done automatically).
+
+The `view` method, on the other hand, can merge the content the way it wants,
+or add `block-content` attributes and let the merge be done automatically.
 
 It can also place a `block-handle` boolean attribute on a DOM Node to facilitate
 selection and drag and drop of the block DOM representation.

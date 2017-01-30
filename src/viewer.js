@@ -48,21 +48,19 @@ Viewer.prototype.render = function(block, edition) {
 	block = Object.assign({}, block);
 	if (!block.data) block.data = {};
 	if (!block.content) block.content = {};
-	var node = renderFn.call(el, this, block);
-	var main = this;
-	Object.keys(this.modifiers).forEach(function(k) {
-		main.modifiers[k](main, block, node);
-	});
-	return node;
-};
-
-Viewer.prototype.merge = function(dom, content) {
-	if (content) Object.keys(content).forEach(function(name) {
+	var dom = renderFn.call(el, this, block);
+	if (block.content) Object.keys(block.content).forEach(function(name) {
 		var contentNode = dom.querySelector('[block-content="'+name+'"]');
 		if (!contentNode) return;
-		var val = content[name];
+		var val = block.content[name];
+		// TODO if val is a string it's an OFFLINE content - something more must be done ?
 		if (!val.nodeType) contentNode.innerHTML = val;
 		else contentNode.parentNode.replaceChild(val, contentNode);
 	});
+	var main = this;
+	Object.keys(this.modifiers).forEach(function(k) {
+		main.modifiers[k](main, block, dom);
+	});
 	return dom;
 };
+

@@ -88,8 +88,6 @@ Inspector.edit = function(main, block) {
 	node.querySelector('aside > div > p').innerHTML = data.description || "";
 
 	fill(node.querySelector('aside > div > div'), obj);
-	main.merge(node, block.content);
-
 	return node;
 };
 
