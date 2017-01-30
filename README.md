@@ -195,8 +195,8 @@ Pagecut.Editor global variable holds some default options values:
 - menu: function(coed, items) { return items.fullMenu; }
 
 Pagecut.Editor methods:
-- set(dom) - sets the content of the editor using this dom
-- get() - gets the content of the editor for viewing
+- set(dom) - set the dom content of the editor
+- get() - get the dom content of the editor (see also view.render)
 
 
 Pagecut.Viewer
@@ -205,6 +205,10 @@ Pagecut.Viewer
 An instance of viewer is created by default by an instance of Pagecut.Editor.
 Its purpose it to keep track of elements and resolvers, and mainly to render
 blocks to DOM using `render` method.
+
+* render(block, edition) returns a DOM node  
+  Calls the element edit or view function, and modifiers.
+  Merges content. Not recursive.
 
 
 The id module
