@@ -34,7 +34,7 @@ Viewer.prototype.resolve = function(thing) {
 		if (syncBlock) return true;
 	});
 	// TODO it would be nice to not rely upon the DOM to replace the temporary block
-	if (syncBlock && !syncBlock.url) syncBlock.id = "id-" + Date.now();
+	if (syncBlock && !syncBlock.id) syncBlock.id = "id-" + Date.now();
 	return syncBlock;
 };
 
