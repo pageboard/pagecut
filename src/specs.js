@@ -260,6 +260,5 @@ function domSelector(attrs) {
 }
 
 function rootSelector(attrs) {
-	var sel = attrs.tag + '[block-type="'+attrs.block_type+'"]';
-	return sel;
+	return '[block-type="'+attrs.block_type+'"]';
 }
