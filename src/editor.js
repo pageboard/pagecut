@@ -291,7 +291,12 @@ function actionAncestorBlock(main, transaction) {
 		if (roots[i].count == steps.length) {
 			var node = roots[i].root;
 			var block = Specs.attrToBlock(node.attrs);
-			block.content = nodeToContent(main, node);
+			Object.defineProperty(block, 'content', {
+				get: function() {
+					// this operation is not cheap
+					return nodeToContent(main, node);
+				}
+			});
 			return block;
 		}
 	}
