@@ -96,7 +96,7 @@ function Editor(opts, shared) {
 				}
 			}
 		}
-		return dom
+		return dom;
 	};
 
 	this.parsers = {
