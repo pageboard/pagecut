@@ -147,7 +147,7 @@ Editor.prototype.set = function(dom) {
 };
 
 Editor.prototype.get = function() {
-	return this.serializers.view.serializeFragment(this.view.state.doc.content);
+	return this.serializers.edit.serializeFragment(this.view.state.doc.content);
 };
 
 Editor.prototype.insert = function(dom, sel) {
