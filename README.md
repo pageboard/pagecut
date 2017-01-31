@@ -232,7 +232,8 @@ cache
 - an element to hold a temporary dom node, in case no block already exists in
 the IdModule store and IdResolver.fetch exists
 - IdModule.to(main) returns an object with html containing the editor root
-content, and blocks, an id->block map of all blocks in the document.
+content, and blocks, an id->block map of all blocks in the document. Each block
+has its contents nodes properly serialized.
 - IdModule.from(main, html, blocks) returns a DOM Node built from the output of
 IdModule.to.
 
