@@ -15,42 +15,61 @@ function IdModule(main) {
 	main.elements.id = IdElement;
 }
 
-IdModule.blocks = function(main) {
-	var replacer = new IdReplacer(main);
-	var store = replacer.run(main);
-	return store;
-};
+// render blocks as DOM
+IdModule.from = fromBlock;
 
-function IdReplacer(main) {
-	this.store = {};
-	main.modifiers.IdReplacer = this.modifier.bind(this);
-}
-IdReplacer.prototype.modifier = function(main, block, dom) {
-	var id = block.id;
-	if (!id) return;
-	var prev = this.store[id];
-	if (prev) {
-		console.error("has already a block", block);
-	} else {
-		this.store[id] = block;
-		dom.empty();
-	}
-};
-IdReplacer.prototype.run = function(main) {
-	console.log("TODO build a document block");
-	/*
-	var xtore = {};
-	xtore.document = {
+function fromBlock(main, html, blocks) {
+	var fragment = main.render({
 		type: 'document',
 		content: {
-			root: dom
+			document: html
+		}
+	});
+	var list = fragment.querySelectorAll('[block-id]');
+	for (var i=0; i < list.length; i++) {
+		var node = list.item(i);
+		var id = node.getAttribute('block-id');
+		var block = blocks[id];
+		if (!block) {
+			console.error("Unknown block id", id);
+			continue;
+		}
+		// replace recursively
+		node.parentNode.replaceChild(fromBlock(main, block, blocks), node);
+	}
+	return fragment;
+};
+
+// export editor as blocks
+IdModule.to = function(main) {
+	var list = [];
+	main.modifiers.IdTo = function(main, block, dom) {
+		if (block.id) {
+			var div = dom.ownerDocument.createElement('div');
+			div.setAttribute('block-id', block.id);
+			list.push(block);
+			return div;
 		}
 	};
-	*/
-	var dom = main.get();
-	delete main.modifiers.IdReplacer;
-	console.log("TODO serialize html");
-	return this.store;
+
+	var domFragment = main.get();
+	delete main.modifiers.IdTo;
+
+	var blocks = {};
+	for (var i = list.length - 1; i >= 0; i--) {
+		var block = list[i];
+		blocks[block.id] = block;
+		for (var name in block.content) {
+			block.content[name] = block.content[name].innerHTML;
+		}
+	}
+	var div = domFragment.ownerDocument.createElement("div");
+	div.appendChild(domFragment);
+
+	return {
+		html: div.innerHTML,
+		blocks: blocks
+	};
 };
 
 // this is exposed for clients, pagecut does not know about this interface
