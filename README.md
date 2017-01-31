@@ -151,9 +151,9 @@ A simple object with:
 - data object
 - content object
 
-and optionally, for internal use:
-// TODO this could be handled by a modifier
-- focused
+and optionally, some extensions:
+- id (used by id module)
+- focused (used by focus modifier)
 
 Application data should be stored in the data object, but the block object itself
 can be used to store runtime variables like these.
@@ -175,8 +175,7 @@ A modifier is a function(main, block, dom) {} that returns nothing.
 
 Typical modifiers:
 - add a block-id attribute if block.id is set
-- merge content automatically if block.content has properties
-
+- add a block-focused attribute if block.focused is set
 
 Pagecut.Editor
 --------------
@@ -213,6 +212,14 @@ blocks to DOM using `render` method.
   Calls the element edit or view function, and modifiers.
   Merges content. Not recursive.
 
+A default `document` type is available to be able to render a fragment of html:
+```
+pagecut.render({
+	type: 'document',
+	content: {document: 'some html <p>string</p>'}
+});
+```
+
 
 The id module
 -------------
@@ -226,15 +233,4 @@ the IdModule store and IdResolver.fetch exists
 - an export function that returns the shared cache of all blocks with the blocks
 in their contents replaced by a single `div block-id=xxx` tag.
 
-Though the edited document is not itself a block, it helps to think of it as
-a "document" block, so the export function can return:
-```
-{
-	id: 'document',
-	type: 'document',
-	content: {
-		document: 'the document content'
-	}
-}
-```
 
