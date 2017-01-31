@@ -81,11 +81,6 @@ function createRootSpec(main, element, nodeViews, dom) {
 			var dom = main.render(block, true);
 			var attrs = nodeAttrs(dom);
 			prepareDom(element, dom);
-			if (node.attrs.block_focused) {
-				attrs['block-focused'] = 'true';
-			}	else {
-				delete attrs['block-focused'];
-			}
 			return [dom.nodeName, attrs, 0];
 		}
 	};

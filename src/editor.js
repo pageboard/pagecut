@@ -46,6 +46,8 @@ function Editor(opts, shared) {
 	var viewer = new Viewer(opts);
 	Object.assign(this, viewer);
 
+	if (!this.modifiers.focus) this.modifiers.focus = focusModifier;
+
 	opts = Object.assign({
 		plugins: []
 	}, Editor, opts);
@@ -296,6 +298,11 @@ function actionAncestorBlock(main, transaction) {
 			return block;
 		}
 	}
+}
+
+function focusModifier(main, block, dom) {
+	if (block.focused) dom.setAttribute('block-focused', 'true');
+	else dom.removeAttribute('block-focused');
 }
 
 function fragmentReplace(fragment, regexp, replacer) {
