@@ -27,7 +27,7 @@ Viewer.prototype.resolve = function(thing) {
 	var syncBlock;
 	Object.keys(this.resolvers).some(function(k) {
 		syncBlock = main.resolvers[k](main, obj, function(err, block) {
-			var oldDom = document.getElementById(syncBlock.id);
+			var oldDom = block.dom; //document.getElementById(syncBlock._id);
 			if (!oldDom) return;
 			if (err) {
 				console.error(err);
@@ -41,7 +41,7 @@ Viewer.prototype.resolve = function(thing) {
 		if (syncBlock) return true;
 	});
 	// TODO it would be nice to not rely upon the DOM to replace the temporary block
-	if (syncBlock && !syncBlock.id) syncBlock.id = "id-" + Date.now();
+	// if (syncBlock) syncBlock._id = "id-" + Date.now();
 	return syncBlock;
 };
 
@@ -55,14 +55,12 @@ Viewer.prototype.render = function(block, edition) {
 	block = Object.assign({}, block);
 	if (!block.data) block.data = {};
 	if (!block.content) block.content = {};
+	revive(this.doc, block);
 	var dom = renderFn.call(el, this.doc, block);
 	if (block.content) Object.keys(block.content).forEach(function(name) {
 		var contentNode = dom.querySelector('[block-content="'+name+'"]');
 		if (!contentNode) return;
-		var val = block.content[name];
-		// TODO if val is a string it's an OFFLINE content - something more must be done ?
-		if (!val.nodeType) contentNode.innerHTML = val;
-		else contentNode.parentNode.replaceChild(val, contentNode);
+		contentNode.innerHTML = block.content[name].innerHTML;
 	});
 	var main = this;
 	var ndom;
@@ -74,14 +72,19 @@ Viewer.prototype.render = function(block, edition) {
 };
 
 function renderDocumentBlock(document, block) {
-	var content = block.content.document;
-	var div = document.createElement('div');
-	if (content == null) return div;
-	if (typeof content == "string") {
-		div.innerHTML = content;
-		return div;
-	} else {
-		div.appendChild(content);
-	}
-	return div;
+	return block.content.document;
 }
+
+function revive(doc, block) {
+	var contents = block.content;
+	var name, content, div;
+	for (name in contents) {
+		content = contents[name];
+		if (content && typeof content == "string") {
+			div = doc.createElement("div");
+			div.innerHTML = content;
+			contents[name] = div;
+		}
+	}
+}
+

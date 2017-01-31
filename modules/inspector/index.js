@@ -68,7 +68,6 @@ Inspector.edit = function(document, block) {
 	link.setAttribute("title", data.site || "");
 	if (data.type) node.setAttribute("type", data.type);
 	if (data.originalType) node.setAttribute("original-type", data.originalType);
-	if (data.id) node.setAttribute("id", data.id);
 	if (data.url) link.setAttribute("href", data.url);
 	if (data.icon) ensure(link, 'img', { src: data.icon });
 	if (data.thumbnail) ensure(node.querySelector('figure'), 'img', { src: data.thumbnail });

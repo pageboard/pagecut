@@ -214,10 +214,11 @@ blocks to DOM using `render` method.
 
 A default `document` type is available to be able to render a fragment of html:
 ```
-pagecut.render({
+var domWrapper = pagecut.render({
 	type: 'document',
 	content: {document: 'some html <p>string</p>'}
 });
+// domWrapper.innerHTML == 'some html <p>string</p>'
 ```
 
 
@@ -225,12 +226,14 @@ The id module
 -------------
 
 The id module provides
-- a resolver that maps block-id attributes values to blocks stored in a shared
+- IdResolver that maps block-id attributes values to blocks stored in a shared
 cache
-- a modifier that adds block-id attributes when block.id is defined
+- IdModifier for edition that adds block-id attributes when block.id is defined
 - an element to hold a temporary dom node, in case no block already exists in
 the IdModule store and IdResolver.fetch exists
-- an export function that returns the shared cache of all blocks with the blocks
-in their contents replaced by a single `div block-id=xxx` tag.
+- IdModule.to(main) returns an object with html containing the editor root
+content, and blocks, an id->block map of all blocks in the document.
+- IdModule.from(main, html, blocks) returns a DOM Node built from the output of
+IdModule.to.
 
 
