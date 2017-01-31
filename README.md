@@ -19,11 +19,14 @@ Main concepts
 * Resolvers  
   Return synchronously and/or asynchronously a block from a url or from a dom node.
 
+* Modifiers  
+  Change a block or its rendered attributes on the fly.
+
 * Elements  
   Blocks are instances of elements.  
   An element comes in two parts:  
   - its definition (name, group, specs, and json schema)
-  - its edit and view methods, with signatures (main, block).
+  - its edit and view methods, with signatures (document, block).
 
 * Modules  
   A simple extension system for defining resolvers and elements.
@@ -121,9 +124,9 @@ Properties:
   [prosemirror content expression](http://prosemirror.net/guide/schema.html).
 
 Methods:
-- view(main, block)  
+- view(document, block)  
   renders a block to DOM
-- edit(main, block)  
+- edit(document, block)  
   renders a block to editable DOM
 
 The `edit` method must return a DOM with `block-content` attributes placed on
@@ -196,7 +199,7 @@ Pagecut.Editor global variable holds some default options values:
 
 Pagecut.Editor methods:
 - set(dom) - set the dom content of the editor
-- get() - get the dom content of the editor (see also view.render)
+- get(edition) - get the dom content of the editor
 
 
 Pagecut.Viewer
