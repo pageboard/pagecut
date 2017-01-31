@@ -1,10 +1,16 @@
 module.exports = Viewer;
 
+var DocumentElement = {
+	name: 'document',
+	view: renderDocumentBlock
+};
+
 function Viewer(opts) {
 	this.doc = document.implementation.createHTMLDocument();
 	var modules = global.Pagecut && global.Pagecut.modules || {};
 	this.resolvers = opts.resolvers || {};
 	this.elements = opts.elements || {};
+	if (!this.elements.document) this.elements.document = DocumentElement;
 	this.modifiers = opts.modifiers || {};
 	var main = this;
 
@@ -65,3 +71,15 @@ Viewer.prototype.render = function(block, edition) {
 	return dom;
 };
 
+function renderDocumentBlock(document, block) {
+	var content = block.content.document;
+	var div = document.createElement('div');
+	if (content == null) return div;
+	if (typeof content == "string") {
+		div.innerHTML = content;
+		return div;
+	} else {
+		div.appendChild(content);
+	}
+	return div;
+}
