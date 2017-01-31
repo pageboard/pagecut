@@ -65,8 +65,10 @@ Viewer.prototype.render = function(block, edition) {
 		else contentNode.parentNode.replaceChild(val, contentNode);
 	});
 	var main = this;
+	var ndom;
 	Object.keys(this.modifiers).forEach(function(k) {
-		main.modifiers[k](main, block, dom);
+		ndom = main.modifiers[k](main, block, dom);
+		if (ndom) dom = ndom;
 	});
 	return dom;
 };
