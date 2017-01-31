@@ -33,6 +33,7 @@ module.exports = Editor;
 
 function Editor(opts, shared) {
 	var main = this;
+	this.Specs = Specs;
 	this.Model = Model;
 	this.State = State;
 	this.Transform = Transform;
@@ -66,7 +67,8 @@ function Editor(opts, shared) {
 			vnode.toDOM = function(node) {
 				var type = node.type.typeName;
 				var block = Specs.attrToBlock(node.attrs);
-				block.content = nodeToContent(main, node);
+				// nodeToContent calls serializeNode calls toDOM so it's recursive
+				block.content = Specs.nodeToContent(main.serializers.view, node);
 				return main.render(block);
 			};
 		}
@@ -253,19 +255,6 @@ Editor.prototype.parents = function(rpos, all) {
 	else return obj;
 };
 
-function nodeToContent(main, node, content) {
-	var type = node.type.spec.typeName;
-	if (type == "content") {
-		content[node.attrs.block_content] = main.serializers.view.serializeNode(node);
-	} else if (type != "root" || !content) {
-		if (!content) content = {};
-		node.forEach(function(child) {
-			nodeToContent(main, child, content);
-		});
-	}
-	return content;
-}
-
 function actionAncestorBlock(main, transaction) {
 	// returns the ancestor block modified by this transaction
 	if (!transaction.docChanged) return;
@@ -297,7 +286,7 @@ function actionAncestorBlock(main, transaction) {
 			Object.defineProperty(block, 'content', {
 				get: function() {
 					// this operation is not cheap
-					return nodeToContent(main, node);
+					return Specs.nodeToContent(main.serializers.edit, node);
 				}
 			});
 			return block;

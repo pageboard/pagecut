@@ -1,6 +1,7 @@
 exports.define = defineSpecs;
 exports.attrToBlock = attrToBlock;
 exports.blockToAttr = blockToAttr;
+exports.nodeToContent = nodeToContent;
 
 var index;
 
@@ -114,6 +115,19 @@ function attrToBlock(attrs) {
 		}
 	}
 	return block;
+}
+
+function nodeToContent(serializer, node, content) {
+	var type = node.type.spec.typeName;
+	if (type == "content") {
+		content[node.attrs.block_content] = serializer.serializeNode(node);
+	} else if (type != "root" || !content) {
+		if (!content) content = {};
+		node.forEach(function(child) {
+			nodeToContent(serializer, child, content);
+		});
+	}
+	return content;
 }
 
 function createWrapSpec(element, nodeViews, dom) {
