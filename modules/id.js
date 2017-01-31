@@ -18,13 +18,14 @@ function IdModule(main) {
 // render blocks as DOM
 IdModule.from = fromBlock;
 
-function fromBlock(main, html, blocks) {
-	var fragment = main.render({
+function fromBlock(main, rootBlock, blocks) {
+	if (typeof rootBlock == "string") rootBlock = {
 		type: 'document',
 		content: {
-			document: html
+			document: rootBlock
 		}
-	});
+	};
+	var fragment = main.render(rootBlock);
 	var list = fragment.querySelectorAll('[block-id]');
 	for (var i=0; i < list.length; i++) {
 		var node = list.item(i);
