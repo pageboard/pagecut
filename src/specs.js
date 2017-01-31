@@ -76,10 +76,10 @@ function createRootSpec(main, element, nodeViews, dom) {
 		}],
 		toDOM: function(node) {
 			var block = attrToBlock(node.attrs);
+			// render without content, and keep the nodeName and attributes
 			var dom = main.render(block, true);
 			var attrs = nodeAttrs(dom);
 			prepareDom(element, dom);
-			// attrs = Object.assign(domAttrs(node.attrs), attrs); // unused
 			if (node.attrs.block_focused) {
 				attrs['block-focused'] = 'true';
 			}	else {
