@@ -72,7 +72,7 @@ Viewer.prototype.render = function(block, edition) {
 };
 
 function renderDocumentBlock(document, block) {
-	return block.content.document;
+	return block.content.document || document.createElement("div");
 }
 
 function revive(doc, block) {
