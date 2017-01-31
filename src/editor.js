@@ -151,8 +151,12 @@ Editor.prototype.set = function(dom) {
 	this.insert(dom, new State.NodeSelection(this.view.state.doc.resolve(0)));
 };
 
-Editor.prototype.get = function() {
-	return this.serializers.edit.serializeFragment(this.view.state.doc.content);
+Editor.prototype.get = function(edition) {
+	// in an offline document
+	var serializer = edition ? this.serializers.edit : this.serializers.view;
+	return serializer.serializeFragment(this.view.state.doc.content, {
+		document: document.implementation.createHTMLDocument()
+	});
 };
 
 Editor.prototype.insert = function(dom, sel) {
