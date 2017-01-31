@@ -114,9 +114,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		},
 		change: function(me, block) {
-			// TODO update preview as above, but do it only for DOM nodes rendering
-			// that block
-			console.log(block);
+			// TODO
+			// 1) the document should be considered a block here, so root changes are received
+			// 2) update the online blocks store (which has DOM Nodes inside content, not html)
+			// 3) optimization: update preview by block
+
+			// console.log(block);
 		},
 		content: contentNode
 	}, {
