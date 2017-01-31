@@ -124,6 +124,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			GET("https://inspector.eda.sarl/inspector", {url: url}, cb);
 		}
 	});
+
+	Pagecut.test = function() {
+		var obj = Pagecut.modules.id.to(Pagecut.sample);
+		console.log("Document exported as", obj);
+		var fragment = Pagecut.modules.id.from(Pagecut.sample, obj.html, obj.blocks);
+		console.log("Exported document rendered as", fragment);
+	};
 	//pagecut.set(contentNode);
 	contentNode.hidden = true;
 });
