@@ -55,7 +55,7 @@ function defaultInspector(url, cb) {
 	});
 }
 
-Inspector.edit = function(main, block) {
+Inspector.edit = function(document, block) {
 	var data = block.data;
 	var node = document.createElement('div');
 	if (block.type) node.setAttribute('block-type', block.type);
@@ -91,7 +91,7 @@ Inspector.edit = function(main, block) {
 	return node;
 };
 
-Inspector.view = function(main, block) {
+Inspector.view = function(document, block) {
 	var data = block.data;
 	var content = block.content;
 	if (data.type == "link") {
@@ -110,7 +110,7 @@ Inspector.view = function(main, block) {
 		div.innerHTML = data.html;
 		return div;
 	} else {
-		return Inspector.edit(main, block);
+		return Inspector.edit(document, block);
 	}
 };
 

@@ -1,6 +1,7 @@
 module.exports = Viewer;
 
 function Viewer(opts) {
+	this.doc = document.implementation.createHTMLDocument();
 	var modules = global.Pagecut && global.Pagecut.modules || {};
 	this.resolvers = opts.resolvers || {};
 	this.elements = opts.elements || {};
@@ -48,7 +49,7 @@ Viewer.prototype.render = function(block, edition) {
 	block = Object.assign({}, block);
 	if (!block.data) block.data = {};
 	if (!block.content) block.content = {};
-	var dom = renderFn.call(el, this, block);
+	var dom = renderFn.call(el, this.doc, block);
 	if (block.content) Object.keys(block.content).forEach(function(name) {
 		var contentNode = dom.querySelector('[block-content="'+name+'"]');
 		if (!contentNode) return;
