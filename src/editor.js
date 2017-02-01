@@ -167,8 +167,7 @@ Editor.prototype.insert = function(dom, sel) {
 	if (!sel) sel = tr.selection;
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
-	var action = tr.replaceWith(start, end, this.parse(dom)).action();
-	view.props.onAction(action);
+	view.dispatch(tr.replaceWith(start, end, this.parse(dom)));
 };
 
 Editor.prototype.delete = function(sel) {
@@ -177,8 +176,7 @@ Editor.prototype.delete = function(sel) {
 	if (!sel) sel = tr.selection;
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
-	var action = tr.delete(start, end).action();
-	view.props.onAction(action);
+	view.dispatch(tr.delete(start, end));
 };
 
 Editor.prototype.parse = function(dom) {
