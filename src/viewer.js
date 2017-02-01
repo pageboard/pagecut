@@ -19,32 +19,6 @@ function Viewer(opts) {
 	});
 }
 
-Viewer.prototype.resolve = function(thing) {
-	var obj = {};
-	if (typeof thing == "string") obj.url = thing;
-	else obj.node = thing;
-	var main = this;
-	var syncBlock;
-	Object.keys(this.resolvers).some(function(k) {
-		syncBlock = main.resolvers[k](main, obj, function(err, block) {
-			var oldDom = block.dom; //document.getElementById(syncBlock._id);
-			if (!oldDom) return;
-			if (err) {
-				console.error(err);
-				main.remove(oldDom);
-			} else {
-				if (syncBlock.focused) block.focused = true;
-				else delete block.focused;
-				main.replace(oldDom, block);
-			}
-		});
-		if (syncBlock) return true;
-	});
-	// TODO it would be nice to not rely upon the DOM to replace the temporary block
-	// if (syncBlock) syncBlock._id = "id-" + Date.now();
-	return syncBlock;
-};
-
 Viewer.prototype.render = function(block, edition) {
 	var type = block.type;
 	if (!type) throw new Error("Missing block type");

@@ -161,6 +161,31 @@ Editor.prototype.get = function(edition) {
 	});
 };
 
+Editor.prototype.resolve = function(thing) {
+	var obj = {};
+	if (typeof thing == "string") obj.url = thing;
+	else obj.node = thing;
+	var main = this;
+	var syncBlock;
+	Object.keys(this.resolvers).some(function(k) {
+		syncBlock = main.resolvers[k](main, obj, function(err, block) {
+			var pos = syncBlock && syncBlock.pos;
+			if (pos == null) return;
+			delete syncBlock.pos;
+			if (err) {
+				console.error(err);
+				main.remove(pos);
+			} else {
+				if (syncBlock.focused) block.focused = true;
+				else delete block.focused;
+				main.replace(pos, block);
+			}
+		});
+		if (syncBlock) return true;
+	});
+	return syncBlock;
+};
+
 Editor.prototype.insert = function(dom, sel) {
 	var view = this.view;
 	var tr = view.state.tr;
@@ -202,7 +227,7 @@ Editor.prototype.refresh = function(dom) {
 };
 
 Editor.prototype.select = function(dom) {
-	var pos = this.posFromDOM(dom);
+	var pos = typeof dom == "number" ? dom : this.posFromDOM(dom);
 	if (pos === false) return false;
 	var $pos = this.view.state.doc.resolve(pos);
 	return new this.State.NodeSelection($pos);
@@ -218,8 +243,8 @@ Editor.prototype.replace = function(src, dst) {
 	return true;
 };
 
-Editor.prototype.remove = function(dom) {
-	var sel = this.select(dom);
+Editor.prototype.remove = function(src) {
+	var sel = this.select(src);
 	if (!sel) return false;
 	return this.delete(sel);
 };
@@ -315,7 +340,7 @@ function fragmentReplace(fragment, regexp, replacer) {
 				end = start + m[0].length;
 				if (start > 0) list.push(child.copy(child.text.slice(pos, start)));
 				str = child.text.slice(start, end);
-				node = replacer(str) || "";
+				node = replacer(str, pos) || "";
 				list.push(node);
 				pos = end;
 			}
@@ -331,9 +356,13 @@ function CreateResolversPlugin(main, opts) {
 	return new State.Plugin({
 		props: {
 			transformPasted: function(pslice) {
-				var frag = fragmentReplace(pslice.content, UrlRegex(), function(str) {
+				var sel = main.view.state.selection;
+				var frag = fragmentReplace(pslice.content, UrlRegex(), function(str, pos) {
 					var block = main.resolve(str);
-					if (block) return main.parse(main.render(block, true)).firstChild;
+					if (block) {
+						block.pos = pos + sel.from + 1;
+						return main.parse(main.render(block, true)).firstChild;
+					}
 				});
 				return new Model.Slice(frag, pslice.openLeft, pslice.openRight);
 			}
