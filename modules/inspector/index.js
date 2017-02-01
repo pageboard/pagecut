@@ -35,7 +35,7 @@ function InspectorResolver(main, obj, cb) {
 		}
 	};
 	InspectorModule.set(block);
-	(InspectorModule.inspector || defaultInspector)(url, function(err, info) {
+	(InspectorModule.inspect || defaultInspector)(url, function(err, info) {
 		if (err) return cb(err);
 		var block = {
 			type: 'link',

@@ -93,6 +93,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}]);
 
+	Pagecut.modules.inspector.inspect = function(url, cb) {
+		GET("https://inspector.eda.sarl/inspector", {url: url}, cb);
+	};
+
 	// expose pagecut instance for debug purpose only
 	Pagecut.sample = new Pagecut.Editor({
 		menu: function(me, items) {
@@ -122,10 +126,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			// console.log(block);
 		},
 		content: contentNode
-	}, {
-		inspector: function(url, cb) {
-			GET("https://inspector.eda.sarl/inspector", {url: url}, cb);
-		}
 	});
 
 	Pagecut.test = function() {
