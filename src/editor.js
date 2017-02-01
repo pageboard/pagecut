@@ -214,16 +214,12 @@ Editor.prototype.parse = function(dom) {
 };
 
 Editor.prototype.refresh = function(dom) {
-	var tr = new this.Transform.Transform(this.view.state.tr.doc);
 	var pos = this.posFromDOM(dom);
 	if (pos === false) return;
 	var block = this.resolve(dom);
 	if (!block) return;
-	console.log("not sure this still works");
-	this.view.props.onAction({
-		type: "transform",
-		transform: tr.setNodeType(pos, null, Specs.blockToAttr(block))
-	});
+	var view = this.view;
+	view.dispatch(view.state.tr.setNodeType(pos, null, Specs.blockToAttr(block)));
 };
 
 Editor.prototype.select = function(dom) {
