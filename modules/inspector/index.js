@@ -24,6 +24,17 @@ function InspectorResolver(main, obj, cb) {
 	if (!url) return;
 	var block = InspectorModule.get(url);
 	if (block) return block;
+	var block = {
+		type: 'link',
+		url: url,
+		data: {
+			type: 'none'
+		},
+		content: {
+			title: url
+		}
+	};
+	InspectorModule.set(block);
 	(InspectorModule.inspector || defaultInspector)(url, function(err, info) {
 		if (err) return cb(err);
 		var block = {
@@ -37,16 +48,7 @@ function InspectorResolver(main, obj, cb) {
 		InspectorModule.set(block);
 		cb(null, block);
 	});
-	return {
-		type: 'link',
-		url: url,
-		data: {
-			type: 'none'
-		},
-		content: {
-			title: url
-		}
-	};
+	return block;
 }
 
 function defaultInspector(url, cb) {
