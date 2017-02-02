@@ -27,10 +27,7 @@ Viewer.prototype.render = function(block, edition) {
 	if (!el) throw new Error("Missing element " + type);
 	var renderFn = edition && el.edit || el.view;
 	if (!renderFn) throw new Error("Missing render function for block type " + type);
-	block = Object.assign({}, block);
-	if (!block.data) block.data = {};
-	if (!block.content) block.content = {};
-	revive(this.doc, block);
+	block = this.copy(block, true);
 	var dom = renderFn.call(el, this.doc, block);
 	if (block.content) Object.keys(block.content).forEach(function(name) {
 		var contentNode = dom.querySelector('[block-content="'+name+'"]');
@@ -46,20 +43,30 @@ Viewer.prototype.render = function(block, edition) {
 	return dom;
 };
 
-function renderDocumentBlock(document, block) {
-	return block.content.document || document.createElement("div");
-}
-
-function revive(doc, block) {
-	var contents = block.content;
-	var name, content, div;
+Viewer.prototype.copy = function(block, withDomContent) {
+	var copy = Object.assign({}, block);
+	copy.data = Object.assign({}, block.data);
+	copy.content = Object.assign({}, block.content);
+	var contents = copy.content;
+	var name, content, div, isNode;
 	for (name in contents) {
 		content = contents[name];
-		if (content && typeof content == "string") {
-			div = doc.createElement("div");
+		if (!content) continue;
+		isNode = content instanceof Node;
+		if (withDomContent) {
+			if (isNode) continue;
+			div = this.doc.createElement("div");
 			div.innerHTML = content;
 			contents[name] = div;
+		} else {
+			if (!isNode) continue;
+			contents[name] = content.innerHTML;
 		}
 	}
+	return copy;
+};
+
+function renderDocumentBlock(document, block) {
+	return block.content.document || document.createElement("div");
 }
 

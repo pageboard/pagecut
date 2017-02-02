@@ -60,10 +60,7 @@ IdModule.to = function(main) {
 	var blocks = {};
 	for (var i = list.length - 1; i >= 0; i--) {
 		var block = list[i];
-		blocks[block.id] = block;
-		for (var name in block.content) {
-			block.content[name] = block.content[name].innerHTML;
-		}
+		blocks[block.id] = main.copy(block, false);
 	}
 	var div = domFragment.ownerDocument.createElement("div");
 	div.appendChild(domFragment);
