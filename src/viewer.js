@@ -6,6 +6,7 @@ var DocumentElement = {
 };
 
 function Viewer(opts) {
+	if (!opts) opts = {};
 	this.doc = document.implementation.createHTMLDocument();
 	var modules = global.Pagecut && global.Pagecut.modules || {};
 	this.resolvers = opts.resolvers || {};
