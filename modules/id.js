@@ -19,6 +19,7 @@ function IdModule(main) {
 IdModule.from = fromBlock;
 
 function fromBlock(main, rootBlock, blocks) {
+	if (!rootBlock) rootBlock = "";
 	if (typeof rootBlock == "string") rootBlock = {
 		type: 'document',
 		content: {
