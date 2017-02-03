@@ -92,16 +92,12 @@ Resolvers
 Elements convert blocks to DOM, and resolvers are there to do the reverse.
 
 A resolver is a `function(main, obj, cb)`,
-- that can return a block immediately. That block gets a unique `id` if it
-  doesn't already have one.
+- that can return a block immediately.
 - that can return a block asynchronously using `cb(err, block)`;
 - the synchronous block is automatically replaced by the asynchronous block
 
 obj can have obj.url or obj.node, depending on wether a url was pasted or a
 node is being processed.
-
-A typical module will use `block-id` DOM attribute to store the block id and
-keep track of its modifications, so it can later restore the original block.
 
 
 Elements
