@@ -20,9 +20,9 @@ function IdModule(main) {
 IdModule.prototype.from = function(rootBlock, store, resolver) {
 	if (!rootBlock) rootBlock = "";
 	if (typeof rootBlock == "string") rootBlock = {
-		type: 'document',
+		type: 'fragment',
 		content: {
-			document: rootBlock
+			fragment: rootBlock
 		}
 	};
 	var fragment = main.render(rootBlock);
@@ -64,8 +64,10 @@ IdModule.prototype.to = function(store) {
 	div.appendChild(domFragment);
 
 	return {
-		html: div.innerHTML,
-		blocks: blocks
+		type: 'fragment',
+		content: {
+			fragment: div.innerHTML
+		}
 	};
 };
 

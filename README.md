@@ -218,11 +218,11 @@ A separate instance can be created using `new Pagecut.Viewer(opts)` where opts:
   Calls the element edit or view function, and modifiers.
   Merges content. Not recursive.
 
-A default `document` type is available to be able to render a fragment of html:
+A default `fragment` type is available to be able to render a fragment of html:
 ```
 var domWrapper = pagecut.render({
-	type: 'document',
-	content: {document: 'some html <p>string</p>'}
+	type: 'fragment',
+	content: {fragment: 'some html <p>string</p>'}
 });
 // domWrapper.innerHTML == 'some html <p>string</p>'
 ```
