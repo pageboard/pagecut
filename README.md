@@ -231,16 +231,22 @@ var domWrapper = pagecut.render({
 The id module
 -------------
 
-The id module provides
-- IdResolver that maps block-id attributes values to blocks stored in a shared
-cache
-- IdModifier for edition that adds block-id attributes when block.id is defined
-- an element to hold a temporary dom node, in case no block already exists in
-the IdModule store and IdResolver.fetch exists
-- IdModule.to(main) returns an object with html containing the editor root
-content, and blocks, an id->block map of all blocks in the document. Each block
-has its contents nodes properly serialized.
-- IdModule.from(main, html, blocks) returns a DOM Node built from the output of
-IdModule.to.
+The id module provides:
+- IdResolver for edition that maps block-id attributes values to blocks stored
+in a shared cache,
 
+- IdModifier for edition that adds block-id attributes when block.id is defined,
+
+- id.to(store?) returns a block fragment of the editor root content, and
+  optionally populates store with the blocks (by id) that have been referenced.
+
+- id.from(block or html, store, resolver?) renders the block, searches *all*
+  descendents with a `block-id` attribute in the store, and if it doesn't find
+  a matching block, optionally calls the resolver(id, cb) function, then
+  replaces each block with its rendered DOM.
+  The async resolver allows one to fetch remote data during initial rendering
+  of the view. It's similar (but different in the details and applications) to
+  the editor's resolvers functions.  
+  It's up to the custom resolver to store fetched blocks in the id module cache.  
+  Returns a DOM node.
 

@@ -25,24 +25,27 @@ IdModule.prototype.from = function(rootBlock, store, resolver) {
 			fragment: rootBlock
 		}
 	};
-	var fragment = main.render(rootBlock);
+	var fragment = this.main.render(rootBlock);
 	var list = fragment.querySelectorAll('[block-id]');
+	var me = this;
 	for (var i=0; i < list.length; i++) {
-		var node = list.item(i);
-		var id = node.getAttribute('block-id');
-		var block = blocks[id];
-		if (!block) {
-			console.error("Unknown block id", id);
-			continue;
-		}
-		// replace recursively
-		node.parentNode.replaceChild(fromBlock(main, block, blocks), node);
+		(function(node, next) {
+			var id = node.getAttribute('block-id');
+			var block = store[id];
+			if (block) next(null, block);
+			else if (resolver) resolver(id, store, next);
+			else next(new Error("Unknown block id " + id));
+		)(list[i], function(err, block) {
+			if (err) return console.error(err);
+			node.parentNode.replaceChild(me.from(block, store, resolver), node);
+		});
 	}
 	return fragment;
 };
 
 IdModule.prototype.to = function(store) {
 	var list = [];
+	var main = this.main;
 	main.modifiers.IdTo = function(main, block, dom) {
 		if (block.id) {
 			var div = dom.ownerDocument.createElement('div');
@@ -55,10 +58,10 @@ IdModule.prototype.to = function(store) {
 	var domFragment = main.get();
 	delete main.modifiers.IdTo;
 
-	var blocks = {};
+	var block;
 	for (var i = list.length - 1; i >= 0; i--) {
-		var block = list[i];
-		blocks[block.id] = main.copy(block, false);
+		block = list[i];
+		store[block.id] = main.copy(block, false);
 	}
 	var div = domFragment.ownerDocument.createElement("div");
 	div.appendChild(domFragment);
@@ -72,6 +75,18 @@ IdModule.prototype.to = function(store) {
 };
 
 IdModule.prototype.clear = function(id) {
+	if (id === undefined) {
+		this.store = {};
+	} else if (id == null || id == false) {
+		console.warn('id.clear expects undefined or something not null');
+	} else if (!this.store[id]) {
+		console.warn('id.clear expects store to contain id', id);
+	} else {
+		delete this.store[id];
+	}};
+};
+
+IdModule.prototype.get = function(url) {
 	var data = this.store[id];
 	data.id = id;
 	return data;
