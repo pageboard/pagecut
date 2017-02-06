@@ -10,15 +10,14 @@ var IdElement = {
 };
 
 function IdModule(main) {
+	this.main = main;
 	main.resolvers.id = IdResolver;
 	main.modifiers.id = IdModifier;
 	main.elements.id = IdElement;
 }
 
-// render blocks as DOM
-IdModule.from = fromBlock;
 
-function fromBlock(main, rootBlock, blocks) {
+IdModule.prototype.from = function(rootBlock, store, resolver) {
 	if (!rootBlock) rootBlock = "";
 	if (typeof rootBlock == "string") rootBlock = {
 		type: 'document',
@@ -42,8 +41,7 @@ function fromBlock(main, rootBlock, blocks) {
 	return fragment;
 };
 
-// export editor as blocks
-IdModule.to = function(main) {
+IdModule.prototype.to = function(store) {
 	var list = [];
 	main.modifiers.IdTo = function(main, block, dom) {
 		if (block.id) {
@@ -71,14 +69,13 @@ IdModule.to = function(main) {
 	};
 };
 
-// this is exposed for clients, pagecut does not know about this interface
-IdModule.store = {};
-IdModule.get = function(url) {
+IdModule.prototype.clear = function(id) {
 	var data = this.store[id];
 	data.id = id;
 	return data;
 };
-IdModule.set = function(data) {
+
+IdModule.prototype.set = function(data) {
 	if (data && data.id) data = [data];
 	for (var i = 0; i < data.length; i++) {
 		this.store[data[i].id] = data[i];

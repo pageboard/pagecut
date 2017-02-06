@@ -1,22 +1,23 @@
 module.exports = Viewer;
 
-var DocumentElement = {
-	name: 'document',
-	view: renderDocumentBlock
+var FragmentElement = {
+	name: 'fragment',
+	view: renderFragment
 };
 
 function Viewer(opts) {
 	if (!opts) opts = {};
 	this.doc = document.implementation.createHTMLDocument();
-	var modules = global.Pagecut && global.Pagecut.modules || {};
+	var modules = Object.assign({}, global.Pagecut && global.Pagecut.modules, opts.modules);
 	this.resolvers = opts.resolvers || {};
 	this.elements = opts.elements || {};
-	if (!this.elements.document) this.elements.document = DocumentElement;
+	if (!this.elements.fragment) this.elements.fragment = FragmentElement;
 	this.modifiers = opts.modifiers || {};
 	var main = this;
+	main.modules = {};
 
 	Object.keys(modules).forEach(function(k) {
-		modules[k](main);
+		main.modules[k] = new modules[k](main);
 	});
 }
 
@@ -66,7 +67,7 @@ Viewer.prototype.copy = function(block, withDomContent) {
 	return copy;
 };
 
-function renderDocumentBlock(document, block) {
-	return block.content.document || document.createElement("div");
+function renderFragment(document, block) {
+	return block.content.fragment || document.createElement("div");
 }
 

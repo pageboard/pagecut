@@ -32,7 +32,8 @@ Main concepts
 
 * Modules  
   A simple extension system for defining resolvers and elements.
-  A module exports a function `Pagecut.modules.mymodulename(elements, resolvers)`.
+  Modules are initialized by viewer instance, and is accessible by its name under
+  `pagecut.modules.modulename`.
 
 * Blocks  
   The core data structure for holding elements instances, and persisting content.
@@ -65,7 +66,7 @@ Yet such a setup isn't really useful without modules.
 Modules
 -------
 
-The function exported by a module as `Pagecut.modules.<name>` can set up:
+A module constructor receives a viewer instance as argument, so it can set up:
 - elements
 - resolvers
 - modifiers
@@ -73,6 +74,7 @@ The function exported by a module as `Pagecut.modules.<name>` can set up:
 Example:
 ```
 module.exports = function(main) {
+	this.main = main;
 	main.elements.video = VideoElement;
 	main.resolvers.youtube = YoutubeResolver;
 	main.modifiers.oddity = MyOwnModifier;
@@ -82,6 +84,8 @@ and is typically exported using browserify:
 ```
 browserify --standalone Pagecut.modules.video modules/video.js
 ```
+
+The viewer instance initializes the globally installed modules automatically.
 
 The order of modules, and in particular, the order of resolvers or modifiers,
 should not change the result - be sure to define independent functions that

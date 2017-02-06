@@ -3,16 +3,18 @@ var Inspector = require('./schema');
 module.exports = InspectorModule;
 
 function InspectorModule(main) {
+	this.main = main;
 	main.elements.link = Inspector;
 	main.resolvers.inspector = InspectorResolver;
+	this.store = {};
 }
 
 // this is exposed for clients, pagecut does not know about this interface
-InspectorModule.store = {};
-InspectorModule.get = function(url) {
+InspectorModule.prototype.store = {};
+InspectorModule.prototype.get = function(url) {
 	return this.store[url];
 };
-InspectorModule.set = function(blocks) {
+InspectorModule.prototype.set = function(blocks) {
 	if (blocks && blocks.data) blocks = [blocks];
 	for (var i = 0; i < blocks.length; i++) {
 		this.store[blocks[i].url] = blocks[i];
