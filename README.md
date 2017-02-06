@@ -19,7 +19,7 @@ Main concepts
   by prosemirror to render that internal model into a DOM view.
 
 * Resolvers  
-  Return synchronously and/or asynchronously a block from a url or from a dom node.
+  Return synchronously or asynchronously a block from a url or from a DOM node.
 
 * Modifiers  
   Change a block or its rendered attributes on the fly.
