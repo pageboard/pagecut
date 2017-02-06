@@ -11,10 +11,12 @@ Main concepts
 -------------
 
 * Viewer  
-  renders blocks to DOM using resolvers and elements.
+  renders blocks to DOM using elements and modifiers.
 
 * Editor  
-  transform blocks into internal editor representation and render them for edition.
+  parse DOM into blocks using resolvers, render blocks into DOM (edit version),
+  parse that DOM into an internal editor object model, which is in turn used
+  by prosemirror to render that internal model into a DOM view.
 
 * Resolvers  
   Return synchronously and/or asynchronously a block from a url or from a dom node.
