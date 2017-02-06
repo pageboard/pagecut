@@ -129,9 +129,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 	Pagecut.test = function() {
-		var obj = Pagecut.modules.id.to(Pagecut.sample);
-		console.log("Document exported as", obj);
-		var fragment = Pagecut.modules.id.from(Pagecut.sample, obj.html, obj.blocks);
+		var id = Pagecut.sample.modules.id;
+		var storedBlocks = {};
+		var fragmentBlock = id.to(storedBlocks);
+		console.log("Document exported as", fragmentBlock, storedBlocks);
+		var fragment = id.from(fragmentBlock, storedBlocks);
 		console.log("Exported document rendered as", fragment);
 	};
 	//pagecut.set(contentNode);
