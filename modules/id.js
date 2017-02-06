@@ -83,7 +83,7 @@ IdModule.prototype.clear = function(id) {
 		console.warn('id.clear expects store to contain id', id);
 	} else {
 		delete this.store[id];
-	}};
+	}
 };
 
 IdModule.prototype.get = function(url) {
