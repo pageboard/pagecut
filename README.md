@@ -151,7 +151,7 @@ Blocks
 A simple object with:
 - type
 - data object
-- content object
+- content object (mapping names with content)
 
 and optionally, some extensions:
 - id (used by id module)
