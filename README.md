@@ -210,6 +210,10 @@ An instance of viewer is created by default by an instance of Pagecut.Editor.
 Its purpose it to keep track of elements and resolvers, and mainly to render
 blocks to DOM using `render` method.
 
+A separate instance can be created using `new Pagecut.Viewer(opts)` where opts:
+- document: a DOM Document (a new one is created if none is given)
+
+
 * render(block, edition) returns a DOM node  
   Calls the element edit or view function, and modifiers.
   Merges content. Not recursive.
