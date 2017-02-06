@@ -35,7 +35,7 @@ IdModule.prototype.from = function(rootBlock, store, resolver) {
 			if (block) next(null, block);
 			else if (resolver) resolver(id, store, next);
 			else next(new Error("Unknown block id " + id));
-		)(list[i], function(err, block) {
+		})(list[i], function(err, block) {
 			if (err) return console.error(err);
 			node.parentNode.replaceChild(me.from(block, store, resolver), node);
 		});
