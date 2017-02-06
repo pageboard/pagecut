@@ -9,7 +9,6 @@ function Viewer(opts) {
 	if (!opts) opts = {};
 	this.doc = document.implementation.createHTMLDocument();
 	var modules = Object.assign({}, global.Pagecut && global.Pagecut.modules, opts.modules);
-	this.resolvers = opts.resolvers || {};
 	this.elements = opts.elements || {};
 	if (!this.elements.fragment) this.elements.fragment = FragmentElement;
 	this.modifiers = opts.modifiers || {};

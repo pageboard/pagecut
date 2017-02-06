@@ -52,6 +52,8 @@ function Editor(opts, shared) {
 		plugins: []
 	}, Editor, opts);
 
+	this.resolvers = opts.resolvers || {};
+
 	var spec = {
 		nodes: opts.nodeSpec,
 		marks: opts.markSpec
