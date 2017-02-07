@@ -159,7 +159,7 @@ Editor.prototype.get = function(edition) {
 	// in an offline document
 	var serializer = edition ? this.serializers.edit : this.serializers.view;
 	return serializer.serializeFragment(this.view.state.doc.content, {
-		document: document.implementation.createHTMLDocument()
+		document: this.doc
 	});
 };
 
