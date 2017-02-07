@@ -29,16 +29,17 @@ IdModule.prototype.from = function(rootBlock, store, resolver) {
 	var list = fragment.querySelectorAll('[block-id]');
 	var me = this;
 	for (var i=0; i < list.length; i++) {
-		(function(node, next) {
+		(function(node) {
+			function cb(err, block) {
+				if (err) return console.error(err);
+				node.parentNode.replaceChild(me.from(block, store, resolver), node);
+			}
 			var id = node.getAttribute('block-id');
 			var block = store[id];
-			if (block) next(null, block);
-			else if (resolver) resolver(id, store, next);
-			else next(new Error("Unknown block id " + id));
-		})(list[i], function(err, block) {
-			if (err) return console.error(err);
-			node.parentNode.replaceChild(me.from(block, store, resolver), node);
-		});
+			if (block) cb(null, block);
+			else if (resolver) resolver(id, store, cb);
+			else cb(new Error("Unknown block id " + id));
+		})(list[i]);
 	}
 	return fragment;
 };
