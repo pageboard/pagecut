@@ -22,9 +22,10 @@ InspectorModule.prototype.set = function(blocks) {
 };
 
 function InspectorResolver(main, obj, cb) {
+	var inspector = main.modules.inspector;
 	var url = obj.url || obj.node && obj.node.getAttribute('block-url');
 	if (!url) return;
-	var block = InspectorModule.get(url);
+	var block = inspector.get(url);
 	if (block) return block;
 	var block = {
 		type: 'link',
@@ -36,8 +37,8 @@ function InspectorResolver(main, obj, cb) {
 			title: url
 		}
 	};
-	InspectorModule.set(block);
-	(InspectorModule.inspect || defaultInspector)(url, function(err, info) {
+	inspector.set(block);
+	(inspector.inspect || defaultInspector)(url, function(err, info) {
 		if (err) return cb(err);
 		var block = {
 			type: 'link',
@@ -47,7 +48,7 @@ function InspectorResolver(main, obj, cb) {
 				title: info.title
 			}
 		};
-		InspectorModule.set(block);
+		inspector.set(block);
 		cb(null, block);
 	});
 	return block;
