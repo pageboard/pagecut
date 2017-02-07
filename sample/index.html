@@ -56,7 +56,46 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	var contentNode = document.getElementById("content");
 
-	Pagecut.modules.inspector.set([{
+	// expose pagecut instance for debug purpose only
+	Pagecut.sample = new Pagecut.Editor({
+		menu: function(me, items) {
+			return [
+				[items.toggleStrong, items.toggleEm, items.toggleCode],
+				[items.wrapBulletList, items.wrapOrderedList, items.wrapBlockQuote],
+				[me.Menu.undoItem, me.Menu.redoItem],
+			];
+		},
+		place: "#editor",
+		update: function(me, transaction) {
+			if (!transaction.docChanged) return;
+			setTimeout(function() {
+				var from = document.getElementById('preview');
+				var to = document.createElement('div');
+				to.id = 'preview';
+				to.appendChild(me.get());
+				differ.apply(from, differ.diff(from, to));
+			});
+		},
+		change: function(me, block) {
+			// TODO
+			// 1) the document should be considered a block here, so root changes are received
+			// 2) update the online blocks store (which has DOM Nodes inside content, not html)
+			// 3) optimization: update preview by block
+
+			// console.log(block);
+		},
+		// content: contentNode // we need to seed inspector module before
+	});
+
+	Pagecut.test = function() {
+		var id = Pagecut.sample.modules.id;
+		var storedBlocks = {};
+		var fragmentBlock = id.to(storedBlocks);
+		console.log("Document exported as", fragmentBlock, storedBlocks);
+		var fragment = id.from(fragmentBlock, storedBlocks);
+		console.log("Exported document rendered as", fragment);
+	};
+	Pagecut.sample.modules.inspector.set([{
 		id: 1,
 		type: 'link',
 		url: "https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale",
@@ -93,51 +132,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}]);
 
-	Pagecut.modules.inspector.inspect = function(url, cb) {
+	Pagecut.sample.modules.inspector.inspect = function(url, cb) {
 		GET("https://inspector.eda.sarl/inspector", {url: url}, cb);
 	};
-
-	// expose pagecut instance for debug purpose only
-	Pagecut.sample = new Pagecut.Editor({
-		menu: function(me, items) {
-			return [
-				[items.toggleStrong, items.toggleEm, items.toggleCode],
-				[items.wrapBulletList, items.wrapOrderedList, items.wrapBlockQuote],
-				[me.Menu.undoItem, me.Menu.redoItem],
-			];
-		},
-		place: "#editor",
-		update: function(me, transaction) {
-			if (!transaction.docChanged) return;
-			setTimeout(function() {
-				var from = document.getElementById('preview');
-				var to = document.createElement('div');
-				to.id = 'preview';
-				to.appendChild(me.get());
-				differ.apply(from, differ.diff(from, to));
-			});
-		},
-		change: function(me, block) {
-			// TODO
-			// 1) the document should be considered a block here, so root changes are received
-			// 2) update the online blocks store (which has DOM Nodes inside content, not html)
-			// 3) optimization: update preview by block
-
-			// console.log(block);
-		},
-		content: contentNode
-	});
-
-	Pagecut.test = function() {
-		var id = Pagecut.sample.modules.id;
-		var storedBlocks = {};
-		var fragmentBlock = id.to(storedBlocks);
-		console.log("Document exported as", fragmentBlock, storedBlocks);
-		var fragment = id.from(fragmentBlock, storedBlocks);
-		console.log("Exported document rendered as", fragment);
-	};
-	//pagecut.set(contentNode);
+	Pagecut.sample.set(contentNode);
 	contentNode.hidden = true;
+
+
 });
 	</script>
 </head>
