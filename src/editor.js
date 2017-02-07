@@ -43,16 +43,14 @@ function Editor(opts, shared) {
 	this.shared = shared;
 	this.nodeViews = {};
 
-	var viewer = new Viewer(opts);
-	Object.assign(this, viewer);
-
-	if (!this.modifiers.focus) this.modifiers.focus = focusModifier;
-
 	opts = Object.assign({
 		plugins: []
 	}, Editor, opts);
 
 	this.resolvers = opts.resolvers || {};
+	Viewer.call(this, opts);
+
+	if (!this.modifiers.focus) this.modifiers.focus = focusModifier;
 
 	var spec = {
 		nodes: opts.nodeSpec,
@@ -148,6 +146,8 @@ function Editor(opts, shared) {
 	});
 	var view = this.view = menuBarView.editor;
 }
+
+Object.assign(Editor.prototype, Viewer.prototype);
 
 Editor.prototype.set = function(dom) {
 	var content = this.view.state.doc.content;
