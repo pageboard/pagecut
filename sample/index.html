@@ -92,8 +92,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		var storedBlocks = {};
 		var fragmentBlock = id.to(storedBlocks);
 		console.log("Document exported as", fragmentBlock, storedBlocks);
-		var fragment = id.from(fragmentBlock, storedBlocks);
-		console.log("Exported document rendered as", fragment);
+		id.from(fragmentBlock, storedBlocks).then(function(fragment) {
+			console.log("Exported document rendered as", fragment);
+		}).catch(function(err) {
+			console.error(err);
+		});
 	};
 	Pagecut.sample.modules.inspector.set([{
 		id: 1,

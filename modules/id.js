@@ -26,22 +26,35 @@ IdModule.prototype.from = function(rootBlock, store, resolver) {
 		}
 	};
 	var fragment = this.main.render(rootBlock);
-	var list = fragment.querySelectorAll('[block-id]');
+	var nodes = fragment.querySelectorAll('[block-id]');
 	var me = this;
-	for (var i=0; i < list.length; i++) {
-		(function(node) {
-			function cb(err, block) {
-				if (err) return console.error(err);
-				node.parentNode.replaceChild(me.from(block, store, resolver), node);
-			}
-			var id = node.getAttribute('block-id');
-			var block = store[id];
-			if (block) cb(null, block);
-			else if (resolver) resolver(id, store, cb);
-			else cb(new Error("Unknown block id " + id));
-		})(list[i]);
+
+	var list = [];
+	for (var i=0; i < nodes.length; i++) {
+		node = nodes[i];
+		var id = node.getAttribute('block-id');
+		var block = store[id];
+		var p;
+		if (block) {
+			p = Promise.resolve(block);
+		} else if (resolver) {
+			p = Promise.resolve().then(function() {
+				return resolver(id, store);
+			});
+		} else {
+			p = Promise.reject(new Error("Unknown block id " + id));
+		}
+		list.push(p.then(function(block) {
+			var node = this;
+			return me.from(block, store, resolver).then(function(child) {
+				node.parentNode.replaceChild(child, node);
+			});
+		}.bind(node)));
 	}
-	return fragment;
+
+	return Promise.all(list).then(function() {
+		return fragment;
+	});
 };
 
 IdModule.prototype.to = function(store) {

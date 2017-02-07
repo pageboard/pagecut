@@ -242,11 +242,11 @@ in a shared cache,
 
 - id.from(block or html, store, resolver?) renders the block, searches *all*
   descendents with a `block-id` attribute in the store, and if it doesn't find
-  a matching block, optionally calls the resolver(id, cb) function, then
-  replaces each block with its rendered DOM.
+  a matching block, optionally calls the resolver(id) function which can return
+  a promise, then replaces each block with its rendered DOM.
   The async resolver allows one to fetch remote data during initial rendering
   of the view. It's similar (but different in the details and applications) to
   the editor's resolvers functions.  
   It's up to the custom resolver to store fetched blocks in the id module cache.  
-  Returns a DOM node.
+  Returns a promise that resolves to a DOM node.
 
