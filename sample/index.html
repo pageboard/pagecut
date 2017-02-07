@@ -97,6 +97,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		}).catch(function(err) {
 			console.error(err);
 		});
+
+		// example with a really async resolver
+		id.from(fragmentBlock, {}, function(id) {
+			return new Promise(function(resolve) {
+				setTimeout(function() {
+					resolve(storedBlocks[id]);
+				}, 100);
+			});
+		}).then(function(fragment) {
+			console.log("Exported document asynchronously rendered as", fragment);
+		}).catch(function(err) {
+			console.error(err);
+		});
 	};
 	Pagecut.sample.modules.inspector.set([{
 		id: 1,
