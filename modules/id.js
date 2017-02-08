@@ -11,7 +11,7 @@ var IdElement = {
 
 function IdModule(main) {
 	this.main = main;
-	main.resolvers.id = IdResolver;
+	if (main.resolvers) main.resolvers.id = IdResolver;
 	main.modifiers.id = IdModifier;
 	main.elements.id = IdElement;
 }
