@@ -30,10 +30,12 @@ IdModule.prototype.from = function(rootBlock, store, resolver) {
 	var me = this;
 
 	var list = [];
+
+	var block, id, node;
 	for (var i=0; i < nodes.length; i++) {
 		node = nodes[i];
-		var id = node.getAttribute('block-id');
-		var block = store[id];
+		id = node.getAttribute('block-id');
+		block = store[id];
 		var p;
 		if (block) {
 			p = Promise.resolve(block);
