@@ -7,7 +7,7 @@ var FragmentElement = {
 
 function Viewer(opts) {
 	if (!opts) opts = {};
-	this.doc = document.implementation.createHTMLDocument();
+	this.doc = opts.document || document.implementation.createHTMLDocument();
 	var modules = Object.assign({}, global.Pagecut && global.Pagecut.modules, opts.modules);
 	this.elements = opts.elements || {};
 	if (!this.elements.fragment) this.elements.fragment = FragmentElement;
