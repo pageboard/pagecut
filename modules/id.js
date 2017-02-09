@@ -35,6 +35,9 @@ IdModule.prototype.from = function(rootBlock, store, resolver) {
 	for (var i=0; i < nodes.length; i++) {
 		node = nodes[i];
 		id = node.getAttribute('block-id');
+		if (id === '' + rootBlock.id) {
+			continue;
+		}
 		block = store[id];
 		var p;
 		if (block) {
