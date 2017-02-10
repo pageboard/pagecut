@@ -322,6 +322,7 @@ function actionAncestorBlock(main, transaction) {
 }
 
 function focusModifier(main, block, dom) {
+	if (dom.nodeType == Node.DOCUMENT_NODE) dom = dom.documentElement;
 	if (block.focused) dom.setAttribute('block-focused', 'true');
 	else dom.removeAttribute('block-focused');
 }
