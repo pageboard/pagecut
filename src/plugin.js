@@ -1,6 +1,9 @@
+var State = require("prosemirror-state");
+var keymap = require("prosemirror-keymap").keymap;
+
 function CreatePlugin(main, options) {
 	var handler = new Handler(main, options);
-	return new main.State.Plugin({
+	return new State.Plugin({
 		props: {
 			handleClick: handler.click,
 			handleDOMEvents: {
@@ -26,7 +29,7 @@ function Handler(main, options) {
 
 	this.command = this.command.bind(this);
 
-	options.plugins.unshift(main.keymap({
+	options.plugins.unshift(keymap({
 		Enter: this.command
 	}));
 }
@@ -75,7 +78,7 @@ function focusRoot(view, pos, node, focus) {
 Handler.prototype.focus = function(view, $pos) {
 	var parents = this.main.parents($pos);
 	var node = parents.node.root;
-	var dom = node && posToNode(this.main, view, parents.pos.root);
+	var dom = node && posToNode(view, parents.pos.root);
 	var existing = view.content.querySelectorAll('[block-focused]');
 	var blurs = [];
 	// reverse on purpose here
@@ -115,10 +118,10 @@ Handler.prototype.mousedown = function(view, e) {
 	var $root = view.state.tr.doc.resolve(cpos.root);
 
 	view.dispatch(
-		view.state.tr.setSelection(new this.main.State.NodeSelection($root))
+		view.state.tr.setSelection(new State.NodeSelection($root))
 	);
 
-	var dom = posToNode(this.main, view, cpos.root);
+	var dom = posToNode(view, cpos.root);
 
 	if (dom) dom = dom.querySelector('[block-handle]');
 	if (dom) {
@@ -140,7 +143,7 @@ Handler.prototype.mouseup = function(view, e) {
 			//setTimeout(function() {
 			view.dispatch(
 				view.state.tr.setSelection(
-					new main.State.TextSelection(view.state.tr.selection.$from)
+					new State.TextSelection(view.state.tr.selection.$from)
 				)
 			);
 			//});
@@ -148,10 +151,10 @@ Handler.prototype.mouseup = function(view, e) {
 	}
 };
 
-function posToNode(main, view, pos) {
+function posToNode(view, pos) {
 	if (pos == null) return;
 	try {
-		var fromPos = main.view.docView.domFromPos(pos);
+		var fromPos = view.docView.domFromPos(pos);
 		if (fromPos) {
 			var dom = fromPos.node;
 			var offset = fromPos.offset;

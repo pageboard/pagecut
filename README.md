@@ -7,8 +7,8 @@ An easy to setup and easy to extend html content editor built upon
 [ProseMirror](https://prosemirror.net).
 
 
-Main concepts
--------------
+Objects
+-------
 
 * Viewer  
   renders blocks to DOM using elements and modifiers.
@@ -193,7 +193,7 @@ Pagecut.Editor options:
 - change(main, block): called when a block has changed  
   the ancestor block, if any, in which the current action is applied.
 
-Pagecut.Editor global variable holds some default options values:
+Pagecut.Editor.defaults holds some default options values:
 - markSpec, nodeSpec: the schema specifications
 - plugins: array of plugins for ProseMirror
 - menu: function(coed, items) { return items.fullMenu; }
@@ -226,6 +226,12 @@ var domWrapper = pagecut.render({
 });
 // domWrapper.innerHTML == 'some html <p>string</p>'
 ```
+
+Prosemirror modules
+-------------------
+
+The Prosemirror modules that are used by Editor are accessible through
+Pagecut variable.
 
 
 The id module

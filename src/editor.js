@@ -18,14 +18,22 @@ var UrlRegex = require('url-regex');
 
 var CreatePlugin = require("./plugin");
 var Specs = require("./specs");
-var Viewer = require("./viewer")
+var Viewer = require("./viewer");
+
 Object.assign(Editor.prototype, Viewer.prototype);
 
-Editor.nodeSpec = baseSchema.nodeSpec.remove('image');
-Editor.nodeSpec = listSchema.addListNodes(Editor.nodeSpec, "paragraph block*", "block");
-// Editor.nodeSpec = tableSchema.addTableNodes(nodeSpec, "inline<_>*", "block");
+Editor.defaults = {};
+Editor.defaults.nodeSpec = baseSchema.nodeSpec.remove('image');
+Editor.defaults.nodeSpec = listSchema.addListNodes(
+	Editor.defaults.nodeSpec,
+	"paragraph block*",
+	"block"
+);
+// Editor.defaults.nodeSpec = tableSchema.addTableNodes(
+// 	Editor.defaults.nodeSpec, "inline<_>*", "block"
+// );
 
-Editor.markSpec = baseSchema.markSpec;
+Editor.defaults.markSpec = baseSchema.markSpec;
 
 
 function EditorMenu(main, opts) {
@@ -38,28 +46,29 @@ EditorMenu.prototype.init = function(items) {
 
 EditorMenu.prototype.update = function(view) {
 	this.menubar.textContent = ""
+	this.menubar.classList.add('ProseMirror-menu');
 	this.menubar.appendChild(Menu.renderGrouped(view, this.menu));
 };
 
 Editor.EditorMenu = EditorMenu;
 
-module.exports = Editor;
+module.exports = {
+	Editor: Editor,
+	Model: Model,
+	State: State,
+	Transform: Transform,
+	Menu: Menu,
+	Commands: Commands,
+	keymap: keymap
+};
 
-function Editor(opts, shared) {
+function Editor(opts) {
 	var main = this;
-	this.Specs = Specs;
-	this.Model = Model;
-	this.State = State;
-	this.Transform = Transform;
-	this.Menu = Menu;
-	this.Commands = Commands;
-	this.keymap = keymap;
-	this.shared = shared;
 	this.nodeViews = {};
 
 	opts = Object.assign({
 		plugins: []
-	}, Editor, opts);
+	}, Editor.defaults, opts);
 
 	this.resolvers = opts.resolvers || {};
 	Viewer.call(this, opts);
