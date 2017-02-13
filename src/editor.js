@@ -27,7 +27,21 @@ Editor.nodeSpec = listSchema.addListNodes(Editor.nodeSpec, "paragraph block*", "
 
 Editor.markSpec = baseSchema.markSpec;
 
-Editor.menu = defaultMenu;
+
+function EditorMenu(main, opts) {
+	this.menubar = opts.menubar;
+}
+
+EditorMenu.prototype.init = function(items) {
+	this.menu = items.fullMenu;
+};
+
+EditorMenu.prototype.update = function(view) {
+	this.menubar.textContent = ""
+	this.menubar.appendChild(Menu.renderGrouped(view, this.menu));
+};
+
+Editor.EditorMenu = EditorMenu;
 
 module.exports = Editor;
 
@@ -118,14 +132,19 @@ function Editor(opts, shared) {
 		keymap(Setup.buildKeymap(editSchema, opts.mapKeys)),
 		keymap(Commands.baseKeymap),
 		history(),
-		CreateMenuPlugin(main, opts, editSchema),
 		CreateResolversPlugin(main, opts),
 		DropCursor(opts)
 	);
 
+	this.menu = opts.menubar && new Editor.EditorMenu(this, opts);
+	if (this.menu) this.menu.init(Setup.buildMenuItems(editSchema));
+
 	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
-	var menuBarView = new Menu.MenuBarEditorView(place, {
+	var view = this.view = new EditorView(function(viewContent) {
+		// this use a prosemirror-view patch that allows us to return content
+		return place;
+	}, {
 		state: State.EditorState.create({
 			schema: editSchema,
 			plugins: opts.plugins,
@@ -140,11 +159,11 @@ function Editor(opts, shared) {
 					if (changedBlock) opts.change(main, changedBlock);
 				}
 				view.updateState(view.state.apply(transaction));
+				if (main.menu) main.menu.update(view);
 			}
 		},
 		nodeViews: this.nodeViews
 	});
-	var view = this.view = menuBarView.editor;
 }
 
 Object.assign(Editor.prototype, Viewer.prototype);
@@ -365,26 +384,6 @@ function CreateResolversPlugin(main, opts) {
 				});
 				return new Model.Slice(frag, pslice.openLeft, pslice.openRight);
 			}
-		}
-	});
-}
-
-function defaultMenu(main, items) {
-	return items.fullMenu;
-}
-
-function CreateMenuPlugin(main, opts, editSchema) {
-	var menu = opts.menu(main, Setup.buildMenuItems(editSchema)).map(function(group) {
-		return group.filter(function(x) {
-			// remove undefined items
-			return !!x;
-		});
-	});
-
-	return new State.Plugin({
-		props: {
-			menuContent: menu,
-			floatingMenu: true
 		}
 	});
 }

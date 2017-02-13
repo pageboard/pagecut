@@ -36,6 +36,11 @@ body {
 	overflow:auto;
 	max-height:100%;
 }
+#menubar {
+	margin:1em;
+	margin-bottom:0;
+	border:1px solid gray;
+}
 	</style>
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -56,15 +61,17 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	var contentNode = document.getElementById("content");
 
+	Pagecut.Editor.EditorMenu.init = function(items) {
+		this.menu = [
+			[items.toggleStrong, items.toggleEm, items.toggleCode],
+			[items.wrapBulletList, items.wrapOrderedList, items.wrapBlockQuote],
+			[me.Menu.undoItem, me.Menu.redoItem],
+		];
+	};
+
 	// expose pagecut instance for debug purpose only
 	Pagecut.sample = new Pagecut.Editor({
-		menu: function(me, items) {
-			return [
-				[items.toggleStrong, items.toggleEm, items.toggleCode],
-				[items.wrapBulletList, items.wrapOrderedList, items.wrapBlockQuote],
-				[me.Menu.undoItem, me.Menu.redoItem],
-			];
-		},
+		menubar: document.querySelector('#menubar'),
 		place: "#editor",
 		update: function(me, transaction) {
 			if (!transaction.docChanged) return;
@@ -164,6 +171,7 @@ Pagecut demo.
 <br>
 <code id="install">npm install window-agent diff-dom</code>
 
+<div id="menubar" class="ProseMirror-menu"></div>
 <div id="editor"></div>
 
 <div id="content">
