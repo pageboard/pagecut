@@ -51,10 +51,9 @@ EditorMenu.prototype.update = function(view) {
 	this.menubar.appendChild(Menu.renderGrouped(view, this.menu));
 };
 
-Editor.EditorMenu = EditorMenu;
-
 module.exports = {
 	Editor: Editor,
+	EditorMenu: EditorMenu,
 	Model: Model,
 	State: State,
 	Setup: Setup,
@@ -173,7 +172,7 @@ function Editor(opts) {
 		nodeViews: this.nodeViews
 	});
 
-	this.menu = opts.menubar && new Editor.EditorMenu(this, opts);
+	this.menu = opts.menubar && new module.exports.EditorMenu(this, opts);
 	if (this.menu) {
 		this.menu.init(editSchema);
 		if (!opts.content) this.menu.update(view);
