@@ -40,7 +40,8 @@ function EditorMenu(main, opts) {
 	this.menubar = opts.menubar;
 }
 
-EditorMenu.prototype.init = function(items) {
+EditorMenu.prototype.init = function(schema) {
+	var items = Setup.buildMenuItems(schema);
 	this.menu = items.fullMenu;
 };
 
@@ -56,6 +57,7 @@ module.exports = {
 	Editor: Editor,
 	Model: Model,
 	State: State,
+	Setup: Setup,
 	Transform: Transform,
 	Menu: Menu,
 	Commands: Commands,
@@ -145,9 +147,6 @@ function Editor(opts) {
 		DropCursor(opts)
 	);
 
-	this.menu = opts.menubar && new Editor.EditorMenu(this, opts);
-	if (this.menu) this.menu.init(Setup.buildMenuItems(editSchema));
-
 	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
 	var view = this.view = new EditorView(function(viewContent) {
@@ -173,6 +172,12 @@ function Editor(opts) {
 		},
 		nodeViews: this.nodeViews
 	});
+
+	this.menu = opts.menubar && new Editor.EditorMenu(this, opts);
+	if (this.menu) {
+		this.menu.init(editSchema);
+		if (!opts.content) this.menu.update(view);
+	}
 }
 
 Object.assign(Editor.prototype, Viewer.prototype);
