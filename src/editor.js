@@ -18,7 +18,8 @@ var UrlRegex = require('url-regex');
 
 var CreatePlugin = require("./plugin");
 var Specs = require("./specs");
-var Viewer = require("./viewer");
+
+var Viewer = global.Pagecut && global.Pagecut.Viewer || require("./viewer");
 
 Object.assign(Editor.prototype, Viewer.prototype);
 
@@ -60,7 +61,9 @@ module.exports = {
 	Transform: Transform,
 	Menu: Menu,
 	Commands: Commands,
-	keymap: keymap
+	keymap: keymap,
+	Viewer: Viewer,
+	modules: global.Pagecut && global.Pagecut.modules
 };
 
 function Editor(opts) {
