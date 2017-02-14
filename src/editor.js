@@ -36,11 +36,11 @@ Editor.defaults.nodeSpec = listSchema.addListNodes(
 Editor.defaults.markSpec = baseSchema.markSpec;
 
 
-function EditorMenu(main, opts) {
+function EditorMenu(opts) {
 	this.menubar = opts.menubar;
 }
 
-EditorMenu.prototype.init = function(schema) {
+EditorMenu.prototype.init = function(main, schema) {
 	var items = Setup.buildMenuItems(schema);
 	this.menu = items.fullMenu;
 };
@@ -172,9 +172,9 @@ function Editor(opts) {
 		nodeViews: this.nodeViews
 	});
 
-	this.menu = opts.menubar && new module.exports.EditorMenu(this, opts);
+	this.menu = opts.menubar && new module.exports.EditorMenu(opts);
 	if (this.menu) {
-		this.menu.init(editSchema);
+		this.menu.init(this, editSchema);
 		if (!opts.content) this.menu.update(view);
 	}
 }
