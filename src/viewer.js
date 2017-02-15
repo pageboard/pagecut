@@ -31,12 +31,11 @@ Viewer.prototype.render = function(block, edition) {
 	block = this.copy(block, true);
 	var dom = renderFn.call(el, this.doc, block);
 	var main = this;
-	var ndom;
+	var ndom = dom;
 	Object.keys(this.modifiers).forEach(function(k) {
-		ndom = main.modifiers[k](main, block, dom);
-		if (ndom) dom = ndom;
+		ndom = main.modifiers[k](main, block, ndom) || ndom;
 	});
-	return dom;
+	return ndom;
 };
 
 Viewer.prototype.copy = function(block, withDomContent) {
