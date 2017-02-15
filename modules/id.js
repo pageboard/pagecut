@@ -1,20 +1,10 @@
 module.exports = IdModule;
 
-var IdElement = {
-	name: 'id',
-	edit: function(main, block) {
-		var div = document.createElement("div");
-		div.setAttribute('block-state', 'loading');
-		return div;
-	}
-};
-
 function IdModule(main) {
 	this.store = {};
 	this.main = main;
 	if (main.resolvers) main.resolvers.id = IdResolver;
 	main.modifiers.id = IdModifier;
-	main.elements.id = IdElement;
 }
 
 
