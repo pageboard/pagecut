@@ -260,10 +260,15 @@ Editor.prototype.refresh = function(dom) {
 };
 
 Editor.prototype.select = function(dom) {
-	var pos = typeof dom == "number" ? dom : this.posFromDOM(dom);
-	if (pos === false) return false;
-	var $pos = this.view.state.doc.resolve(pos);
-	return new this.State.NodeSelection($pos);
+	var $pos;
+	if (dom instanceof Model.ResolvedPos) {
+		$pos = dom;
+	} else {
+		if (dom instanceof Node) dom = this.posFromDOM(dom);
+		if (typeof dom == "number") $pos = this.view.state.doc.resolve(pos);
+		else return false;
+	}
+	return new State.NodeSelection($pos);
 };
 
 Editor.prototype.replace = function(src, dst) {
