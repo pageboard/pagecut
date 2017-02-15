@@ -78,6 +78,7 @@ function Editor(opts) {
 	Viewer.call(this, opts);
 
 	if (!this.modifiers.focus) this.modifiers.focus = focusModifier;
+	if (!this.modifiers.type) this.modifiers.type = typeModifier;
 
 	var spec = {
 		nodes: opts.nodeSpec,
@@ -364,6 +365,10 @@ function actionAncestorBlock(main, transaction) {
 function focusModifier(main, block, dom) {
 	if (block.focused) dom.setAttribute('block-focused', 'true');
 	else dom.removeAttribute('block-focused');
+}
+
+function typeModifier(main, block, dom) {
+	if (!dom.hasAttribute('block-type')) dom.setAttribute('block-type', block.type);
 }
 
 function fragmentReplace(fragment, regexp, replacer) {
