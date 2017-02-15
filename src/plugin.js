@@ -34,17 +34,17 @@ function Handler(main, options) {
 	}));
 }
 
-Handler.prototype.command = function(state, onAction, view) {
+Handler.prototype.command = function(state, dispatch, view) {
 	var sel = state.tr.selection;
 	var bef = sel.$to.nodeBefore;
 	if (bef && bef.type.name == "hard_break") {
-		if (sel.empty && onAction) {
-			onAction(state.tr.delete(sel.$to.pos - 1, sel.$to.pos).scrollIntoView());
+		if (sel.empty && dispatch) {
+			dispatch(state.tr.delete(sel.$to.pos - 1, sel.$to.pos).scrollIntoView());
 		}
 		// fall through
 		return false;
 	} else {
-		if (onAction) onAction(state.tr.replaceSelectionWith(state.schema.nodes.hard_break.create()).scrollIntoView());
+		if (dispatch) dispatch(state.tr.replaceSelectionWith(state.schema.nodes.hard_break.create()).scrollIntoView());
 		// stop here
 		return true;
 	}
