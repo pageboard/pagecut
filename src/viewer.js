@@ -12,6 +12,7 @@ function Viewer(opts) {
 	this.elements = opts.elements || {};
 	if (!this.elements.fragment) this.elements.fragment = FragmentElement;
 	this.modifiers = opts.modifiers || {};
+	if (!this.modifiers.content) this.modifiers.content = contentModifier;
 	var main = this;
 	main.modules = {};
 
@@ -29,11 +30,6 @@ Viewer.prototype.render = function(block, edition) {
 	if (!renderFn) throw new Error("Missing render function for block type " + type);
 	block = this.copy(block, true);
 	var dom = renderFn.call(el, this.doc, block);
-	if (block.content) Object.keys(block.content).forEach(function(name) {
-		var contentNode = dom.querySelector('[block-content="'+name+'"]');
-		if (!contentNode) return;
-		contentNode.innerHTML = block.content[name].innerHTML;
-	});
 	var main = this;
 	var ndom;
 	Object.keys(this.modifiers).forEach(function(k) {
@@ -68,5 +64,13 @@ Viewer.prototype.copy = function(block, withDomContent) {
 
 function renderFragment(document, block) {
 	return block.content.fragment || document.createElement("div");
+}
+
+function contentModifier(main, block, dom) {
+	if (block.content) Object.keys(block.content).forEach(function(name) {
+		var contentNode = dom.querySelector('[block-content="'+name+'"]');
+		if (!contentNode) return;
+		contentNode.innerHTML = block.content[name].innerHTML;
+	});
 }
 
