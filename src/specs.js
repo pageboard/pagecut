@@ -35,7 +35,21 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 			if (child.nodeType != Node.ELEMENT_NODE) continue;
 			content.push(defineSpecs(main, element, schemaSpecs, child));
 		}
-		if (content.length) spec.content = content.join(" ");
+		if (content.length) {
+			spec.content = content.join(" ");
+		} else if (spec.typeName == "root" && element.specs) {
+			var specKeys = Object.keys(element.specs);
+			var contentName = dom.getAttribute('block-content');
+			if (specKeys.length == 1) {
+				if (contentName == specKeys[0]) {
+					spec.content = element.specs[contentName];
+				} else {
+					console.warn("element has specs", element.specs, "but no matching content");
+				}
+			} else {
+				console.warn("element has multiple specs", element.specs, "only one default block-content is allowed");
+			}
+		}
 	}
 	if (spec) {
 		// use original specName here
