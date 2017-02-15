@@ -66,10 +66,12 @@ function renderFragment(document, block) {
 }
 
 function contentModifier(main, block, dom) {
-	if (block.content) Object.keys(block.content).forEach(function(name) {
+	var contents = block.content;
+	if (!contents) return;
+	Object.keys(contents).forEach(function(name) {
 		var contentNode = dom.querySelector('[block-content="'+name+'"]');
 		if (!contentNode) return;
-		contentNode.innerHTML = block.content[name].innerHTML;
+		contentNode.innerHTML = contents[name].innerHTML;
 	});
 }
 
