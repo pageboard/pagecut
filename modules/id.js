@@ -10,6 +10,7 @@ var IdElement = {
 };
 
 function IdModule(main) {
+	this.store = {};
 	this.main = main;
 	if (main.resolvers) main.resolvers.id = IdResolver;
 	main.modifiers.id = IdModifier;
@@ -105,10 +106,8 @@ IdModule.prototype.clear = function(id) {
 	}
 };
 
-IdModule.prototype.get = function(url) {
-	var data = this.store[id];
-	data.id = id;
-	return data;
+IdModule.prototype.get = function(id) {
+	return this.store[id];
 };
 
 IdModule.prototype.set = function(data) {
@@ -121,11 +120,11 @@ IdModule.prototype.set = function(data) {
 function IdResolver(main, obj, cb) {
 	var id = obj.node && obj.node.getAttribute('block-id');
 	if (!id) return;
-	var block = IdModule.get(id);
+	var block = main.modules.id.get(id);
 	if (block) return block;
 	if (IdResolver.fetch) IdResolver.fetch(id, function(err, block) {
 		if (err) return cb(err);
-		IdModule.set(block);
+		main.modules.id.set(block);
 		cb(null, block);
 	});
 	return {
