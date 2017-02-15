@@ -12,7 +12,6 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 	if (!dom) {
 		index = 0;
 		dom = main.render({ type: element.name }, true);
-		if (dom.nodeType == Node.DOCUMENT_NODE) dom = dom.body;
 		spec = createRootSpec(main, element, main.nodeViews, dom);
 		recursive = true;
 	} else if (contentName) {

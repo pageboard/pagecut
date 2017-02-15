@@ -134,12 +134,6 @@ function IdResolver(main, obj, cb) {
 }
 
 function IdModifier(main, block, dom) {
-	if (dom.nodeType == Node.DOCUMENT_NODE) {
-		dom = dom.documentElement;
-	} else if (dom.nodeType != Node.ELEMENT_NODE) {
-		console.warn("Cannot set block-id attribute on non-element node", dom);
-		return;
-	}
 	if (block.id != null) dom.setAttribute('block-id', block.id);
 	else dom.removeAttribute('block-id');
 }
