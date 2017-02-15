@@ -347,19 +347,33 @@ function actionAncestorBlock(main, transaction) {
 			});
 		});
 	});
-	for (var i=0; i < roots.length; i++) {
-		if (roots[i].count == steps.length) {
-			var node = roots[i].root;
-			var block = Specs.attrToBlock(node.attrs);
-			Object.defineProperty(block, 'content', {
-				get: function() {
-					// this operation is not cheap
-					return Specs.nodeToContent(main.serializers.edit, node);
-				}
-			});
-			return block;
-		}
+	var rootNode;
+	roots.some(function(root) {
+		if (root.count != steps.length) return;
+		rootNode = root.root;
+		return true;
+	});
+	if (rootNode) {
+		block = Specs.attrToBlock(rootNode.attrs);
+		Object.defineProperty(block, 'content', {
+			get: function() {
+				// this operation is not cheap
+				return Specs.nodeToContent(main.serializers.edit, rootNode);
+			}
+		});
+	} else {
+		block = {
+			type: 'fragment',
+			content: {}
+		};
+		Object.defineProperty(block.content, 'fragment', {
+			get: function() {
+				// this operation is not cheap
+				return main.serializers.edit.serializeFragment(main.view.state.doc);
+			}
+		});
 	}
+	return block;
 }
 
 function focusModifier(main, block, dom) {
