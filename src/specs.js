@@ -46,13 +46,13 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 }
 
 function createRootSpec(main, element, nodeViews, dom) {
-	var defaultAttrs = tagAttrs(dom);
-	var defaultSpecAttrs = specAttrs(Object.assign({
+	var defaultAttrs = Object.assign({
 		block_id: null,
 		block_focused: null,
 		block_url: null,
 		block_type: element.name
-	}, defaultAttrs));
+	}, tagAttrs(dom));
+	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
 		specName: "root_" + element.name,
