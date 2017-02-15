@@ -63,7 +63,6 @@ function defaultInspector(url, cb) {
 Inspector.edit = function(document, block) {
 	var data = block.data;
 	var node = document.createElement('div');
-	if (block.type) node.setAttribute('block-type', block.type);
 	if (block.url) node.setAttribute('block-url', block.url);
 	node.innerHTML = '<header block-handle><a name="type"></a><a title="" target="_blank"></a><a name="preview"></a></header><div>\
 <div block-content="title"></div><div block-content="content"></div>\
