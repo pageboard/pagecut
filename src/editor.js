@@ -323,6 +323,18 @@ Editor.prototype.parents = function(rpos, all) {
 	else return obj;
 };
 
+Editor.prototype.nodeToBlock = function(node) {
+	var block = Specs.attrToBlock(node.attrs);
+	var main = this;
+	Object.defineProperty(block, 'content', {
+		get: function() {
+			// this operation is not cheap
+			return Specs.nodeToContent(main.serializers.edit, node);
+		}
+	});
+	return block;
+};
+
 function actionAncestorBlock(main, transaction) {
 	// returns the ancestor block modified by this transaction
 	if (!transaction.docChanged) return;
@@ -354,13 +366,7 @@ function actionAncestorBlock(main, transaction) {
 		return true;
 	});
 	if (rootNode) {
-		block = Specs.attrToBlock(rootNode.attrs);
-		Object.defineProperty(block, 'content', {
-			get: function() {
-				// this operation is not cheap
-				return Specs.nodeToContent(main.serializers.edit, rootNode);
-			}
-		});
+		block = main.nodeToBlock(rootNode);
 	} else {
 		block = {
 			type: 'fragment',
