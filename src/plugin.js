@@ -41,6 +41,9 @@ Handler.prototype.command = function(state, dispatch, view) {
 		if (sel.empty && dispatch) {
 			dispatch(state.tr.delete(sel.$to.pos - 1, sel.$to.pos).scrollIntoView());
 		}
+		// do not split root blocks
+		var parent = sel.$to.parent;
+		if (parent && parent.type.spec.typeName == "root") return true;
 		// fall through
 		return false;
 	} else {
