@@ -100,9 +100,10 @@ Inspector.view = function(document, block) {
 	if (data.type == "link") {
 		var anchor = document.createElement('a');
 		anchor.href = block.url;
-		if (content.title) anchor.setAttribute('title', content.title.innerHTML);
+		if (content.title) anchor.setAttribute('title', content.title.firstChild.nodeValue);
 		else anchor.removeAttribute('title');
-		anchor.innerHTML = content.content && content.content.innerHTML || '';
+		anchor.textContent = '';
+		if (content.content) anchor.appendChild(content.content);
 		return anchor;
 	} else if (data.html) {
 		var div = document.createElement('div');

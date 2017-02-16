@@ -128,8 +128,12 @@ function attrToBlock(attrs) {
 
 function nodeToContent(serializer, node, content) {
 	var type = node.type.spec.typeName;
+
 	if (type == "content") {
-		content[node.attrs.block_content] = serializer.serializeNode(node);
+		content[node.attrs.block_content] = serializer.serializeFragment(node.content);
+	} else if (type == "root" && node.attrs.block_content) {
+		if (!content) content = {};
+		content[node.attrs.block_content] = serializer.serializeFragment(node.content);
 	} else if (type != "root" || !content) {
 		if (!content) content = {};
 		node.forEach(function(child) {

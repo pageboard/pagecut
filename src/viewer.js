@@ -8,6 +8,7 @@ var FragmentElement = {
 function Viewer(opts) {
 	if (!opts) opts = {};
 	this.doc = opts.document || document.implementation.createHTMLDocument();
+	this.serializer = new XMLSerializer();
 	var modules = Object.assign({}, global.Pagecut && global.Pagecut.modules, opts.modules);
 	this.elements = opts.elements || {};
 	if (!this.elements.fragment) this.elements.fragment = FragmentElement;
@@ -43,7 +44,7 @@ Viewer.prototype.copy = function(block, withDomContent) {
 	copy.data = Object.assign({}, block.data);
 	copy.content = Object.assign({}, block.content);
 	var contents = copy.content;
-	var name, content, div, isNode;
+	var name, content, div, frag, isNode;
 	for (name in contents) {
 		content = contents[name];
 		if (!content) continue;
@@ -52,10 +53,12 @@ Viewer.prototype.copy = function(block, withDomContent) {
 			if (isNode) continue;
 			div = this.doc.createElement("div");
 			div.innerHTML = content;
-			contents[name] = div;
+			frag = this.doc.createDocumentFragment();
+			while (div.firstChild) frag.appendChild(div.firstChild);
+			contents[name] = frag;
 		} else {
 			if (!isNode) continue;
-			contents[name] = content.innerHTML;
+			contents[name] = this.serializer.serializeToString(content);
 		}
 	}
 	return copy;
@@ -69,9 +72,15 @@ function contentModifier(main, block, dom) {
 	var contents = block.content;
 	if (!contents) return;
 	Object.keys(contents).forEach(function(name) {
-		var contentNode = dom.querySelector('[block-content="'+name+'"]');
-		if (!contentNode) return;
-		contentNode.innerHTML = contents[name].innerHTML;
+		var blockContent = dom.getAttribute('block-content');
+		var node;
+		if (blockContent) {
+			if (name == blockContent) node = dom;
+		} else {
+			node = dom.querySelector('[block-content="'+name+'"]');
+		}
+		if (!node) return;
+		node.appendChild(contents[name].cloneNode(true));
 	});
 }
 
