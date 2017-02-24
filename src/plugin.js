@@ -82,7 +82,7 @@ Handler.prototype.focus = function(view, $pos) {
 	var parents = this.main.parents($pos);
 	var node = parents.node.root;
 	var dom = node && posToNode(view, parents.pos.root);
-	var existing = view.content.querySelectorAll('[block-focused]');
+	var existing = view.dom.querySelectorAll('[block-focused]');
 	var blurs = [];
 	// reverse on purpose here
 	for (var i = existing.length - 1; i >= 0; i--) {

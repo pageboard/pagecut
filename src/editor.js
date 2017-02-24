@@ -24,17 +24,17 @@ var Viewer = global.Pagecut && global.Pagecut.Viewer || require("./viewer");
 Object.assign(Editor.prototype, Viewer.prototype);
 
 Editor.defaults = {};
-Editor.defaults.nodeSpec = baseSchema.nodeSpec.remove('image');
-Editor.defaults.nodeSpec = listSchema.addListNodes(
-	Editor.defaults.nodeSpec,
+Editor.defaults.nodes = baseSchema.spec.nodes.remove('image');
+Editor.defaults.nodes = listSchema.addListNodes(
+	Editor.defaults.nodes,
 	"paragraph block*",
 	"block"
 );
-// Editor.defaults.nodeSpec = tableSchema.addTableNodes(
-// 	Editor.defaults.nodeSpec, "inline<_>*", "block"
+// Editor.defaults.nodes = tableSchema.addTableNodes(
+// 	Editor.defaults.nodes, "inline<_>*", "block"
 // );
 
-Editor.defaults.markSpec = baseSchema.markSpec;
+Editor.defaults.marks = baseSchema.spec.marks;
 
 
 function EditorMenu(opts) {
@@ -81,8 +81,8 @@ function Editor(opts) {
 	if (!this.modifiers.type) this.modifiers.type = typeModifier;
 
 	var spec = {
-		nodes: opts.nodeSpec,
-		marks: opts.markSpec
+		nodes: opts.nodes,
+		marks: opts.marks
 	};
 	Object.keys(this.elements).forEach(function(k) {
 		Specs.define(main, main.elements[k], spec);
@@ -152,10 +152,7 @@ function Editor(opts) {
 
 	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
-	var view = this.view = new EditorView(function(viewContent) {
-		// this use a prosemirror-view patch that allows us to return content
-		return place;
-	}, {
+	var view = this.view = new EditorView({mount: place}, {
 		state: State.EditorState.create({
 			schema: editSchema,
 			plugins: opts.plugins,
