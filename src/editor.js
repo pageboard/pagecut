@@ -286,12 +286,15 @@ Editor.prototype.remove = function(src) {
 };
 
 Editor.prototype.posFromDOM = function(dom) {
-	var offset = 0, sib = dom;
-	while (sib = sib.previousSibling) offset++;
-
+	var offset = 0;
+	if (dom != this.view.dom) {
+		var sib = dom;
+		while (sib = sib.previousSibling) offset++;
+		dom = dom.parentNode;
+	}
 	var pos;
 	try {
-		pos = this.view.docView.posFromDOM(dom.parentNode, offset, 0);
+		pos = this.view.docView.posFromDOM(dom, offset, 0);
 	} catch(ex) {
 		console.info(ex);
 		pos = false;
