@@ -109,27 +109,35 @@ node is being processed.
 Elements
 --------
 
-As explained before, an element is a simple object with properties and methods.
+An element is a simple object with properties and methods, and must be added
+to the `elements` array, mapping types to elements.
 
-Properties:
+Mandatory property:
 - name  
   the element type name
+
+Properties for the editor:
 - group (optional)  
   the group as defined by the prosemirror editor
-- properties  
-  a json schema object defining the format of block's data object,
-  but can actually only hold strings (empty string being the default value).
-- more json-schema stuff  
-  anything being optional at that level.
 - specs  
   an object matching contents names to
   [prosemirror content expression](http://prosemirror.net/guide/schema.html).
 
-Methods:
+Properties for content management:
+- properties  
+  a json schema object defining the format of block's data object,
+  but can actually only hold strings (empty string being the default value).
+- required or other json-schema keywords  
+  anything being optional here
+
+Mandatory viewing method:
 - view(document, block)  
   renders a block to DOM
+
+Methods for editing:
 - edit(document, block)  
-  renders a block to editable DOM
+  optional, defaults to view().  
+  renders a block to editable DOM.
 
 The `edit` method must return a DOM with `block-content` attributes placed on
 DOM Nodes that have editable content, and does not need to actually merge the
@@ -140,9 +148,6 @@ or add `block-content` attributes and let the merge be done automatically.
 
 It can also place a `block-handle` boolean attribute on a DOM Node to facilitate
 selection and drag and drop of the block DOM representation.
-
-Only the edit method is mandatory, if the view method is not defined, it falls
-back to using the edit method (when rendering to DOM).
 
 
 Blocks
