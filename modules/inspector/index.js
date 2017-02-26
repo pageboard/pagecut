@@ -4,8 +4,8 @@ module.exports = InspectorModule;
 
 function InspectorModule(main) {
 	this.main = main;
-	main.elements.link = Inspector;
-	main.resolvers.inspector = InspectorResolver;
+	main.elements.push(Inspector);
+	main.resolvers.push(InspectorResolver);
 	this.store = {};
 }
 

@@ -3,8 +3,8 @@ module.exports = IdModule;
 function IdModule(main) {
 	this.store = {};
 	this.main = main;
-	if (main.resolvers) main.resolvers.id = IdResolver;
-	main.modifiers.id = IdModifier;
+	if (main.resolvers) main.resolvers.push(IdResolver);
+	main.modifiers.push(IdModifier);
 }
 
 
@@ -56,17 +56,18 @@ IdModule.prototype.from = function(rootBlock, store, resolver) {
 IdModule.prototype.to = function(store) {
 	var list = [];
 	var main = this.main;
-	main.modifiers.IdTo = function(main, block, dom) {
+	var origModifiers = main.modifiers;
+	main.modifiers = origModifiers.concat([function(main, block, dom) {
 		if (block.id) {
 			var div = dom.ownerDocument.createElement('div');
 			div.setAttribute('block-id', block.id);
 			list.push(block);
 			return div;
 		}
-	};
+	}]);
 
 	var domFragment = main.get();
-	delete main.modifiers.IdTo;
+	main.modifiers = origModifiers;
 
 	var block;
 	for (var i = list.length - 1; i >= 0; i--) {

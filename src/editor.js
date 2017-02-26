@@ -74,19 +74,19 @@ function Editor(opts) {
 		plugins: []
 	}, Editor.defaults, opts);
 
-	this.resolvers = opts.resolvers || {};
+	this.resolvers = opts.resolvers || [];
 	Viewer.call(this, opts);
 
-	if (!this.modifiers.focus) this.modifiers.focus = focusModifier;
-	if (!this.modifiers.type) this.modifiers.type = typeModifier;
+	this.modifiers.push(focusModifier, typeModifier);
 
 	var spec = {
 		nodes: opts.nodes,
 		marks: opts.marks
 	};
-	Object.keys(this.elements).forEach(function(k) {
-		Specs.define(main, main.elements[k], spec);
-	});
+
+	for (var i=0; i < this.elements.length; i++) {
+		Specs.define(main, this.elements[i], spec);
+	}
 
 	var editSchema = new Model.Schema(spec);
 
@@ -202,8 +202,8 @@ Editor.prototype.resolve = function(thing) {
 	else obj.node = thing;
 	var main = this;
 	var syncBlock;
-	Object.keys(this.resolvers).some(function(k) {
-		syncBlock = main.resolvers[k](main, obj, function(err, block) {
+	this.resolvers.some(function(resolver) {
+		syncBlock = resolver(main, obj, function(err, block) {
 			var pos = syncBlock && syncBlock.pos;
 			if (pos == null) return;
 			delete syncBlock.pos;
