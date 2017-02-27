@@ -1,7 +1,4 @@
-var Inspector = module.exports = {
-	name: 'link',
-	group: 'block'
-};
+(function(exports) {
 
 var StringType = {
 	type: 'string'
@@ -10,7 +7,7 @@ var OptStringType = {
 	type: ['string', 'null']
 };
 
-Inspector.properties = {
+exports.properties = {
 	id: OptStringType,
 	originalType: Object.assign({default: "none"}, StringType),
 	type:  Object.assign({default: "none"}, StringType),
@@ -26,10 +23,6 @@ Inspector.properties = {
 	html: OptStringType
 };
 
-Inspector.required = ['url'];
+exports.required = ['url'];
 
-Inspector.specs = {
-	title: "inline<_>*",
-	content: "block+"
-};
-
+})(typeof exports !== "undefined" ? exports : window.Pagecut.modules.inspector.element);

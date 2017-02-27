@@ -1,4 +1,4 @@
-@import './inspector-font.css';
+@import './font.css';
 
 div[block-type="link"] {
 	display:inline-flex;

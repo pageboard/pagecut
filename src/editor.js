@@ -63,7 +63,7 @@ module.exports = {
 	Commands: Commands,
 	keymap: keymap,
 	Viewer: Viewer,
-	modules: global.Pagecut && global.Pagecut.modules
+	modules: global.Pagecut && global.Pagecut.modules || {}
 };
 
 function Editor(opts) {

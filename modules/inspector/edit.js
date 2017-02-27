@@ -1,25 +1,17 @@
-var Inspector = require('./schema');
+(function(modules) {
 
-module.exports = InspectorModule;
+var ownDoc = (document._currentScript || document.currentScript).ownerDocument;
 
-function InspectorModule(main) {
-	this.main = main;
-	main.elements.push(Inspector);
-	main.resolvers.push(InspectorResolver);
-	this.store = {};
-}
+modules.inspector.resolver = InspectorResolver;
 
-// this is exposed for clients, pagecut does not know about this interface
-InspectorModule.prototype.store = {};
-InspectorModule.prototype.get = function(url) {
-	return this.store[url];
-};
-InspectorModule.prototype.set = function(blocks) {
-	if (blocks && blocks.data) blocks = [blocks];
-	for (var i = 0; i < blocks.length; i++) {
-		this.store[blocks[i].url] = blocks[i];
+Object.assign(modules.inspector.element, {
+	group: 'block',
+	edit: InspectorEdit,
+	specs: {
+		title: "inline<_>*",
+		content: "block+"
 	}
-};
+});
 
 function InspectorResolver(main, obj, cb) {
 	var inspector = main.modules.inspector;
@@ -60,13 +52,11 @@ function defaultInspector(url, cb) {
 	});
 }
 
-Inspector.edit = function(document, block) {
+function InspectorEdit(document, block) {
 	var data = block.data;
 	var node = document.createElement('div');
 	if (block.url) node.setAttribute('block-url', block.url);
-	node.innerHTML = '<header block-handle><a name="type"></a><a title="" target="_blank"></a><a name="preview"></a></header><div>\
-<div block-content="title"></div><div block-content="content"></div>\
-</div><aside><div><div></div><p></p></div><figure></figure></aside><script type="text/html"></script>';
+	node.innerHTML = ownDoc.body.innerHTML;
 	var link = node.querySelector('header > a[title]');
 
 	link.setAttribute("title", data.site || "");
@@ -92,31 +82,7 @@ Inspector.edit = function(document, block) {
 
 	fill(node.querySelector('aside > div > div'), obj);
 	return node;
-};
-
-Inspector.view = function(document, block) {
-	var data = block.data;
-	var content = block.content;
-	if (data.type == "link") {
-		var anchor = document.createElement('a');
-		anchor.href = block.url;
-		if (content.title) anchor.setAttribute('title', content.title.firstChild.nodeValue);
-		else anchor.removeAttribute('title');
-		anchor.textContent = '';
-		if (content.content) anchor.appendChild(content.content);
-		return anchor;
-	} else if (data.html) {
-		var div = document.createElement('div');
-		for (var k in data) {
-			if (k == 'html') continue;
-			div.setAttribute('data-' + k, data[k]);
-		}
-		div.innerHTML = data.html;
-		return div;
-	} else {
-		return Inspector.edit(document, block);
-	}
-};
+}
 
 function ensure(parent, tag, atts) {
 	var childs = parent.childNodes;
@@ -162,3 +128,4 @@ function formatSize(s) {
 	return Math.round(s / 1000) + "KB";
 }
 
+})(window.Pagecut.modules);
