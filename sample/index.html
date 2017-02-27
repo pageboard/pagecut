@@ -43,14 +43,14 @@ body {
 	</style>
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
-	if (window.GET && diffDOM) {
+	if (window.GET && window.diffDOM) {
 		document.getElementById('install').remove();
 	}
 	if (/github\.io/.test(document.location.hostname)) {
 		document.body.insertAdjacentHTML('afterbegin', '<iframe src="https://ghbtns.com/github-btn.html?user=kapouer&repo=pagecut&type=star" frameborder="0" scrolling="0" width="170px" height="20px"></iframe>');
 	}
 
-	var differ = new diffDOM({
+	var differ = new window.diffDOM({
 		filterOuterDiff: function(from, to, diffs) {
 			// do not diff inside a rendered co-link, attributes will change anyway
 			if (from.nodeName == "DIV" && from.attributes && from.attributes['data-type'] && !diffs.length) {
