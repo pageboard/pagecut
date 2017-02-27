@@ -1,10 +1,10 @@
-(function(modules) {
+(function(exports) {
 
 var ownDoc = (document._currentScript || document.currentScript).ownerDocument;
 
-modules.inspector.resolver = InspectorResolver;
+exports.inspector.resolver = InspectorResolver;
 
-Object.assign(modules.inspector.element, {
+Object.assign(exports.inspector.element, {
 	group: 'block',
 	edit: InspectorEdit,
 	specs: {

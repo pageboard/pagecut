@@ -32,8 +32,9 @@ Objects
 
 * Modules  
   A simple extension system for defining resolvers and elements.
-  Modules are initialized by viewer instance, and is accessible by its name under
-  `pagecut.modules.modulename`.
+  A module can be a simple object in which case it is added as an element having
+  the name of the module, or it can be a class constructor function, instantiated
+  by the viewer and accessible under `pagecut.modules[name]`.
 
 * Blocks  
   The core data structure for holding elements instances, and persisting content.
@@ -90,6 +91,9 @@ The viewer instance initializes the globally installed modules automatically.
 The order of modules, and in particular, the order of resolvers or modifiers,
 should not change the result - be sure to define independent functions that
 can be run in any order.
+
+If a module is an object, it is directly added as an element, with
+`element.name` set to be the key under which the object was set on modules.
 
 
 Resolvers

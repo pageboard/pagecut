@@ -5,7 +5,11 @@ function Viewer(opts) {
 	this.doc = opts.document || document.implementation.createHTMLDocument();
 	this.serializer = new XMLSerializer();
 	var modules = Object.assign({
-		fragment: FragmentModule,
+		fragment: {
+			view: function renderFragment(document, block) {
+				return block.content.fragment || document.createElement("div");
+			}
+		},
 		content: ContentModule
 	}, global.Pagecut && global.Pagecut.modules, opts.modules);
 
@@ -16,7 +20,13 @@ function Viewer(opts) {
 	main.modules = {};
 
 	Object.keys(modules).forEach(function(k) {
-		main.modules[k] = new modules[k](main);
+		var mod = modules[k];
+		if (typeof mod == "function") {
+			main.modules[k] = new modules[k](main);
+		} else {
+			mod.name = k;
+			main.elements.push(mod);
+		}
 	});
 
 	var map = this.map = {};
@@ -65,16 +75,6 @@ Viewer.prototype.copy = function(block, withDomContent) {
 	}
 	return copy;
 };
-
-
-function FragmentModule(main) {
-	main.elements.push({
-		name: 'fragment',
-		view: function renderFragment(document, block) {
-			return block.content.fragment || document.createElement("div");
-		}
-	});
-}
 
 function ContentModule(main) {
 	main.modifiers.push(function contentModifier(main, block, dom) {

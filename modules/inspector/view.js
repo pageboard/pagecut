@@ -1,9 +1,9 @@
-(function(modules) {
-modules.inspector = InspectorModule;
+(function(exports) {
+
+exports.inspector = InspectorModule;
 
 function InspectorModule(main) {
 	this.main = main;
-	console.log(InspectorModule.element)
 	main.elements.push(InspectorModule.element);
 	if (InspectorModule.resolver) main.resolvers.push(InspectorModule.resolver);
 	this.store = {};
