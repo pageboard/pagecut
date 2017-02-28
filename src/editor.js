@@ -1,7 +1,6 @@
 var Setup = require("prosemirror-example-setup");
 var State = require("prosemirror-state");
 var Transform = require("prosemirror-transform");
-var Menu = require("prosemirror-menu");
 var EditorView = require("prosemirror-view").EditorView;
 var Model = require("prosemirror-model");
 var Input = require("prosemirror-inputrules");
@@ -36,30 +35,12 @@ Editor.defaults.nodes = listSchema.addListNodes(
 
 Editor.defaults.marks = baseSchema.spec.marks;
 
-
-function EditorMenu(opts) {
-	this.menubar = opts.menubar;
-}
-
-EditorMenu.prototype.init = function(main, schema) {
-	var items = Setup.buildMenuItems(schema);
-	this.menu = items.fullMenu;
-};
-
-EditorMenu.prototype.update = function(view) {
-	this.menubar.textContent = ""
-	this.menubar.classList.add('ProseMirror-menu');
-	this.menubar.appendChild(Menu.renderGrouped(view, this.menu));
-};
-
 module.exports = {
 	Editor: Editor,
-	EditorMenu: EditorMenu,
 	Model: Model,
 	State: State,
 	Setup: Setup,
 	Transform: Transform,
-	Menu: Menu,
 	Commands: Commands,
 	keymap: keymap,
 	Viewer: Viewer,
@@ -172,12 +153,6 @@ function Editor(opts) {
 		},
 		nodeViews: this.nodeViews
 	});
-
-	this.menu = opts.menubar && new module.exports.EditorMenu(opts);
-	if (this.menu) {
-		this.menu.init(this, editSchema);
-		if (!opts.content) this.menu.update(view);
-	}
 }
 
 Object.assign(Editor.prototype, Viewer.prototype);

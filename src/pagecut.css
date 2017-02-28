@@ -1,6 +1,4 @@
 @import './prosemirror.css';
-@import './prosemirror-menu.css';
-@import './prosemirror-setup.css';
 
 .ProseMirror-content {
 	outline:none;

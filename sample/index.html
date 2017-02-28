@@ -4,7 +4,9 @@
 	<meta charset="utf-8" />
 	<title>Sample editor</title>
 	<link href="../dist/pagecut.css" rel="stylesheet" />
+	<link href="../dist/pagecut-menu.css" rel="stylesheet" />
 	<script src="../dist/pagecut-editor.js"></script>
+	<script src="../dist/pagecut-menu.js"></script>
 	<link rel="import" href="../modules/inspector/import.html" />
 	<script src="../dist/pagecut-id.js"></script>
 	<script src="agent.js"></script>
@@ -60,17 +62,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	var contentNode = document.getElementById("content");
 
-	Pagecut.EditorMenu.init = function(items) {
-		this.menu = [
-			[items.toggleStrong, items.toggleEm, items.toggleCode],
-			[items.wrapBulletList, items.wrapOrderedList, items.wrapBlockQuote],
-			[me.Menu.undoItem, me.Menu.redoItem],
-		];
-	};
-
 	// expose pagecut instance for debug purpose only
 	Pagecut.sample = new Pagecut.Editor({
-		menubar: document.querySelector('#menubar'),
 		place: "#editor",
 		update: function(me, transaction) {
 			if (!transaction.docChanged) return;
@@ -92,6 +85,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		},
 		// content: contentNode // we need to seed inspector module before
 	});
+
+	var items = Pagecut.Setup.buildMenuItems(Pagecut.sample.view.state.schema);
+	Pagecut.sample.menu = new Pagecut.Menubar({
+		place: document.querySelector('#menubar'),
+		items: [
+			[items.toggleStrong, items.toggleEm, items.toggleCode],
+			[items.wrapBulletList, items.wrapOrderedList, items.wrapBlockQuote],
+			[Pagecut.Menubar.Menu.undoItem, Pagecut.Menubar.Menu.redoItem],
+		]
+	});
+	// Pagecut.sample.menu.update(Pagecut.sample.view);
 
 	Pagecut.test = function() {
 		var id = Pagecut.sample.modules.id;

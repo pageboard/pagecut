@@ -4,7 +4,7 @@ FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
 .PHONY: build
-build: predist dist/pagecut-editor.js dist/pagecut-viewer.js dist/pagecut-id.js
+build: predist dist/pagecut-menu.js dist/pagecut-editor.js dist/pagecut-viewer.js dist/pagecut-id.js
 	#dist/pagecut-inspector.js
 
 .PHONY: all
@@ -37,6 +37,9 @@ dist/pagecut-editor.js: src/*.js
 
 dist/pagecut-viewer.js: src/viewer.js
 	$(BROWSERIFY) --standalone Pagecut.Viewer --outfile $@ src/viewer.js
+
+dist/pagecut-menu.js: src/menubar.js
+	$(BROWSERIFY) --standalone Pagecut.Menubar --outfile $@ src/menubar.js
 
 fontopen:
 	@if test ! `which curl` ; then \
