@@ -238,7 +238,7 @@ Editor.prototype.select = function(dom) {
 		$pos = dom;
 	} else {
 		if (dom instanceof Node) dom = this.posFromDOM(dom);
-		if (typeof dom == "number") $pos = this.view.state.doc.resolve(pos);
+		if (typeof dom == "number") $pos = this.view.state.doc.resolve(dom);
 		else return false;
 	}
 	return new State.NodeSelection($pos);
