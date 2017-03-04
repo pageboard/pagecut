@@ -278,7 +278,7 @@ Editor.prototype.posFromDOM = function(dom) {
 };
 
 Editor.prototype.parents = function(rpos, all) {
-	var node, type, pos, obj, level = rpos.depth, ret = [];
+	var node, type, obj, level = rpos.depth, ret = [];
 	while (level >= 0) {
 		if (!obj) obj = {};
 		node = rpos.node(level);
@@ -289,7 +289,10 @@ Editor.prototype.parents = function(rpos, all) {
 			if (marks.length) {
 				for (var k=0; k < marks.length; k++) {
 					type = marks[k].type && marks[k].type.spec.typeName;
-					if (type) break;
+					if (type) {
+						node = marks[k];
+						break;
+					}
 				}
 			}
 		}
