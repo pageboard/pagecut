@@ -46,14 +46,19 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 				} else {
 					console.warn("element has specs", element.specs, "but no matching content");
 				}
-			} else {
+			} else if (specKeys.length > 1) {
 				console.warn("element has multiple specs", element.specs, "only one default block-content is allowed");
 			}
 		}
 	}
 	if (spec) {
 		// use original specName here
-		schemaSpecs.nodes = schemaSpecs.nodes.addToEnd(spec.specName, spec);
+		if (spec.inline) {
+			schemaSpecs.marks = schemaSpecs.marks.addToEnd(spec.specName, spec);
+		} else {
+			schemaSpecs.nodes = schemaSpecs.nodes.addToEnd(spec.specName, spec);
+		}
+
 	}
 	return specName;
 }
@@ -72,7 +77,7 @@ function createRootSpec(main, element, nodeViews, dom) {
 		typeName: "root",
 		group: element.group,
 		inline: !!element.inline,
-		defining: true,
+		defining: !element.inline,
 		attrs: Object.assign({}, defaultSpecAttrs, specAttrs(element.properties, "data-")),
 		parseDOM: [{
 			tag: rootSelector(defaultAttrs),
@@ -95,7 +100,7 @@ function createRootSpec(main, element, nodeViews, dom) {
 			var dom = main.render(block, true);
 			var attrs = nodeAttrs(dom);
 			prepareDom(element, dom);
-			return [dom.nodeName, attrs, 0];
+			return element.inline ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];
 		}
 	};
 }

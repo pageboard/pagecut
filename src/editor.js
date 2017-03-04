@@ -301,6 +301,7 @@ Editor.prototype.parents = function(rpos, all) {
 Editor.prototype.nodeToBlock = function(node) {
 	var block = Specs.attrToBlock(node.attrs);
 	var main = this;
+	if (node instanceof Model.Mark) return block;
 	Object.defineProperty(block, 'content', {
 		get: function() {
 			// this operation is not cheap
