@@ -280,12 +280,11 @@ Editor.prototype.posFromDOM = function(dom) {
 Editor.prototype.parents = function(rpos, all) {
 	var node, type, pos, obj, level = rpos.depth, ret = [];
 	while (level >= 0) {
-		if (!obj) obj = {pos: {}, node: {}};
+		if (!obj) obj = {};
 		node = rpos.node(level);
 		type = node.type && node.type.spec.typeName;
 		if (type) {
-			obj.pos[type] = rpos.before(level);
-			obj.node[type] = node;
+			obj[type] = {rpos: rpos, level: level, node: node};
 		}
 		if (type == "root") {
 			if (!all) break;
@@ -319,11 +318,11 @@ function actionAncestorBlock(main, transaction) {
 	steps.forEach(function(step) {
 		var parents = main.parents(main.view.state.doc.resolve(step.from), true);
 		parents.forEach(function(obj) {
-			var root = obj.node.root;
+			var root = obj.root;
 			if (!root) return;
 			var found = false;
 			for (var i=0; i < roots.length; i++) {
-				if (roots[i].root == root) {
+				if (roots[i].root == root.node) {
 					roots[i].count++;
 					found = true;
 					break;
@@ -331,7 +330,7 @@ function actionAncestorBlock(main, transaction) {
 			}
 			if (!found) roots.push({
 				count: 1,
-				root: root
+				root: root.node
 			});
 		});
 	});

@@ -80,8 +80,9 @@ function focusRoot(view, pos, node, focus) {
 
 Handler.prototype.focus = function(view, $pos) {
 	var parents = this.main.parents($pos);
-	var node = parents.node.root;
-	var dom = node && posToNode(view, parents.pos.root);
+	var root = parents.root;
+	var pos = root && root.rpos.before(root.level);
+	var dom = root && posToNode(view, pos);
 	var existing = view.dom.querySelectorAll('[block-focused]');
 	var blurs = [];
 	// reverse on purpose here
@@ -94,11 +95,12 @@ Handler.prototype.focus = function(view, $pos) {
 		}
 	}
 
-	if (node && !node.attrs.block_focused) {
-		focusRoot(view, parents.pos.root, node, true);
-		while (parents = this.main.parents(view.state.tr.doc.resolve(parents.pos.root))) {
-			if (!parents.pos.root) break;
-			focusRoot(view, parents.pos.root, parents.node.root, true);
+	if (root && !root.node.attrs.block_focused) {
+		focusRoot(view, pos, root.node, true);
+		while (parents = this.main.parents(root.rpos)) {
+			if (!parents.root || parents.root.node == root.node) break;
+			root = parents.root;
+			focusRoot(view, root.rpos.before(root.level), root.node, true);
 		}
 	}
 };
@@ -112,19 +114,20 @@ Handler.prototype.mousedown = function(view, e) {
 		return;
 	}
 	var cobj = this.main.parents(view.state.tr.doc.resolve(pos));
-	var cpos = cobj.pos;
-	if (cpos.root == null || cpos.content != null || cpos.wrap != null) {
+	var root = cobj.root;
+	if (root == null || cobj.content != null || cobj.wrap != null) {
 		return;
 	}
 	e.target.draggable = false;
 
-	var $root = view.state.tr.doc.resolve(cpos.root);
+	var posBefore = root.rpos.before(root.level);
+	var rposBefore = view.state.doc.resolve(posBefore);
 
 	view.dispatch(
-		view.state.tr.setSelection(new State.NodeSelection($root))
+		view.state.tr.setSelection(new State.NodeSelection(rposBefore))
 	);
 
-	var dom = posToNode(view, cpos.root);
+	var dom = posToNode(view, posBefore);
 
 	if (dom) dom = dom.querySelector('[block-handle]');
 	if (dom) {
