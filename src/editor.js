@@ -283,6 +283,16 @@ Editor.prototype.parents = function(rpos, all) {
 		if (!obj) obj = {};
 		node = rpos.node(level);
 		type = node.type && node.type.spec.typeName;
+		if (!type && level == rpos.depth) {
+			// let's see if we have an inline block
+			var marks = rpos.marks();
+			if (marks.length) {
+				for (var k=0; k < marks.length; k++) {
+					type = marks[k].type && marks[k].type.spec.typeName;
+					if (type) break;
+				}
+			}
+		}
 		if (type) {
 			obj[type] = {rpos: rpos, level: level, node: node};
 		}
