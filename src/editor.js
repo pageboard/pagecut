@@ -141,13 +141,13 @@ function Editor(opts) {
 		}),
 		domParser: this.parsers.edit,
 		domSerializer: this.serializers.edit,
-		dispatchTransaction: function(transaction) {
-			if (!opts.update || !opts.update(main, transaction)) {
+		dispatchTransaction: function(tr) {
+			if (!opts.update || !opts.update(main, tr)) {
 				if (opts.change) {
-					var changedBlock = actionAncestorBlock(main, transaction);
+					var changedBlock = actionAncestorBlock(main, tr);
 					if (changedBlock) opts.change(main, changedBlock);
 				}
-				view.updateState(view.state.apply(transaction));
+				view.updateState(view.state.apply(tr));
 				if (main.menu) main.menu.update(view);
 			}
 		},
@@ -323,10 +323,10 @@ Editor.prototype.nodeToBlock = function(node) {
 	return block;
 };
 
-function actionAncestorBlock(main, transaction) {
+function actionAncestorBlock(main, tr) {
 	// returns the ancestor block modified by this transaction
-	if (!transaction.docChanged) return;
-	var steps = transaction.steps;
+	if (!tr.docChanged) return;
+	var steps = tr.steps;
 	var roots = [];
 	steps.forEach(function(step) {
 		var parents = main.parents(main.view.state.doc.resolve(step.from), true);
