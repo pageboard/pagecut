@@ -73,7 +73,7 @@ function createRootSpec(main, element, nodeViews, dom) {
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
-		specName: "root_" + element.name,
+		specName: element.name,
 		typeName: "root",
 		group: element.group,
 		inline: !!element.inline,
