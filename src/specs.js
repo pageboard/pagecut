@@ -84,12 +84,19 @@ function createRootSpec(main, element, nodeViews, dom) {
 			getAttrs: function(dom) {
 				var block = main.resolve(dom);
 				var newDom = main.render(block, true);
-				while (dom.firstChild) dom.removeChild(dom.firstChild);
-				while (newDom.firstChild) dom.appendChild(newDom.firstChild);
-				for (var k in newDom.attributes) {
-					var att = newDom.attributes[k];
-					dom.setAttribute(att.name, att.value);
+				if (!element.inline) {
+					while (dom.firstChild) dom.removeChild(dom.firstChild);
+					while (newDom.firstChild) dom.appendChild(newDom.firstChild);
 				}
+				var domAttrs = dom.attributes;
+				for (var j=0; j < domAttrs.length; j++) {
+					dom.removeAttribute(domAttrs[j].name);
+				}
+				var newAttrs = newDom.attributes;
+				for (var k=0; k < newAttrs.length; k++) {
+					dom.setAttribute(newAttrs[k].name, newAttrs[k].value);
+				}
+
 				prepareDom(element, dom);
 				return blockToAttr(block);
 			}
