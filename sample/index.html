@@ -99,17 +99,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	Pagecut.test = function() {
 		var id = Pagecut.sample.modules.id;
-		var storedBlocks = {};
-		var fragmentBlock = id.to(storedBlocks);
+		var fragmentBlock = id.to();
+		var storedBlocks = id.store;
 		console.log("Document exported as", fragmentBlock, storedBlocks);
-		id.from(fragmentBlock, storedBlocks).then(function(fragment) {
+		id.store = storedBlocks;
+		id.from(fragmentBlock).then(function(fragment) {
 			console.log("Exported document rendered as", fragment);
 		}).catch(function(err) {
 			console.error(err);
 		});
 
 		// example with a really async resolver
-		id.from(fragmentBlock, {}, function(id) {
+		id.from(fragmentBlock, function(id) {
 			return new Promise(function(resolve) {
 				setTimeout(function() {
 					resolve(storedBlocks[id]);

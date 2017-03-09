@@ -8,7 +8,7 @@ function IdModule(main) {
 }
 
 
-IdModule.prototype.from = function(rootBlock, store, resolver) {
+IdModule.prototype.from = function(rootBlock, resolver) {
 	if (!rootBlock) rootBlock = "";
 	if (typeof rootBlock == "string") rootBlock = {
 		type: 'fragment',
@@ -29,21 +29,33 @@ IdModule.prototype.from = function(rootBlock, store, resolver) {
 		if (id === '' + rootBlock.id) {
 			continue;
 		}
-		block = store[id];
+		block = this.store[id];
 		var p;
 		if (block) {
 			p = Promise.resolve(block);
 		} else if (resolver) {
 			p = Promise.resolve().then(function() {
-				return resolver(id, store);
+				return resolver(id, this.store);
 			});
 		} else {
 			p = Promise.reject(new Error("Unknown block id " + id));
 		}
 		list.push(p.then(function(block) {
 			var node = this;
-			return me.from(block, store, resolver).then(function(child) {
-				node.parentNode.replaceChild(child, node);
+			return me.from(block, resolver).then(function(child) {
+				var el = me.main.map[block.type];
+				if (el.inline) {
+					var attrs = node.attributes;
+					for (var j=0; j < attrs.length; j++) {
+						node.removeAttribute(attrs[j].name);
+					}
+					attrs = child.attributes;
+					for (var j=0; j < attrs.length; j++) {
+						node.setAttribute(attrs[j].name, attrs[j].value);
+					}
+				} else {
+					node.parentNode.replaceChild(child, node);
+				}
 			});
 		}.bind(node)));
 	}
@@ -53,7 +65,7 @@ IdModule.prototype.from = function(rootBlock, store, resolver) {
 	});
 };
 
-IdModule.prototype.to = function(store) {
+IdModule.prototype.to = function() {
 	var list = [];
 	var main = this.main;
 	var origModifiers = main.modifiers;
@@ -72,7 +84,7 @@ IdModule.prototype.to = function(store) {
 	var block;
 	for (var i = list.length - 1; i >= 0; i--) {
 		block = list[i];
-		store[block.id] = main.copy(block, false);
+		this.store[block.id] = main.copy(block, false);
 	}
 	var div = domFragment.ownerDocument.createElement("div");
 	div.appendChild(domFragment);
