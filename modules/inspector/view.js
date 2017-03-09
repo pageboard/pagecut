@@ -10,7 +10,7 @@ function InspectorModule(main) {
 }
 
 InspectorModule.element = {
-	name: 'link',
+	name: 'inspector',
 	view: InspectorView
 };
 

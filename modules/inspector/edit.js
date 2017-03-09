@@ -20,7 +20,7 @@ function InspectorResolver(main, obj, cb) {
 	var block = inspector.get(url);
 	if (block) return block;
 	var block = {
-		type: 'link',
+		type: 'inspector',
 		url: url,
 		data: {
 			type: 'none'
@@ -33,7 +33,7 @@ function InspectorResolver(main, obj, cb) {
 	(inspector.inspect || defaultInspector)(url, function(err, info) {
 		if (err) return cb(err);
 		var block = {
-			type: 'link',
+			type: 'inspector',
 			url: url,
 			data: info,
 			content: {

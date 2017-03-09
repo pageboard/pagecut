@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	Pagecut.sample.modules.inspector.set([{
 		id: 1,
-		type: 'link',
+		type: 'inspector',
 		url: "https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale",
 		data: {
 			mime: 'text/html; charset=UTF-8',
@@ -137,11 +137,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		},
 		content: {
 			title: '<span>overriden title</span>',
-			content: '<p>Toto la praline</p><div block-type="link" block-url="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg"></div>'
+			content: '<p>Toto la praline</p><div block-type="inspector" block-url="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg"></div>'
 		}
 	}, {
 		id: 2,
-		type: "link",
+		type: "inspector",
 		url: "https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg",
 		data: {
 			mime: 'image/jpeg',
@@ -179,7 +179,7 @@ Pagecut demo.
 
 <div id="content">
 <p>a</p>
-<div block-type="link" block-url="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale">
+<div block-type="inspector" block-url="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale">
 	<header>
 		<a name="type"></a>
 		<a title="fr.wikipedia.org" target="_blank" href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale"><img src="https://fr.wikipedia.org/static/favicon/wikipedia.ico"></a>
@@ -188,7 +188,7 @@ Pagecut demo.
 	<div>
 		<div block-content="title"><span>SESdAM-Vitale — Wikipédia</span></div>
 		<div block-content="content"><p><span>Ceci est un lien qui contient une image</span></p>
-			<div block-type="link" block-url="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg"></div>
+			<div block-type="inspector" block-url="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg"></div>
 			<p><span>et avec du texte en dessous aussi</span></p>
 		</div>
 	</div>
