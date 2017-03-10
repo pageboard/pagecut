@@ -43,8 +43,8 @@ IdModule.prototype.from = function(rootBlock, resolver) {
 		list.push(p.then(function(block) {
 			var node = this;
 			return me.from(block, resolver).then(function(child) {
-				var el = me.main.map[block.type];
-				if (el.inline) {
+				if (child.childNodes.length == 0 && child.hasAttribute('block-content') == false) {
+					// block.type is inline
 					var attrs = node.attributes;
 					for (var j=0; j < attrs.length; j++) {
 						node.removeAttribute(attrs[j].name);
@@ -54,6 +54,7 @@ IdModule.prototype.from = function(rootBlock, resolver) {
 						node.setAttribute(attrs[j].name, attrs[j].value);
 					}
 				} else {
+					// block.type is block
 					node.parentNode.replaceChild(child, node);
 				}
 			});
