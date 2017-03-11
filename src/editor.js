@@ -143,7 +143,7 @@ function Editor(opts) {
 		domSerializer: this.serializers.edit,
 		dispatchTransaction: function(tr) {
 			if (!opts.update || !opts.update(main, tr)) {
-				if (opts.change) {
+				if (opts.change && tr.docChanged) {
 					var changedBlock = actionAncestorBlock(main, tr);
 					if (changedBlock) opts.change(main, changedBlock);
 				}
@@ -325,7 +325,6 @@ Editor.prototype.nodeToBlock = function(node) {
 
 function actionAncestorBlock(main, tr) {
 	// returns the ancestor block modified by this transaction
-	if (!tr.docChanged) return;
 	var steps = tr.steps;
 	var roots = [];
 	steps.forEach(function(step) {
