@@ -200,9 +200,28 @@ Editor.prototype.insert = function(dom, sel) {
 	var view = this.view;
 	var tr = view.state.tr;
 	if (!sel) sel = tr.selection;
-	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
-	var end = sel.head !== undefined ? sel.head : sel.to;
-	view.dispatch(tr.replaceWith(start, end, this.parse(dom)));
+	var shouldBeInline = false;
+	if (dom.childNodes.length == 0 && dom.hasAttribute('block-content') == false) {
+		dom.textContent = '-';
+		shouldBeInline = true;
+	}
+	var frag = this.parse(dom);
+	var root = frag.content[0];
+	var type = root.type;
+	var from = sel.from;
+	var to = sel.to;
+	if (type.isInline) {
+		if (!shouldBeInline) console.warn('Node rendered as block but parsed as inline', dom);
+		var mark = root.marks[0];
+		if (!mark) return;
+		if (view.state.doc.rangeHasMark(from, to, mark.type)) {
+			tr = tr.removeMark(from, to, mark.type);
+		}
+		view.dispatch(tr.addMark(from, to, mark.type.create(mark.attrs)));
+	} else {
+		if (shouldBeInline) console.warn('Node rendered as inline but parsed as block', dom);
+		view.dispatch(tr.replaceWith(from, to, frag));
+	}
 };
 
 Editor.prototype.delete = function(sel) {
@@ -232,19 +251,41 @@ Editor.prototype.refresh = function(dom) {
 	view.dispatch(view.state.tr.setNodeType(pos, null, Specs.blockToAttr(block)));
 };
 
-Editor.prototype.select = function(dom) {
-	var $pos;
-	if (dom instanceof Model.ResolvedPos) {
-		$pos = dom;
+Editor.prototype.select = function(obj) {
+	var $pos, pos;
+	var state = this.view.state;
+	if (obj instanceof Model.ResolvedPos) {
+		$pos = obj;
 	} else {
-		if (dom instanceof Node) dom = this.posFromDOM(dom);
-		if (typeof dom == "number") $pos = this.view.state.doc.resolve(dom);
+		if (obj instanceof Node) pos = this.posFromDOM(obj);
+		else pos = obj;
+		if (typeof pos == "number") $pos = state.doc.resolve(pos);
 		else return false;
 	}
-	return new State.NodeSelection($pos);
+	var info = this.parents($pos, false, true);
+	var root = info.root;
+	if (!root) return;
+	var sel;
+	if (root.node instanceof Model.Mark) {
+		var nodeBefore = root.rpos.nodeBefore;
+		var nodeAfter = root.rpos.nodeAfter;
+
+		var start = root.rpos.pos;
+		if (nodeBefore && Model.Mark.sameSet(nodeBefore.marks, [root.node])) {
+			start = start - root.rpos.nodeBefore.nodeSize;
+		}
+		var end = root.rpos.pos;
+		if (nodeAfter && Model.Mark.sameSet(nodeAfter.marks, [root.node])) {
+			end = end + root.rpos.nodeAfter.nodeSize;
+		}
+		return State.TextSelection.create(state.doc, start, end);
+	} else {
+		return new State.NodeSelection($pos);
+	}
 };
 
 Editor.prototype.replace = function(src, dst) {
+	// src can be ResolvedPos or pos or dom node
 	var sel = this.select(src);
 	if (!sel) return false;
 	if (!(dst instanceof Node)) {
@@ -277,7 +318,7 @@ Editor.prototype.posFromDOM = function(dom) {
 	return pos;
 };
 
-Editor.prototype.parents = function(rpos, all) {
+Editor.prototype.parents = function(rpos, all, marksAfter) {
 	var node, type, obj, level = rpos.depth, ret = [];
 	while (level >= 0) {
 		if (!obj) obj = {};
@@ -285,7 +326,7 @@ Editor.prototype.parents = function(rpos, all) {
 		type = node.type && node.type.spec.typeName;
 		if (!type && level == rpos.depth) {
 			// let's see if we have an inline block
-			var marks = rpos.marks();
+			var marks = rpos.marks(!!marksAfter);
 			if (marks.length) {
 				for (var k=0; k < marks.length; k++) {
 					type = marks[k].type && marks[k].type.spec.typeName;
