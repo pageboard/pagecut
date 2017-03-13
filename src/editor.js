@@ -351,6 +351,18 @@ Editor.prototype.parents = function(rpos, all, marksAfter) {
 	else return obj;
 };
 
+Editor.prototype.selectionParents = function(sel) {
+	var fromParents = this.parents(sel.$from, true, true);
+	if (sel.empty) return fromParents;
+	var toParents = this.parents(sel.$to, true, false);
+	var parents = [];
+	for (var i=0; i < fromParents.length && i < toParents.length; i++) {
+		if (fromParents[i].root.node == toParents[i].root.node) parents.push(fromParents[i]);
+		else break;
+	}
+	return parents;
+};
+
 Editor.prototype.nodeToBlock = function(node) {
 	var block = Specs.attrToBlock(node.attrs);
 	var main = this;
