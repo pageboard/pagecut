@@ -127,12 +127,14 @@ function blockToAttr(block) {
 
 function attrToBlock(attrs) {
 	var block = {data: {}};
+	var name;
 	for (var k in attrs) {
 		if (!attrs[k]) continue;
 		if (k.indexOf('data-') == 0) {
 			block.data[k.substring(5)] = attrs[k];
 		} else if (k.indexOf('block_') == 0) {
-			block[k.substring(6)] = attrs[k];
+			name = k.substring(6);
+			if (name != "content") block[name] = attrs[k];
 		}
 	}
 	return block;
