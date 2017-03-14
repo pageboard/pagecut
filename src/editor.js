@@ -188,7 +188,7 @@ Editor.prototype.resolve = function(thing) {
 			} else {
 				if (syncBlock.focused) block.focused = true;
 				else delete block.focused;
-				main.replace(pos, block);
+				main.replace(block, pos);
 			}
 		});
 		if (syncBlock) return true;
@@ -200,6 +200,9 @@ Editor.prototype.insert = function(dom, sel) {
 	var view = this.view;
 	var tr = view.state.tr;
 	if (!sel) sel = tr.selection;
+	if (!(dom instanceof Node)) {
+		dom = this.render(dom, true);
+	}
 	var shouldBeInline = false;
 	if (dom.childNodes.length == 0 && dom.hasAttribute('block-content') == false) {
 		dom.textContent = '-';
@@ -252,19 +255,26 @@ Editor.prototype.refresh = function(dom) {
 };
 
 Editor.prototype.select = function(obj) {
-	var $pos, pos;
+	var $pos, pos, root;
 	var state = this.view.state;
-	if (obj instanceof Model.ResolvedPos) {
-		$pos = obj;
+	if (obj instanceof State.Selection) {
+		var infos = this.selectionParents(obj);
+		if (infos.length) root = infos[infos.length - 1].root;
 	} else {
-		if (obj instanceof Node) pos = this.posFromDOM(obj);
-		else pos = obj;
-		if (typeof pos == "number") $pos = state.doc.resolve(pos);
-		else return false;
+		if (obj instanceof Model.ResolvedPos) {
+			$pos = obj;
+		} else {
+			if (obj instanceof Node) pos = this.posFromDOM(obj);
+			else pos = obj;
+			if (typeof pos == "number") $pos = state.doc.resolve(pos);
+			else return false;
+		}
+		var info = this.parents($pos, false, true);
+		root = info && info.root;
 	}
-	var info = this.parents($pos, false, true);
-	var root = info.root;
-	if (!root) return;
+	if (!root) {
+		return false;
+	}
 	var sel;
 	if (root.node instanceof Model.Mark) {
 		var nodeBefore = root.rpos.nodeBefore;
@@ -284,14 +294,11 @@ Editor.prototype.select = function(obj) {
 	}
 };
 
-Editor.prototype.replace = function(src, dst) {
-	// src can be ResolvedPos or pos or dom node
-	var sel = this.select(src);
+Editor.prototype.replace = function(by, sel) {
+	// sel can be ResolvedPos or pos or dom node or a selection
+	sel = this.select(sel);
 	if (!sel) return false;
-	if (!(dst instanceof Node)) {
-		dst = this.render(dst, true);
-	}
-	this.insert(dst, sel);
+	this.insert(by, sel);
 	return true;
 };
 
