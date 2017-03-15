@@ -208,7 +208,9 @@ Editor.prototype.insert = function(dom, sel) {
 		dom.textContent = '-';
 		shouldBeInline = true;
 	}
-	var frag = this.parse(dom);
+	var frag = this.parse(dom, {
+		topNode: sel.$from.parent
+	});
 	var root, type;
 	if (frag.content.length == 1) {
 		root = frag.content[0];
@@ -240,11 +242,11 @@ Editor.prototype.delete = function(sel) {
 	view.dispatch(tr.delete(start, end));
 };
 
-Editor.prototype.parse = function(dom) {
+Editor.prototype.parse = function(dom, opts) {
 	if (!dom) return;
 	var parent = dom.ownerDocument.createDocumentFragment();
 	parent.appendChild(dom);
-	var node = this.parsers.edit.parse(parent);
+	var node = this.parsers.edit.parse(parent, opts);
 	return node.content;
 };
 
