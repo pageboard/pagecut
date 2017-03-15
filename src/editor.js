@@ -259,7 +259,10 @@ Editor.prototype.select = function(obj) {
 	var state = this.view.state;
 	if (obj instanceof State.Selection) {
 		var infos = this.selectionParents(obj);
-		if (infos.length) root = infos[infos.length - 1].root;
+		if (infos.length) {
+			root = infos[infos.length - 1].root;
+			$pos = root.rpos;
+		}
 	} else {
 		if (obj instanceof Model.ResolvedPos) {
 			$pos = obj;
