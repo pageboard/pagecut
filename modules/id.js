@@ -5,7 +5,15 @@ function IdModule(main) {
 	this.main = main;
 	if (main.resolvers) main.resolvers.push(IdResolver);
 	main.modifiers.push(IdModifier);
+	main.elements.push(IdModule.element);
 }
+
+IdModule.element = {
+	name: 'id',
+	view: function(doc, block) {
+		return doc.createElement("div");
+	}
+};
 
 
 IdModule.prototype.from = function(rootBlock, resolver) {
