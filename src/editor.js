@@ -209,11 +209,15 @@ Editor.prototype.insert = function(dom, sel) {
 		shouldBeInline = true;
 	}
 	var frag = this.parse(dom);
-	var root = frag.content[0];
-	var type = root.type;
+	var root, type;
+	if (frag.content.length == 1) {
+		root = frag.content[0];
+		if (root) type = root.type || {};
+	}
+
 	var from = sel.from;
 	var to = sel.to;
-	if (type.isInline) {
+	if (type && type.isInline) {
 		if (!shouldBeInline) console.warn('Node rendered as block but parsed as inline', dom);
 		var mark = root.marks[0];
 		if (!mark) return;
@@ -238,11 +242,10 @@ Editor.prototype.delete = function(sel) {
 
 Editor.prototype.parse = function(dom) {
 	if (!dom) return;
-	var frag = dom.ownerDocument.createDocumentFragment();
-	frag.appendChild(dom);
-	return this.parsers.edit.parseSlice(frag, {
-		// TODO topNode: ???
-	}).content;
+	var parent = dom.ownerDocument.createDocumentFragment();
+	parent.appendChild(dom);
+	var node = this.parsers.edit.parse(parent);
+	return node.content;
 };
 
 Editor.prototype.refresh = function(dom) {
