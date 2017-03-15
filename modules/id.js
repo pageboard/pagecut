@@ -146,8 +146,12 @@ function IdResolver(main, obj, cb) {
 }
 
 function IdModifier(main, block, dom) {
-	if (block.id != null) dom.setAttribute('block-id', block.id);
-	else dom.removeAttribute('block-id');
+	if (block.id == null) {
+		var id = "id" + Date.now();
+		block.id = id;
+		main.modules.id.set(block);
+	}
+	dom.setAttribute('block-id', block.id);
 	dom.setAttribute('block-type', block.type);
 }
 
