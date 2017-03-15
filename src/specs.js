@@ -82,6 +82,10 @@ function createRootSpec(main, element, nodeViews, dom) {
 			tag: rootSelector(defaultAttrs),
 			getAttrs: function(dom) {
 				var block = main.resolve(dom);
+				if (!block) {
+					console.info("unresolved dom node", dom);
+					return;
+				}
 				var newDom = main.render(block, true);
 				if (!element.inline) {
 					while (dom.firstChild) dom.removeChild(dom.firstChild);
