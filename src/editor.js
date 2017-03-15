@@ -263,7 +263,7 @@ Editor.prototype.select = function(obj) {
 	if (obj instanceof State.Selection) {
 		var infos = this.selectionParents(obj);
 		if (infos.length) {
-			root = infos[infos.length - 1].root;
+			root = infos[0].root;
 			$pos = root.rpos;
 		}
 	} else {
