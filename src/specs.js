@@ -72,10 +72,9 @@ function createRootSpec(main, element, nodeViews, dom) {
 	}, tagAttrs(dom));
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
-	return {
+	var spec = {
 		specName: element.name,
 		typeName: "root",
-		group: element.group,
 		inline: !!element.inline,
 		defining: !element.inline,
 		attrs: Object.assign({}, defaultSpecAttrs, specAttrs(element.properties, "data-")),
@@ -110,6 +109,8 @@ function createRootSpec(main, element, nodeViews, dom) {
 			return element.inline ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];
 		}
 	};
+	if (element.group) spec.group = element.group;
+	return spec;
 }
 
 function blockToAttr(block) {
