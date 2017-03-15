@@ -389,6 +389,36 @@ Editor.prototype.nodeToBlock = function(node) {
 	return block;
 };
 
+Editor.prototype.canMark = function(state, nodeType) {
+	var can = state.doc.contentMatchAt(0).allowsMark(nodeType);
+	var sel = state.tr.selection;
+	state.doc.nodesBetween(sel.from, sel.to, function(node) {
+		if (can) return false;
+		can = node.isTextblock && node.contentMatchAt(0).allowsMark(nodeType);
+	});
+	return can;
+};
+
+Editor.prototype.canInsert = function(state, nodeType, attrs) {
+	var $from = state.selection.$from;
+	for (var d = $from.depth; d >= 0; d--) {
+		var index = $from.index(d);
+		if ($from.node(d).canReplaceWith(index, index, nodeType, attrs)) {
+			return true;
+		}
+	}
+	return false;
+};
+
+Editor.prototype.markActive = function(state, type) {
+	var sel = state.selection;
+	if (sel.empty) {
+		return type.isInSet(state.storedMarks || sel.$from.marks());
+	}	else {
+		return state.doc.rangeHasMark(sel.from, sel.to, type);
+	}
+};
+
 function actionAncestorBlock(main, tr) {
 	// returns the ancestor block modified by this transaction
 	var steps = tr.steps;
