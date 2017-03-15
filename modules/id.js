@@ -140,6 +140,7 @@ function IdResolver(main, obj, cb) {
 function IdModifier(main, block, dom) {
 	if (block.id != null) dom.setAttribute('block-id', block.id);
 	else dom.removeAttribute('block-id');
+	dom.setAttribute('block-type', block.type);
 }
 
 
