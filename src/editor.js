@@ -260,7 +260,7 @@ Editor.prototype.refresh = function(dom) {
 	view.dispatch(view.state.tr.setNodeType(pos, null, Specs.blockToAttr(block)));
 };
 
-Editor.prototype.select = function(obj) {
+Editor.prototype.select = function(obj, textSelection) {
 	var $pos, pos, root;
 	var state = this.view.state;
 	if (obj instanceof State.Selection) {
@@ -285,6 +285,7 @@ Editor.prototype.select = function(obj) {
 		return false;
 	}
 	var sel;
+	if (!$pos.nodeAfter) textSelection = true;
 	if (root.node instanceof Model.Mark) {
 		var nodeBefore = root.rpos.nodeBefore;
 		var nodeAfter = root.rpos.nodeAfter;
@@ -298,6 +299,8 @@ Editor.prototype.select = function(obj) {
 			end = end + root.rpos.nodeAfter.nodeSize;
 		}
 		return State.TextSelection.create(state.doc, start, end);
+	} else if (textSelection) {
+		return State.TextSelection.create(state.doc, root.rpos.pos, root.rpos.pos);
 	} else {
 		return new State.NodeSelection($pos);
 	}
