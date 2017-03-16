@@ -76,7 +76,6 @@ function Editor(opts) {
 		var vnode = Object.assign({}, node);
 		if (vnode.typeName == "root") {
 			vnode.toDOM = function(node) {
-				var type = node.type.typeName;
 				var block = Specs.attrToBlock(node.attrs);
 				// nodeToContent calls serializeNode calls toDOM so it's recursive
 				block.content = Specs.nodeToContent(main.serializers.view, node);
