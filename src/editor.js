@@ -412,8 +412,11 @@ Editor.prototype.canInsert = function(state, nodeType, attrs) {
 	var $from = state.selection.$from;
 	for (var d = $from.depth; d >= 0; d--) {
 		var index = $from.index(d);
-		if ($from.node(d).canReplaceWith(index, index, nodeType, attrs)) {
+		var node = $from.node(d);
+		if (node.canReplaceWith(index, index, nodeType, attrs)) {
 			return true;
+		} else {
+			if (node.type.spec.typeName) break; // we only check one parent block
 		}
 	}
 	return false;
