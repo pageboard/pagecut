@@ -207,9 +207,11 @@ Editor.prototype.insert = function(dom, sel) {
 		dom.textContent = '-';
 		shouldBeInline = true;
 	}
-	var frag = this.parse(dom, {
-		topNode: sel.$from.parent
-	});
+	var parseOpts = {};
+	var parentNode = sel.$from.parent;
+	// set topNode if parent is not a text block
+	if (!parentNode.type.isTextblock) parseOpts.topNode = parentNode;
+	var frag = this.parse(dom, parseOpts);
 	var root, type;
 	if (frag.content.length == 1) {
 		root = frag.content[0];
