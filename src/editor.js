@@ -376,7 +376,7 @@ Editor.prototype.selectionParents = function(sel) {
 	var toParents = this.parents(sel.$to, true, false);
 	var parents = [];
 	var from, to;
-	for (var i = 1; i <= fromParents.length && i < toParents.length; i++) {
+	for (var i = 1; i <= fromParents.length && i <= toParents.length; i++) {
 		from = fromParents[fromParents.length - i];
 		to = toParents[toParents.length - i];
 		if (from.root.node == to.root.node) parents.unshift(from);
