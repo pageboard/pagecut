@@ -75,7 +75,10 @@ function focusRoot(view, pos, node, focus) {
 	if (focus) attrs.block_focused = true;
 	else delete attrs.block_focused;
 
-	view.dispatch(view.state.tr.setNodeType(pos, null, attrs));
+	var tr = view.state.tr.setNodeType(pos, null, attrs);
+	tr.addToHistory = false;
+
+	view.dispatch(tr);
 }
 
 Handler.prototype.focus = function(view, $pos) {
@@ -123,14 +126,13 @@ Handler.prototype.mousedown = function(view, e) {
 	var posBefore = root.rpos.before(root.level);
 	var rposBefore = view.state.doc.resolve(posBefore);
 
-	view.dispatch(
-		view.state.tr.setSelection(new State.NodeSelection(rposBefore))
-	);
-
 	var dom = posToNode(view, posBefore);
 
 	if (dom) dom = dom.querySelector('[block-handle]');
 	if (dom) {
+		var tr = view.state.tr.setSelection(new State.NodeSelection(rposBefore));
+		tr.addToHistory = false;
+		view.dispatch(tr);
 		dom.draggable = true;
 		this.dragTarget = dom;
 	} else {
@@ -145,14 +147,6 @@ Handler.prototype.mouseup = function(view, e) {
 		if (this.dragTarget) {
 			this.dragTarget.draggable = false;
 			delete this.dragTarget;
-			// this is a workaround
-			//setTimeout(function() {
-			view.dispatch(
-				view.state.tr.setSelection(
-					new State.TextSelection(view.state.tr.selection.$from)
-				)
-			);
-			//});
 		}
 	}
 };
