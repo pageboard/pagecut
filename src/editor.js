@@ -96,9 +96,9 @@ function Editor(opts) {
 	};
 
 	this.serializers.view.renderStructure = function(structure, node, options) {
-		// patch out view serializer because prosemirror view partly checks DOM output against specs
-		// which is bad for us
-		// besides that problem, original code is the same
+		// work around
+		// https://github.com/ProseMirror/prosemirror-model/commit/157db6cb36902ff0ae82774d79da820c4b9ef967
+		// won't be necessary with prosemirror-model 0.19.1
 		var ref = Model.DOMSerializer.renderSpec(options.document || window.document, structure);
 		var dom = ref.dom;
 		var contentDOM = ref.contentDOM;
