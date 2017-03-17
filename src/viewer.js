@@ -44,6 +44,7 @@ Viewer.prototype.render = function(block, edition) {
 	if (!renderFn) throw new Error("Missing render function for block type " + type);
 	block = this.copy(block, true);
 	var dom = renderFn.call(el, this.doc, block);
+	if (!dom) return "";
 	var ndom = dom;
 	for (var i=0; i < this.modifiers.length; i++) {
 		ndom = this.modifiers[i](this, block, ndom) || ndom;
