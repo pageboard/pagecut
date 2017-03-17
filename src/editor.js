@@ -344,14 +344,22 @@ Editor.prototype.parents = function(rpos, all, marksAfter) {
 		node = rpos.node(level);
 		type = node.type && node.type.spec.typeName;
 		if (!type && level == rpos.depth) {
-			// let's see if we have an inline block
-			var marks = rpos.marks(!!marksAfter);
-			if (marks.length) {
-				for (var k=0; k < marks.length; k++) {
-					type = marks[k].type && marks[k].type.spec.typeName;
-					if (type) {
-						node = marks[k];
-						break;
+			// is this between two nodes, and the node after is a root node ?
+			var nodeAfter = rpos.nodeAfter;
+			var typeAfter = nodeAfter && nodeAfter.type.spec.typeName;
+			if (!rpos.textOffset && typeAfter && nodeAfter.type.name != node.type.name) {
+				type = typeAfter;
+				node = nodeAfter;
+			} else {
+				// let's see if we have an inline block
+				var marks = rpos.marks(!!marksAfter);
+				if (marks.length) {
+					for (var k=0; k < marks.length; k++) {
+						type = marks[k].type && marks[k].type.spec.typeName;
+						if (type) {
+							node = marks[k];
+							break;
+						}
 					}
 				}
 			}
