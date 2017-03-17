@@ -3,7 +3,6 @@ module.exports = Viewer;
 function Viewer(opts) {
 	if (!opts) opts = {};
 	this.doc = opts.document || document.implementation.createHTMLDocument();
-	this.serializer = new XMLSerializer();
 	var modules = Object.assign({
 		fragment: {
 			view: function renderFragment(document, block) {
@@ -63,15 +62,19 @@ Viewer.prototype.copy = function(block, withDomContent) {
 		if (!content) continue;
 		isNode = content instanceof Node;
 		if (withDomContent) {
-			if (isNode) continue;
-			div = this.doc.createElement("div");
-			div.innerHTML = content;
-			frag = this.doc.createDocumentFragment();
-			while (div.firstChild) frag.appendChild(div.firstChild);
-			contents[name] = frag;
-		} else {
-			if (!isNode) continue;
-			contents[name] = this.serializer.serializeToString(content);
+			if (!isNode) {
+				div = this.doc.createElement("div");
+				div.innerHTML = content;
+				frag = this.doc.createDocumentFragment();
+				while (div.firstChild) frag.appendChild(div.firstChild);
+				contents[name] = frag;
+			}
+		} else if (isNode) {
+			var html = "";
+			for (var i=0; i < content.childNodes.length; i++) {
+				html += content.childNodes[i].outerHTML;
+			}
+			contents[name] = html;
 		}
 	}
 	return copy;
