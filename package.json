@@ -27,7 +27,7 @@
   "homepage": "https://github.com/kapouer/pagecut#readme",
   "devDependencies": {
     "browserify": "^13.1.1",
-    "bundledom": "^1.7.5",
+    "bundledom": "^1.7.6",
     "prosemirror-commands": "^0.19.0",
     "prosemirror-dropcursor": "^0.19.0",
     "prosemirror-example-setup": "^0.19.0",
