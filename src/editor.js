@@ -196,6 +196,10 @@ Editor.prototype.resolve = function(thing) {
 };
 
 Editor.prototype.insert = function(dom, sel) {
+	this.view.dispatch(this.insertTr(dom, sel));
+};
+
+Editor.prototype.insertTr = function(dom, sel) {
 	var view = this.view;
 	var tr = view.state.tr;
 	if (!sel) sel = tr.selection;
@@ -227,20 +231,24 @@ Editor.prototype.insert = function(dom, sel) {
 		if (view.state.doc.rangeHasMark(from, to, mark.type)) {
 			tr = tr.removeMark(from, to, mark.type);
 		}
-		view.dispatch(tr.addMark(from, to, mark.type.create(mark.attrs)));
+		return tr.addMark(from, to, mark.type.create(mark.attrs));
 	} else {
 		if (shouldBeInline) console.warn('Node rendered as inline but parsed as block', dom);
-		view.dispatch(tr.replaceWith(from, to, frag));
+		return tr.replaceWith(from, to, frag);
 	}
 };
 
 Editor.prototype.delete = function(sel) {
+	this.view.dispatch(this.deleteTr(sel));
+};
+
+Editor.prototype.deleteTr = function(sel) {
 	var view = this.view;
 	var tr = view.state.tr;
 	if (!sel) sel = tr.selection;
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
-	view.dispatch(tr.delete(start, end));
+	return tr.delete(start, end);
 };
 
 Editor.prototype.parse = function(dom, opts) {
@@ -252,12 +260,15 @@ Editor.prototype.parse = function(dom, opts) {
 };
 
 Editor.prototype.refresh = function(dom) {
+	this.view.dispatch(this.refreshTr(dom));
+};
+
+Editor.prototype.refreshTr = function(dom) {
 	var pos = this.posFromDOM(dom);
 	if (pos === false) return;
 	var block = this.resolve(dom);
 	if (!block) return;
-	var view = this.view;
-	view.dispatch(view.state.tr.setNodeType(pos, null, Specs.blockToAttr(block)));
+	return this.view.state.tr.setNodeType(pos, null, Specs.blockToAttr(block));
 };
 
 Editor.prototype.select = function(obj, textSelection) {
@@ -307,17 +318,24 @@ Editor.prototype.select = function(obj, textSelection) {
 };
 
 Editor.prototype.replace = function(by, sel) {
+	this.view.dispatch(this.replaceTr(by, sel));
+};
+
+Editor.prototype.replaceTr = function(by, sel) {
 	// sel can be ResolvedPos or pos or dom node or a selection
 	sel = this.select(sel);
 	if (!sel) return false;
-	this.insert(by, sel);
-	return true;
+	return this.insertTr(by, sel);
 };
 
 Editor.prototype.remove = function(src) {
+	this.view.dispatch(this.removeTr(src));
+};
+
+Editor.prototype.removeTr = function(src) {
 	var sel = this.select(src);
 	if (!sel) return false;
-	return this.delete(sel);
+	return this.deleteTr(sel);
 };
 
 Editor.prototype.posFromDOM = function(dom) {
