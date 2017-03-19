@@ -80,7 +80,7 @@ function focusRoot(view, pos, node, focus) {
 Handler.prototype.focus = function(view, $pos) {
 	var parents = this.main.parents($pos);
 	var root = parents.root;
-	var pos = root && root.rpos.before(root.level);
+	var pos = root && root.level && root.rpos.before(root.level);
 	var dom = root && posToNode(view, pos);
 	var existing = view.dom.querySelectorAll('[block-focused]');
 	var blurs = [];
@@ -119,7 +119,8 @@ Handler.prototype.mousedown = function(view, e) {
 	}
 	e.target.draggable = false;
 
-	var posBefore = root.rpos.before(root.level);
+	// get the root dom node and the handle in it
+	var posBefore = root.level ? root.rpos.before(root.level) : root.rpos.pos;
 	var rposBefore = view.state.doc.resolve(posBefore);
 
 	var dom = posToNode(view, posBefore);
