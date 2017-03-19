@@ -108,6 +108,7 @@ Handler.prototype.mousedown = function(view, e) {
 	this.dragging = true;
 	var dom = e.target;
 	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
+	// get root node
 	var pos = this.main.posFromDOM(dom);
 	if (pos === false) {
 		return;
@@ -117,21 +118,25 @@ Handler.prototype.mousedown = function(view, e) {
 	if (root == null || cobj.content != null || cobj.wrap != null) {
 		return;
 	}
+	// do not drag the target
 	e.target.draggable = false;
 
 	// get the root dom node and the handle in it
 	var posBefore = root.level ? root.rpos.before(root.level) : root.rpos.pos;
 	var rposBefore = view.state.doc.resolve(posBefore);
+	var rootDom = posToNode(view, posBefore);
+	var handleDom = rootDom && rootDom.querySelector('[block-handle]');
 
-	var dom = posToNode(view, posBefore);
-
-	if (dom) dom = dom.querySelector('[block-handle]');
-	if (dom) {
+	// this works because the handle is draggable
+	// TODO also check e.target has closest('[block-handle]')
+	if (handleDom) {
+		// select the whole node
 		var tr = view.state.tr.setSelection(new State.NodeSelection(rposBefore));
 		tr.addToHistory = false;
 		view.dispatch(tr);
-		dom.draggable = true;
-		this.dragTarget = dom;
+		// drag the handle only
+		handleDom.draggable = true;
+		this.dragTarget = handleDom;
 	} else {
 		//return true; // let pm handle that for now...
 	}
