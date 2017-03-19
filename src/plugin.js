@@ -63,11 +63,7 @@ Handler.prototype.action = function(action) {
 	if (this.dragging) return;
 	var sel = action.selection;
 	if (!sel.empty) return;
-	var me = this;
-	setTimeout(function() {
-		// or else current action overwrites view.state.tr - probably a prosemirror bug here
-		me.focus(me.main.view, sel.$to);
-	});
+	this.focus(this.main.view, sel.$to);
 };
 
 function focusRoot(view, pos, node, focus) {
