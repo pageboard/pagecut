@@ -1,7 +1,7 @@
 var Setup = require("prosemirror-example-setup");
 var State = require("prosemirror-state");
 var Transform = require("prosemirror-transform");
-var EditorView = require("prosemirror-view").EditorView;
+var View = require("prosemirror-view");
 var Model = require("prosemirror-model");
 var Input = require("prosemirror-inputrules");
 var keymap = require("prosemirror-keymap").keymap;
@@ -37,6 +37,7 @@ Editor.defaults.marks = baseSchema.spec.marks;
 
 module.exports = {
 	Editor: Editor,
+	View: View,
 	Model: Model,
 	State: State,
 	Setup: Setup,
@@ -132,7 +133,7 @@ function Editor(opts) {
 
 	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
-	var view = this.view = new EditorView({mount: place}, {
+	var view = this.view = new View.EditorView({mount: place}, {
 		state: State.EditorState.create({
 			schema: editSchema,
 			plugins: opts.plugins,
