@@ -8,19 +8,17 @@
 	outline: none;
 }
 
-.ProseMirror-content p[pm-container] {
-	position:relative;
-	margin: 0.5em 0;
-}
-
-.ProseMirror-content p[pm-container]:before {
+[contenteditable="true"] > p:before {
 	display: block;
-	position: absolute;
+	position: relative;
 	font-size: 0.8em;
 	color: black;
-	right: 0px;
+	left: -0.8em;
 	content: '\00b6';
-	opacity: 0.5;
+	opacity: 0.3;
 	top: 0.1em;
+	width:0;
+	height:0;
+	overflow:visible;
 }
 
