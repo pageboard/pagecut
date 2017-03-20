@@ -15,7 +15,10 @@ var listSchema = require("prosemirror-schema-list");
 
 var UrlRegex = require('url-regex');
 
-var CreatePlugin = require("./plugin");
+var FocusPlugin = require("./focus-plugin");
+var HandlePlugin = require("./handle-plugin");
+var BreakPlugin = require("./break-plugin");
+
 var Specs = require("./specs");
 
 var Viewer = global.Pagecut && global.Pagecut.Viewer || require("./viewer");
@@ -122,7 +125,9 @@ function Editor(opts) {
 	};
 
 	opts.plugins.push(
-		CreatePlugin(main, opts),
+		BreakPlugin(main, opts),
+		FocusPlugin(main, opts),
+		HandlePlugin(main, opts),
 		Input.inputRules({
 			rules: Input.allInputRules.concat(Setup.buildInputRules(editSchema))
 		}),
@@ -356,6 +361,23 @@ Editor.prototype.posFromDOM = function(dom) {
 		pos = false;
 	}
 	return pos;
+};
+
+Editor.prototype.posToDOM = function(pos) {
+	if (pos == null) return;
+	try {
+		var fromPos = this.view.docView.domFromPos(pos);
+		if (fromPos) {
+			var dom = fromPos.node;
+			var offset = fromPos.offset;
+			if (dom.nodeType == 1 && offset < dom.childNodes.length) {
+				dom = dom.childNodes.item(offset);
+			}
+			return dom;
+		}
+	} catch(ex) {
+		return false;
+	}
 };
 
 Editor.prototype.parents = function(rpos, all, marksAfter) {
