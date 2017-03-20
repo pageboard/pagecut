@@ -12,18 +12,18 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 	if (!dom) {
 		index = 0;
 		dom = main.render({ type: element.name }, true);
-		spec = createRootSpec(main, element, main.nodeViews, dom);
+		spec = createRootSpec(main, element, dom);
 		recursive = true;
 	} else if (contentName) {
-		spec = createContentSpec(element, main.nodeViews, dom);
+		spec = createContentSpec(element, dom);
 		spec.content = element.specs[contentName];
 		if (!spec.content) throw new Error("Missing element.specs[" + contentName + "]");
 		specName = spec.specName + '[block_content="' + contentName + '"]';
 	} else if (dom.querySelector('[block-content]')) {
-		spec = createWrapSpec(element, main.nodeViews, dom);
+		spec = createWrapSpec(element, dom);
 		recursive = true;
 	} else {
-		spec = createHoldSpec(element, main.nodeViews, dom);
+		spec = createHoldSpec(element, dom);
 	}
 	if (!specName) specName = spec.specName;
 
@@ -63,7 +63,7 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 	return specName;
 }
 
-function createRootSpec(main, element, nodeViews, dom) {
+function createRootSpec(main, element, dom) {
 	var defaultAttrs = Object.assign({
 		block_id: null,
 		block_focused: null,
@@ -162,7 +162,7 @@ function nodeToContent(serializer, node, content) {
 	return content;
 }
 
-function createWrapSpec(element, nodeViews, dom) {
+function createWrapSpec(element, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
@@ -183,7 +183,7 @@ function createWrapSpec(element, nodeViews, dom) {
 	};
 }
 
-function createContentSpec(element, nodeViews, dom) {
+function createContentSpec(element, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
@@ -204,7 +204,7 @@ function createContentSpec(element, nodeViews, dom) {
 	};
 }
 
-function createHoldSpec(element, nodeViews, dom) {
+function createHoldSpec(element, dom) {
 	var defaultAttrs = tagAttrs(dom);
 	var sel = domSelector(defaultAttrs);
 	var defaultSpecAttrs = specAttrs(Object.assign(defaultAttrs, {

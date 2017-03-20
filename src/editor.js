@@ -50,7 +50,6 @@ module.exports = {
 
 function Editor(opts) {
 	var main = this;
-	this.nodeViews = {};
 
 	opts = Object.assign({
 		plugins: []
@@ -66,9 +65,12 @@ function Editor(opts) {
 		marks: opts.marks
 	};
 
-	for (var i=0; i < this.elements.length; i++) {
-		Specs.define(main, this.elements[i], spec);
-	}
+	var nodeViews = {};
+
+	this.elements.forEach(function(el) {
+		Specs.define(main, el, spec);
+		if (el.nodeView) nodeViews[el.name] = el.nodeView;
+	});
 
 	var editSchema = new Model.Schema(spec);
 
@@ -151,7 +153,7 @@ function Editor(opts) {
 				if (main.menu) main.menu.update(view);
 			}
 		},
-		nodeViews: this.nodeViews
+		nodeViews: nodeViews
 	});
 }
 
