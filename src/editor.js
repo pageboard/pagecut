@@ -381,19 +381,14 @@ Editor.prototype.posToDOM = function(pos) {
 };
 
 Editor.prototype.parents = function(rpos, all, marksAfter) {
-	var node, type, obj, level = rpos.depth, ret = [];
+	var depth = rpos.depth + 1;
+	var node, type, obj, level = depth, ret = [];
 	while (level >= 0) {
 		if (!obj) obj = {};
-		node = rpos.node(level);
-		type = node.type && node.type.spec.typeName;
-		if (!type && level == rpos.depth) {
-			// is this between two nodes, and the node after is a root node ?
-			var nodeAfter = rpos.nodeAfter;
-			var typeAfter = nodeAfter && nodeAfter.type.spec.typeName;
-			if (!rpos.textOffset && typeAfter && nodeAfter.type.name != node.type.name) {
-				type = typeAfter;
-				node = nodeAfter;
-			} else {
+		if (level == depth) {
+			node = rpos.nodeAfter;
+			type = node && node.type.spec.typeName;
+			if (!type) {
 				// let's see if we have an inline block
 				var marks = rpos.marks(!!marksAfter);
 				if (marks.length) {
@@ -406,6 +401,9 @@ Editor.prototype.parents = function(rpos, all, marksAfter) {
 					}
 				}
 			}
+		} else {
+			node = rpos.node(level);
+			type = node.type && node.type.spec.typeName;
 		}
 		if (type) {
 			obj[type] = {rpos: rpos, level: level, node: node};
