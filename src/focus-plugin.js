@@ -6,11 +6,10 @@ module.exports = function(main, options) {
 		props: {
 			handleClick: handler.click
 		},
-		state: {
-			init: function(config, state) {
-				return {};
-			},
-			apply: handler.action
+		view: function(view) {
+			return {
+				update: handler.action.bind(handler)
+			}
 		}
 	});
 };
@@ -23,16 +22,16 @@ function Handler(main, options) {
 }
 
 Handler.prototype.click = function(view, pos, e) {
-	this.dragging = false;
+	this.main.dragging = false;
 	this.focus(view, view.state.doc.resolve(pos));
 };
 
-Handler.prototype.action = function(action) {
-	if (action.type != "selection") return;
-	if (this.dragging) return;
-	var sel = action.selection;
+Handler.prototype.action = function(view, state) {
+	if (this.main.dragging) return;
+	var sel = view.state.tr.selection;
 	if (!sel.empty) return;
-	this.focus(this.main.view, sel.$to);
+	if (sel.eq(state.tr.selection)) return;
+	this.focus(view, sel.$to);
 };
 
 function focusRoot(view, pos, node, focus) {
@@ -44,13 +43,6 @@ function focusRoot(view, pos, node, focus) {
 	tr.addToHistory = false;
 
 	view.dispatch(tr);
-}
-
-function createDOMHandle(doc, attrs) {
-	var div = doc.createElement("div");
-	div.innerHTML = "+";
-	div.className = "block-handle";
-	return div;
 }
 
 Handler.prototype.focus = function(view, $pos) {
