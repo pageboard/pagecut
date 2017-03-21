@@ -29,10 +29,10 @@ function createDOMHandle(doc, attrs) {
 
 
 Handler.prototype.mousedown = function(view, e) {
-	this.dragging = true;
+	this.main.dragging = true;
+	delete this.dragTarget;
 	var dom = e.target;
-	if (dom.nodeType == Node.TEXT_NODE) dom = dom.parentNode;
-	// get root node
+	// get root node above target
 	var pos = this.main.posFromDOM(dom);
 	if (pos === false) {
 		return;
@@ -51,34 +51,25 @@ Handler.prototype.mousedown = function(view, e) {
 	if (!rootDom) return;
 
 	var handleDom = rootDom.querySelector('[block-handle]');
+	if (!handleDom) return;
+	if (!isParentOf(handleDom, e.target)) return;
 
-	if (handleDom) {
-		// either rootDom has a handle, in which case e.target must be descendant of it (or it)
-		if (!isParentOf(handleDom, e.target)) return;
-		// select root node
-		var tr = view.state.tr.setSelection(new State.NodeSelection(rposBefore));
-		tr.addToHistory = false;
-		view.dispatch(tr);
-		// drag handle
-		e.target.draggable = false;
-		handleDom.draggable = true;
-		this.dragTarget = handleDom;
-	} else if (rootDom.classList.has('ProseMirror-selectednode')) {
-		// rootDom is selected
-		// drag root
-		e.target.draggable = false;
-		rootDom.draggable = true;
-		this.dragTarget = rootDom;
-	} else {
-		// let it be handled by pm
-	}
+	// select root node
+	var tr = view.state.tr.setSelection(new State.NodeSelection(rposBefore));
+	tr.addToHistory = false;
+	view.dispatch(tr);
+	// drag handle
+	e.target.draggable = false;
+	handleDom.draggable = true;
+	this.dragTarget = handleDom;
 };
 
 
 Handler.prototype.mouseup = function(view, e) {
-	if (this.dragging) {
-		this.dragging = false;
+	if (this.main.dragging) {
+		this.main.dragging = false;
 		if (this.dragTarget) {
+			this.main.select(this.dragTarget);
 			this.dragTarget.draggable = false;
 			delete this.dragTarget;
 		}
