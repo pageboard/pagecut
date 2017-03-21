@@ -126,8 +126,8 @@ function Editor(opts) {
 
 	opts.plugins.push(
 		BreakPlugin(main, opts),
-		FocusPlugin(main, opts),
 		HandlePlugin(main, opts),
+		FocusPlugin(main, opts),
 		Input.inputRules({
 			rules: Input.allInputRules.concat(Setup.buildInputRules(editSchema))
 		}),
