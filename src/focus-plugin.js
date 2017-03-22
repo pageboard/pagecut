@@ -42,7 +42,7 @@ Handler.prototype.action = function(view, state) {
 function focusRoot(view, pos, node, focus) {
 	if (node.type.spec.inline) return; // if node is a Mark
 	var attrs = Object.assign({}, node.attrs);
-	if (focus) attrs.block_focused = true;
+	if (focus) attrs.block_focused = focus;
 	else delete attrs.block_focused;
 	var tr = view.state.tr.setNodeType(pos, null, attrs);
 	tr.addToHistory = false;
@@ -73,12 +73,12 @@ Handler.prototype.focus = function(view, $pos) {
 	}
 
 	if (root && !root.node.attrs.block_focused) {
-		focusRoot(view, pos, root.node, true);
+		focusRoot(view, pos, root.node, "last");
 		var parent;
 		for (var i=1; i < parents.length; i++) {
 			parent = parents[i];
 			root = parent.root;
-			focusRoot(view, root.rpos.before(root.level), root.node, true);
+			focusRoot(view, root.rpos.before(root.level), root.node, i == parents.length - 1 ? "first" : "middle");
 		}
 	}
 };

@@ -527,7 +527,7 @@ function actionAncestorBlock(main, tr) {
 }
 
 function focusModifier(main, block, dom) {
-	if (block.focused) dom.setAttribute('block-focused', 'true');
+	if (block.focused) dom.setAttribute('block-focused', block.focused);
 	else dom.removeAttribute('block-focused');
 }
 
