@@ -6,10 +6,12 @@ module.exports = function(main, options) {
 		props: {
 			handleClick: handler.click
 		},
-		view: function(view) {
-			return {
-				update: handler.action.bind(handler)
+		appendTransaction: function(transactions, oldState, newState) {
+			// find out if we have a focus already
+			for (var i=0; i < transactions.length; i++) {
+				if (transactions[i].focus) return;
 			}
+			return handler.action(newState);
 		}
 	});
 };
@@ -23,14 +25,14 @@ function Handler(main, options) {
 
 Handler.prototype.click = function(view, pos, e) {
 	this.main.dragging = false;
-	var tr = this.focus(view, view.state.tr, view.state.doc.resolve(pos));
+	var tr = this.focus(view.state.tr, view.state.doc.resolve(pos));
 	view.dispatch(tr);
 };
 
-Handler.prototype.action = function(view, state) {
+Handler.prototype.action = function(state) {
+	var tr = state.tr;
 	if (this.main.dragging) return;
-	if (this.focusing) return;
-	var sel = view.state.tr.selection;
+	var sel = tr.selection;
 	var rpos;
 	if (sel.node) {
 		rpos = sel.$from;
@@ -38,10 +40,10 @@ Handler.prototype.action = function(view, state) {
 		rpos = sel.$to;
 	}
 	if (rpos == null) return;
-
-	var tr = this.focus(view, state.tr, rpos);
+	tr = this.focus(tr, rpos);
 	tr.addToHistory = false;
-	view.dispatch(tr);
+	tr.focus = true;
+	return tr;
 };
 
 function focusRoot(tr, pos, node, focus) {
@@ -53,17 +55,19 @@ function focusRoot(tr, pos, node, focus) {
 	return tr;
 }
 
-Handler.prototype.focus = function(view, tr, $pos) {
+Handler.prototype.focus = function(tr, $pos) {
 	// do not unfocus if view or its document has lost focus
-	if (!view.hasFocus()) {
+	if (!this.main.view.hasFocus()) {
 		return tr;
 	}
 	var parents = this.main.parents($pos, true);
 	var root = parents.length && parents[0].root;
 	var pos = root && root.level && root.rpos.before(root.level);
+
+	// problem here - those functions are out of sync with current state
 	var dom = root && this.main.posToDOM(pos);
 	var restoreSelection = dom && dom.classList && dom.classList.contains('ProseMirror-selectednode');
-	var existing = view.dom.querySelectorAll('[block-focused]');
+	var existing = this.main.view.dom.querySelectorAll('[block-focused]');
 
 	var blurs = [];
 	// reverse on purpose here
