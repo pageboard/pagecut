@@ -243,11 +243,8 @@ Editor.prototype.insertTr = function(dom, sel) {
 		tr = tr.replaceWith(from, to, frag);
 		if (root) {
 			var pos = tr.selection.from - frag.size - (parent.isTextblock ? 1 : 0);
-			if (pos < 0) pos = 0;
-			else pos = Math.min(pos, tr.doc.nodeSize);
-			var rpos = tr.doc.resolve(pos);
-			var newSel = new State.NodeSelection(rpos);
-			tr = tr.setSelection(newSel);
+			sel = this.selectTr(tr, pos);
+			if (sel) tr = tr.setSelection(sel);
 		}
 		return tr;
 	}
@@ -286,9 +283,13 @@ Editor.prototype.refreshTr = function(dom) {
 	return this.view.state.tr.setNodeType(pos, null, Specs.blockToAttr(block));
 };
 
+
 Editor.prototype.select = function(obj, textSelection) {
+	this.selectTr(this.view.state.tr, obj, textSelection);
+};
+
+Editor.prototype.selectTr = function(tr, obj, textSelection) {
 	var $pos, pos, root;
-	var state = this.view.state;
 	if (obj instanceof State.Selection) {
 		var infos = this.selectionParents(obj);
 		if (infos.length) {
@@ -301,7 +302,7 @@ Editor.prototype.select = function(obj, textSelection) {
 		} else {
 			if (obj instanceof Node) pos = this.posFromDOM(obj);
 			else pos = obj;
-			if (typeof pos == "number") $pos = state.doc.resolve(pos);
+			if (typeof pos == "number") $pos = tr.doc.resolve(pos);
 			else return false;
 		}
 		var info = this.parents($pos, false);
@@ -324,9 +325,9 @@ Editor.prototype.select = function(obj, textSelection) {
 		if (nodeAfter && Model.Mark.sameSet(nodeAfter.marks, [root.node])) {
 			end = end + root.rpos.nodeAfter.nodeSize;
 		}
-		return State.TextSelection.create(state.doc, start, end);
+		return State.TextSelection.create(tr.doc, start, end);
 	} else if (textSelection) {
-		return State.TextSelection.create(state.doc, root.rpos.pos, root.rpos.pos);
+		return State.TextSelection.create(tr.doc, root.rpos.pos, root.rpos.pos);
 	} else {
 		return new State.NodeSelection($pos);
 	}
