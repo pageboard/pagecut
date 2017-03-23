@@ -6,7 +6,7 @@ exports.nodeToContent = nodeToContent;
 var index;
 
 function defineSpecs(main, element, schemaSpecs, dom) {
-	var content = [];
+	var contents = [];
 	var contentName = dom && dom.getAttribute('block-content');
 	var specName, spec, recursive = false;
 	if (!dom) {
@@ -28,21 +28,20 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 	}
 	if (!specName) specName = spec.specName;
 
-	var content = [];
 	if (recursive) {
 		var childs = dom.childNodes;
 		for (var i=0, child; i < childs.length; i++) {
 			child = childs.item(i);
 			if (child.nodeType != Node.ELEMENT_NODE) continue;
-			content.push(defineSpecs(main, element, schemaSpecs, child));
+			contents.push(defineSpecs(main, element, schemaSpecs, child));
 		}
-		if (content.length) {
-			spec.content = content.join(" ");
+		if (contents.length) {
+			spec.content = contents.join(" ");
 		} else if (spec.typeName == "root" && element.contents) {
 			var specKeys = Object.keys(element.contents);
 			var contentName = dom.getAttribute('block-content');
 			if (specKeys.length == 1) {
-				if (contentName == specKeys[0].spec) {
+				if (contentName == specKeys[0]) {
 					spec.content = element.contents[contentName].spec;
 				} else {
 					console.warn("element has no matching contents", element.contents, contentName);
