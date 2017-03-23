@@ -219,11 +219,10 @@ Editor.prototype.insertTr = function(dom, sel) {
 		dom.textContent = '-';
 		shouldBeInline = true;
 	}
-	var parseOpts = {};
-	var parentNode = sel.$from.parent;
-	// set topNode if parent is not a text block
-	if (!parentNode.type.isTextblock) parseOpts.topNode = parentNode;
-	var frag = this.parse(dom, parseOpts);
+
+	var frag = this.parse(dom, {
+		topNode: sel.$from.parent
+	});
 	var root, type;
 	if (frag.content.length == 1) {
 		root = frag.content[0];
@@ -232,8 +231,7 @@ Editor.prototype.insertTr = function(dom, sel) {
 
 	var from = sel.from;
 	var to = sel.to;
-	if (type && type.isInline) {
-		if (!shouldBeInline) console.warn('Node rendered as block but parsed as inline', dom);
+	if (shouldBeInline) {
 		var mark = root.marks[0];
 		if (!mark) return;
 		if (view.state.doc.rangeHasMark(from, to, mark.type)) {
@@ -241,8 +239,10 @@ Editor.prototype.insertTr = function(dom, sel) {
 		}
 		return tr.addMark(from, to, mark.type.create(mark.attrs));
 	} else {
-		if (shouldBeInline) console.warn('Node rendered as inline but parsed as block', dom);
-		return tr.replaceWith(from, to, frag);
+		tr = tr.replaceWith(from, to, frag);
+		sel = this.select(from);
+		if (sel) tr = tr.setSelection(sel);
+		return tr;
 	}
 };
 
@@ -297,7 +297,7 @@ Editor.prototype.select = function(obj, textSelection) {
 			if (typeof pos == "number") $pos = state.doc.resolve(pos);
 			else return false;
 		}
-		var info = this.parents($pos, false, true);
+		var info = this.parents($pos, false);
 		root = info && info.root;
 	}
 	if (!root) {
@@ -380,17 +380,17 @@ Editor.prototype.posToDOM = function(pos) {
 	}
 };
 
-Editor.prototype.parents = function(rpos, all, marksAfter) {
+Editor.prototype.parents = function(rpos, all, before) {
 	var depth = rpos.depth + 1;
 	var node, type, obj, level = depth, ret = [];
 	while (level >= 0) {
 		if (!obj) obj = {};
 		if (level == depth) {
-			node = rpos.nodeAfter;
+			node = before ? rpos.nodeBefore : rpos.nodeAfter;
 			type = node && node.type.spec.typeName;
 			if (!type) {
 				// let's see if we have an inline block
-				var marks = rpos.marks(!!marksAfter);
+				var marks = rpos.marks(!before);
 				if (marks.length) {
 					for (var k=0; k < marks.length; k++) {
 						type = marks[k].type && marks[k].type.spec.typeName;
@@ -408,6 +408,10 @@ Editor.prototype.parents = function(rpos, all, marksAfter) {
 		if (type) {
 			obj[type] = {rpos: rpos, level: level, node: node};
 		}
+		if (level != depth && node && node.attrs.block_content) {
+			if (!obj.content) obj.content = obj.root || {};
+			obj.content.content = node.attrs.block_content;
+		}
 		if (type == "root") {
 			if (!all) break;
 			ret.push(obj);
@@ -420,9 +424,9 @@ Editor.prototype.parents = function(rpos, all, marksAfter) {
 };
 
 Editor.prototype.selectionParents = function(sel) {
-	var fromParents = this.parents(sel.$from, true, true);
+	var fromParents = this.parents(sel.$from, true, false);
 	if (sel.empty) return fromParents;
-	var toParents = this.parents(sel.$to, true, false);
+	var toParents = this.parents(sel.$to, true, true);
 	var parents = [];
 	var from, to;
 	for (var i = 1; i <= fromParents.length && i <= toParents.length; i++) {

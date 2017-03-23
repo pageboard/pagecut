@@ -28,6 +28,7 @@ Handler.prototype.click = function(view, pos, e) {
 
 Handler.prototype.action = function(view, state) {
 	if (this.main.dragging) return;
+	if (this.focusing) return;
 	var sel = view.state.tr.selection;
 	var rpos;
 	if (sel.node) {
@@ -36,7 +37,9 @@ Handler.prototype.action = function(view, state) {
 		rpos = sel.$to;
 	}
 	if (rpos == null) return;
+	this.focusing = true;
 	this.focus(view, rpos);
+	this.focusing = false;
 };
 
 function focusRoot(view, pos, node, focus) {
@@ -46,7 +49,6 @@ function focusRoot(view, pos, node, focus) {
 	else delete attrs.block_focused;
 	var tr = view.state.tr.setNodeType(pos, null, attrs);
 	tr.addToHistory = false;
-
 	view.dispatch(tr);
 }
 
@@ -59,6 +61,7 @@ Handler.prototype.focus = function(view, $pos) {
 	var root = parents.length && parents[0].root;
 	var pos = root && root.level && root.rpos.before(root.level);
 	var dom = root && this.main.posToDOM(pos);
+	var restoreSelection = dom && dom.classList && dom.classList.contains('ProseMirror-selectednode');
 	var existing = view.dom.querySelectorAll('[block-focused]');
 
 	var blurs = [];
@@ -80,6 +83,10 @@ Handler.prototype.focus = function(view, $pos) {
 			root = parent.root;
 			focusRoot(view, root.rpos.before(root.level), root.node, i == parents.length - 1 ? "first" : "middle");
 		}
+	}
+	if (restoreSelection) {
+		var sel = this.main.select(pos);
+		if (sel) view.dispatch(view.state.tr.setSelection(sel));
 	}
 };
 
