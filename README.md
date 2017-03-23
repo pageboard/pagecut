@@ -203,7 +203,7 @@ Pagecut.Editor options:
   the ancestor block, if any, in which the current action is applied.
 
 Pagecut.Editor.defaults holds some default options values:
-- markSpec, nodeSpec: the schema specifications
+- marks, nodes: the schema specifications
 - plugins: array of plugins for ProseMirror
 - menu: function(coed, items) { return items.fullMenu; }
 
