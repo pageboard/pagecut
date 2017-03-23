@@ -285,7 +285,7 @@ Editor.prototype.refreshTr = function(dom) {
 
 
 Editor.prototype.select = function(obj, textSelection) {
-	this.selectTr(this.view.state.tr, obj, textSelection);
+	return this.selectTr(this.view.state.tr, obj, textSelection);
 };
 
 Editor.prototype.selectTr = function(tr, obj, textSelection) {
