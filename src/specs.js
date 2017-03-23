@@ -16,8 +16,9 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 		recursive = true;
 	} else if (contentName) {
 		spec = createContentSpec(element, dom);
-		spec.content = element.specs[contentName];
-		if (!spec.content) throw new Error("Missing element.specs[" + contentName + "]");
+		var content = element.contents[contentName];
+		if (!content) throw new Error("Missing element.contents[" + contentName + "]");
+		spec.content = content.spec;
 		specName = spec.specName + '[block_content="' + contentName + '"]';
 	} else if (dom.querySelector('[block-content]')) {
 		spec = createWrapSpec(element, dom);
@@ -37,17 +38,17 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 		}
 		if (content.length) {
 			spec.content = content.join(" ");
-		} else if (spec.typeName == "root" && element.specs) {
-			var specKeys = Object.keys(element.specs);
+		} else if (spec.typeName == "root" && element.contents) {
+			var specKeys = Object.keys(element.contents);
 			var contentName = dom.getAttribute('block-content');
 			if (specKeys.length == 1) {
-				if (contentName == specKeys[0]) {
-					spec.content = element.specs[contentName];
+				if (contentName == specKeys[0].spec) {
+					spec.content = element.contents[contentName].spec;
 				} else {
-					console.warn("element has specs", element.specs, "but no matching content");
+					console.warn("element has no matching contents", element.contents, contentName);
 				}
 			} else if (specKeys.length > 1) {
-				console.warn("element has multiple specs", element.specs, "only one default block-content is allowed");
+				console.warn("element has multiple contents", element.contents, "only one default block-content is allowed");
 			}
 		}
 	}

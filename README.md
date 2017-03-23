@@ -27,7 +27,7 @@ Objects
 * Elements  
   Blocks are instances of elements.  
   An element comes in two parts:  
-  - its definition (name, group, specs, and json schema)
+  - its definition (name, group, contents, and json schema properties)
   - its edit and view methods, with signatures (document, block).
 
 * Modules  
@@ -123,9 +123,9 @@ Mandatory property:
 Properties for the editor:
 - group (optional)  
   the group as defined by the prosemirror editor
-- specs  
-  an object matching contents names to
-  [prosemirror content expression](http://prosemirror.net/guide/schema.html).
+- contents  
+  an object matching contents names to an object having a 'spec' property being
+  a [prosemirror content expression](http://prosemirror.net/guide/schema.html).
 
 Properties for content management:
 - properties  

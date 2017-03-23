@@ -7,9 +7,13 @@ exports.inspector.resolver = InspectorResolver;
 Object.assign(exports.inspector.element, {
 	group: 'block',
 	edit: InspectorEdit,
-	specs: {
-		title: "inline<_>*",
-		content: "block+"
+	contents: {
+		title: {
+			spec: "inline<_>*"
+		},
+		content: {
+			spec: "block+"
+		}
 	}
 });
 
