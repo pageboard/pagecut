@@ -241,8 +241,14 @@ Editor.prototype.insertTr = function(dom, sel) {
 		return tr.addMark(from, to, mark.type.create(mark.attrs));
 	} else {
 		tr = tr.replaceWith(from, to, frag);
-		sel = this.select(from);
-		if (sel) tr = tr.setSelection(sel);
+		if (root) {
+			var pos = tr.selection.from - frag.size - (parent.isTextblock ? 1 : 0);
+			if (pos < 0) pos = 0;
+			else pos = Math.min(pos, tr.doc.nodeSize);
+			var rpos = tr.doc.resolve(pos);
+			var newSel = new State.NodeSelection(rpos);
+			tr = tr.setSelection(newSel);
+		}
 		return tr;
 	}
 };
