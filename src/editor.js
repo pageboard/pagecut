@@ -410,7 +410,7 @@ Editor.prototype.parents = function(rpos, all, before) {
 		}
 		if (level != depth && node && node.attrs.block_content) {
 			if (!obj.content) obj.content = obj.root || {};
-			obj.content.content = node.attrs.block_content;
+			obj.content.name = node.attrs.block_content;
 		}
 		if (type == "root") {
 			if (!all) break;
