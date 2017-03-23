@@ -23,7 +23,8 @@ function Handler(main, options) {
 
 Handler.prototype.click = function(view, pos, e) {
 	this.main.dragging = false;
-	this.focus(view, view.state.doc.resolve(pos));
+	var tr = this.focus(view, view.state.tr, view.state.doc.resolve(pos));
+	view.dispatch(tr);
 };
 
 Handler.prototype.action = function(view, state) {
@@ -37,25 +38,25 @@ Handler.prototype.action = function(view, state) {
 		rpos = sel.$to;
 	}
 	if (rpos == null) return;
-	this.focusing = true;
-	this.focus(view, rpos);
-	this.focusing = false;
+
+	var tr = this.focus(view, state.tr, rpos);
+	tr.addToHistory = false;
+	view.dispatch(tr);
 };
 
-function focusRoot(view, pos, node, focus) {
-	if (node.type.spec.inline) return; // if node is a Mark
+function focusRoot(tr, pos, node, focus) {
+	if (node.type.spec.inline) return tr; // if node is a Mark
 	var attrs = Object.assign({}, node.attrs);
 	if (focus) attrs.block_focused = focus;
 	else delete attrs.block_focused;
-	var tr = view.state.tr.setNodeType(pos, null, attrs);
-	tr.addToHistory = false;
-	view.dispatch(tr);
+	tr = tr.setNodeType(pos, null, attrs);
+	return tr;
 }
 
-Handler.prototype.focus = function(view, $pos) {
+Handler.prototype.focus = function(view, tr, $pos) {
 	// do not unfocus if view or its document has lost focus
 	if (!view.hasFocus()) {
-		return;
+		return tr;
 	}
 	var parents = this.main.parents($pos, true);
 	var root = parents.length && parents[0].root;
@@ -70,24 +71,25 @@ Handler.prototype.focus = function(view, $pos) {
 		var blur = existing.item(i);
 		if (!dom || !isParentOf(blur, dom)) {
 			var posBlur = this.main.posFromDOM(blur);
-			var nodeBlur = view.state.tr.doc.resolve(posBlur).nodeAfter;
-			focusRoot(view, posBlur, nodeBlur, false);
+			var nodeBlur = tr.doc.resolve(posBlur).nodeAfter;
+			tr = focusRoot(tr, posBlur, nodeBlur, false);
 		}
 	}
 
 	if (root && !root.node.attrs.block_focused) {
-		focusRoot(view, pos, root.node, "last");
+		tr = focusRoot(tr, pos, root.node, "last");
 		var parent;
 		for (var i=1; i < parents.length; i++) {
 			parent = parents[i];
 			root = parent.root;
-			focusRoot(view, root.rpos.before(root.level), root.node, i == parents.length - 1 ? "first" : "middle");
+			tr = focusRoot(tr, root.rpos.before(root.level), root.node, i == parents.length - 1 ? "first" : "middle");
 		}
 	}
 	if (restoreSelection) {
-		var sel = this.main.select(pos);
-		if (sel) view.dispatch(view.state.tr.setSelection(sel));
+		var sel = this.main.selectTr(tr, pos);
+		if (sel) tr = tr.setSelection(sel);
 	}
+	return tr;
 };
 
 function isParentOf(parent, node) {
