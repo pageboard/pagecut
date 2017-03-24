@@ -224,10 +224,9 @@ Editor.prototype.insertTr = function(dom, sel) {
 	var parent = sel.$from.parent;
 	if (!parent.isTextblock || shouldBeInline) opts.topNode = parent;
 	var frag = this.parse(dom, opts);
-	var root, type;
+	var node, type;
 	if (frag.content.length == 1) {
-		root = frag.content[0];
-		if (root) type = root.type || {};
+		node = frag.content[0];
 	}
 
 	var from = sel.from;
@@ -241,9 +240,8 @@ Editor.prototype.insertTr = function(dom, sel) {
 		return tr.addMark(from, to, mark.type.create(mark.attrs));
 	} else {
 		tr = tr.replaceWith(from, to, frag);
-		if (root) {
-			var pos = tr.selection.from - frag.size - (parent.isTextblock ? 1 : 0);
-			sel = this.selectTr(tr, pos);
+		if (node) {
+			sel = this.selectTr(tr, from);
 			if (sel) tr = tr.setSelection(sel);
 		}
 		return tr;
