@@ -204,7 +204,8 @@ Editor.prototype.resolve = function(thing) {
 };
 
 Editor.prototype.insert = function(dom, sel) {
-	this.view.dispatch(this.insertTr(dom, sel));
+	var tr = this.insertTr(dom, sel);
+	if (tr) this.view.dispatch(tr);
 };
 
 Editor.prototype.insertTr = function(dom, sel) {
