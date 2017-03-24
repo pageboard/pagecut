@@ -63,24 +63,13 @@ Handler.prototype.focus = function(tr, $pos) {
 	var parents = this.main.parents($pos, true);
 	var root = parents.length && parents[0].root;
 	var pos = root && root.level && root.rpos.before(root.level);
+	var selectedRoot = root && tr.selection.node == root.node;
 
-	// problem here - those functions are out of sync with current state
-	var dom = root && this.main.posToDOM(pos);
-	var restoreSelection = dom && dom.classList && dom.classList.contains('ProseMirror-selectednode');
-	var existing = this.main.view.dom.querySelectorAll('[block-focused]');
+	tr.doc.descendants(function(node, pos, parent) {
+		if (node.attrs.block_focused) tr = focusRoot(tr, pos, node, false);
+	});
 
-	var blurs = [];
-	// reverse on purpose here
-	for (var i = existing.length - 1; i >= 0; i--) {
-		var blur = existing.item(i);
-		if (!dom || !isParentOf(blur, dom)) {
-			var posBlur = this.main.posFromDOM(blur);
-			var nodeBlur = tr.doc.resolve(posBlur).nodeAfter;
-			tr = focusRoot(tr, posBlur, nodeBlur, false);
-		}
-	}
-
-	if (root && !root.node.attrs.block_focused) {
+	if (root) {
 		tr = focusRoot(tr, pos, root.node, "last");
 		var parent;
 		for (var i=1; i < parents.length; i++) {
@@ -89,7 +78,7 @@ Handler.prototype.focus = function(tr, $pos) {
 			tr = focusRoot(tr, root.rpos.before(root.level), root.node, i == parents.length - 1 ? "first" : "middle");
 		}
 	}
-	if (restoreSelection) {
+	if (selectedRoot) {
 		var sel = this.main.selectTr(tr, pos);
 		if (sel) tr = tr.setSelection(sel);
 	}
