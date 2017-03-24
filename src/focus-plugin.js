@@ -76,8 +76,7 @@ Handler.prototype.focus = function(tr, $pos) {
 		}
 	}
 	if (selectedRoot) {
-		var sel = this.main.selectTr(tr, pos);
-		if (sel) tr = tr.setSelection(sel);
+		tr = tr.setSelection(new State.NodeSelection(root.rpos));
 	}
 	tr.focus = true;
 	return tr;
