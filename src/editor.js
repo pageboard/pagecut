@@ -320,7 +320,9 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 		}
 		return State.TextSelection.create(tr.doc, start, end);
 	} else if (textSelection) {
-		return State.TextSelection.create(tr.doc, root.rpos.pos, root.rpos.pos);
+		var sel = tr.selection;
+		if (sel.node) return State.TextSelection.create(tr.doc, sel.from, sel.to);
+		else return sel;
 	} else {
 		return new State.NodeSelection($pos);
 	}
