@@ -232,7 +232,7 @@ Editor.prototype.insertTr = function(dom, sel) {
 	var from = sel.from;
 	var to = sel.to;
 	if (shouldBeInline) {
-		var mark = root.marks[0];
+		var mark = node.marks[0];
 		if (!mark) return;
 		if (view.state.doc.rangeHasMark(from, to, mark.type)) {
 			tr = tr.removeMark(from, to, mark.type);
