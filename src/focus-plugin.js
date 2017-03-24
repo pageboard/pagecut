@@ -7,7 +7,7 @@ module.exports = function(main, options) {
 			handleClick: handler.click
 		},
 		appendTransaction: function(transactions, oldState, newState) {
-			// find out if we have a focus already
+			// focus once per transaction
 			for (var i=0; i < transactions.length; i++) {
 				if (transactions[i].focus) return;
 			}
@@ -26,7 +26,7 @@ function Handler(main, options) {
 Handler.prototype.click = function(view, pos, e) {
 	this.main.dragging = false;
 	var tr = this.focus(view.state.tr, view.state.doc.resolve(pos));
-	view.dispatch(tr);
+	if (tr) view.dispatch(tr);
 };
 
 Handler.prototype.action = function(state) {
@@ -40,10 +40,7 @@ Handler.prototype.action = function(state) {
 		rpos = sel.$to;
 	}
 	if (rpos == null) return;
-	tr = this.focus(tr, rpos);
-	tr.addToHistory = false;
-	tr.focus = true;
-	return tr;
+	return this.focus(tr, rpos);
 };
 
 function focusRoot(tr, pos, node, focus) {
@@ -58,7 +55,7 @@ function focusRoot(tr, pos, node, focus) {
 Handler.prototype.focus = function(tr, $pos) {
 	// do not unfocus if view or its document has lost focus
 	if (!this.main.view.hasFocus()) {
-		return tr;
+		return;
 	}
 	var parents = this.main.parents($pos, true);
 	var root = parents.length && parents[0].root;
@@ -71,17 +68,18 @@ Handler.prototype.focus = function(tr, $pos) {
 
 	if (root) {
 		tr = focusRoot(tr, pos, root.node, "last");
-		var parent;
+		var parent, cur;
 		for (var i=1; i < parents.length; i++) {
 			parent = parents[i];
-			root = parent.root;
-			tr = focusRoot(tr, root.rpos.before(root.level), root.node, i == parents.length - 1 ? "first" : "middle");
+			cur = parent.root;
+			tr = focusRoot(tr, cur.rpos.before(cur.level), cur.node, i == parents.length - 1 ? "first" : "middle");
 		}
 	}
 	if (selectedRoot) {
 		var sel = this.main.selectTr(tr, pos);
 		if (sel) tr = tr.setSelection(sel);
 	}
+	tr.focus = true;
 	return tr;
 };
 
