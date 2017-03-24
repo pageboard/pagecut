@@ -321,9 +321,11 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 		}
 		return State.TextSelection.create(tr.doc, start, end);
 	} else if (textSelection) {
-		var sel = tr.selection;
-		if (sel.node) return State.TextSelection.create(tr.doc, sel.from, sel.to);
-		else return sel;
+		if (tr.selection.node) {
+			return State.TextSelection.create(tr.doc, $pos.pos, $pos.pos);
+		} else {
+			return tr.selection;
+		}
 	} else {
 		return new State.NodeSelection($pos);
 	}
