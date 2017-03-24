@@ -289,28 +289,23 @@ Editor.prototype.select = function(obj, textSelection) {
 };
 
 Editor.prototype.selectTr = function(tr, obj, textSelection) {
-	var $pos, pos, root;
+	var info, pos;
 	if (obj instanceof State.Selection) {
-		var infos = this.selectionParents(obj);
-		if (infos.length) {
-			root = infos[0].root;
-			$pos = root.rpos;
-		}
+		info = this.selectionParents(obj).shift();
 	} else {
 		if (obj instanceof Model.ResolvedPos) {
-			$pos = obj;
+			pos = pbj.pos;
 		} else {
 			if (obj instanceof Node) pos = this.posFromDOM(obj);
 			else pos = obj;
-			if (typeof pos == "number") $pos = tr.doc.resolve(pos);
-			else return false;
 		}
-		var info = this.parents($pos, false);
-		root = info && info.root;
+		if (typeof pos != "number") return;
+		info = this.parents(tr.doc.resolve(pos));
 	}
-	if (!root) {
-		return false;
-	}
+	if (!info) return false;
+	var root = info.root;
+	var $pos = root.rpos;
+
 	var sel;
 	if (!$pos.nodeAfter) textSelection = true;
 	if (root.node instanceof Model.Mark) {
