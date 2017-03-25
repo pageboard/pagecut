@@ -25,7 +25,7 @@ function Handler(main, options) {
 
 Handler.prototype.click = function(view, pos, e) {
 	this.main.dragging = false;
-	var tr = this.focus(view.state.tr, view.state.doc.resolve(pos));
+	var tr = this.focus(view.state.tr, pos);
 	if (tr) view.dispatch(tr);
 };
 
@@ -33,14 +33,14 @@ Handler.prototype.action = function(state) {
 	var tr = state.tr;
 	if (this.main.dragging) return;
 	var sel = tr.selection;
-	var rpos;
+	var pos = null;
 	if (sel.node) {
-		rpos = sel.$from;
+		pos = sel.from;
 	} else if (sel.empty) {
-		rpos = sel.$to;
+		pos = sel.to;
 	}
-	if (rpos == null) return;
-	return this.focus(tr, rpos);
+	if (pos === null) return;
+	return this.focus(tr, pos);
 };
 
 function focusRoot(tr, pos, node, focus) {
@@ -52,12 +52,12 @@ function focusRoot(tr, pos, node, focus) {
 	return tr;
 }
 
-Handler.prototype.focus = function(tr, $pos) {
+Handler.prototype.focus = function(tr, pos) {
 	// do not unfocus if view or its document has lost focus
 	if (!this.main.view.hasFocus()) {
 		return;
 	}
-	var parents = this.main.parents($pos, true);
+	var parents = this.main.parents(tr, pos, true);
 	var root = parents.length && parents[0].root;
 	var pos = root && root.level && root.rpos.before(root.level);
 	var selectedRoot = root && tr.selection.node == root.node;

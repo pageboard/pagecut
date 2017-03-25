@@ -37,7 +37,7 @@ Handler.prototype.mousedown = function(view, e) {
 	if (pos === false) {
 		return;
 	}
-	var cobj = this.main.parents(view.state.tr.doc.resolve(pos));
+	var cobj = this.main.parents(view.state.tr, pos);
 	var root = cobj.root;
 	if (root == null || cobj.content != null || cobj.wrap != null) {
 		return;

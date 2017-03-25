@@ -288,7 +288,7 @@ Editor.prototype.select = function(obj, textSelection) {
 Editor.prototype.selectTr = function(tr, obj, textSelection) {
 	var info, pos;
 	if (obj instanceof State.Selection) {
-		info = this.selectionParents(obj).shift();
+		info = this.selectionParents(tr, obj).shift();
 	} else {
 		if (obj instanceof Model.ResolvedPos) {
 			pos = pbj.pos;
@@ -297,7 +297,8 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 			else pos = obj;
 		}
 		if (typeof pos != "number") return;
-		info = this.parents(tr.doc.resolve(pos));
+		info = this.parents(tr, pos);
+	}
 	}
 	if (!info) return false;
 	var root = info.root;
@@ -384,7 +385,8 @@ Editor.prototype.posToDOM = function(pos) {
 	}
 };
 
-Editor.prototype.parents = function(rpos, all, before) {
+Editor.prototype.parents = function(tr, pos, all, before) {
+	var rpos = tr.doc.resolve(pos);
 	var depth = rpos.depth + 1;
 	var node, type, obj, level = depth, ret = [];
 	while (level >= 0) {
@@ -427,10 +429,11 @@ Editor.prototype.parents = function(rpos, all, before) {
 	else return obj;
 };
 
-Editor.prototype.selectionParents = function(sel) {
-	var fromParents = this.parents(sel.$from, true, false);
+Editor.prototype.selectionParents = function(tr, sel) {
+	if (!sel) sel = tr.selection;
+	var fromParents = this.parents(tr, sel.from, true, false);
 	if (sel.empty) return fromParents;
-	var toParents = this.parents(sel.$to, true, true);
+	var toParents = this.parents(tr, sel.to, true, true);
 	var parents = [];
 	var from, to;
 	for (var i = 1; i <= fromParents.length && i <= toParents.length; i++) {
@@ -493,7 +496,7 @@ function actionAncestorBlock(main, tr) {
 	var steps = tr.steps;
 	var roots = [];
 	steps.forEach(function(step) {
-		var parents = main.parents(main.view.state.doc.resolve(step.from), true);
+		var parents = main.parents(tr, step.from, true);
 		parents.forEach(function(obj) {
 			var root = obj.root;
 			if (!root) return;
