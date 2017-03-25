@@ -393,9 +393,18 @@ Editor.prototype.parents = function(tr, pos, all, before) {
 	var rpos = tr.doc.resolve(pos);
 	var depth = rpos.depth + 1;
 	var node, type, obj, level = depth, ret = [];
+	var jumped = false;
 	while (level >= 0) {
 		if (!obj) obj = {};
 		if (level == depth) {
+			if (!before && !rpos.nodeAfter && !jumped) {
+				// check parent next node, this is a hack but it covers most of our needs
+				jumped = true;
+				rpos = tr.doc.resolve(pos+1);
+				depth = rpos.depth + 1;
+				level = depth;
+				continue;
+			}
 			node = before ? rpos.nodeBefore : rpos.nodeAfter;
 			type = node && node.type.spec.typeName;
 			if (!type) {
