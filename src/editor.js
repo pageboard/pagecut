@@ -204,13 +204,12 @@ Editor.prototype.resolve = function(thing) {
 };
 
 Editor.prototype.insert = function(dom, sel) {
-	var tr = this.insertTr(dom, sel);
+	var tr = this.insertTr(this.view.state.tr, dom, sel);
 	if (tr) this.view.dispatch(tr);
 };
 
-Editor.prototype.insertTr = function(dom, sel) {
+Editor.prototype.insertTr = function(tr, dom, sel) {
 	var view = this.view;
-	var tr = view.state.tr;
 	if (!sel) sel = tr.selection;
 	if (!(dom instanceof Node)) {
 		dom = this.render(dom, true);
@@ -250,12 +249,11 @@ Editor.prototype.insertTr = function(dom, sel) {
 };
 
 Editor.prototype.delete = function(sel) {
-	this.view.dispatch(this.deleteTr(sel));
+	this.view.dispatch(this.deleteTr(this.view.state.tr, sel));
 };
 
-Editor.prototype.deleteTr = function(sel) {
+Editor.prototype.deleteTr = function(tr, sel) {
 	var view = this.view;
-	var tr = view.state.tr;
 	if (!sel) sel = tr.selection;
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
@@ -271,15 +269,15 @@ Editor.prototype.parse = function(dom, opts) {
 };
 
 Editor.prototype.refresh = function(dom) {
-	this.view.dispatch(this.refreshTr(dom));
+	this.view.dispatch(this.refreshTr(this.view.state.tr, dom));
 };
 
-Editor.prototype.refreshTr = function(dom) {
+Editor.prototype.refreshTr = function(tr, dom) {
 	var pos = this.posFromDOM(dom);
 	if (pos === false) return;
 	var block = this.resolve(dom);
 	if (!block) return;
-	return this.view.state.tr.setNodeType(pos, null, Specs.blockToAttr(block));
+	return tr.setNodeType(pos, null, Specs.blockToAttr(block));
 };
 
 
@@ -332,14 +330,14 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 };
 
 Editor.prototype.replace = function(by, sel) {
-	this.view.dispatch(this.replaceTr(by, sel));
+	this.view.dispatch(this.replaceTr(this.view.state.tr, by, sel));
 };
 
-Editor.prototype.replaceTr = function(by, sel) {
+Editor.prototype.replaceTr = function(tr, by, sel) {
 	// sel can be ResolvedPos or pos or dom node or a selection
-	sel = this.select(sel);
+	sel = this.selectTr(tr, sel);
 	if (!sel) return false;
-	return this.insertTr(by, sel);
+	return this.insertTr(tr, by, sel);
 };
 
 Editor.prototype.remove = function(src) {
@@ -347,9 +345,9 @@ Editor.prototype.remove = function(src) {
 };
 
 Editor.prototype.removeTr = function(src) {
-	var sel = this.select(src);
+	var sel = this.selectTr(tr, src);
 	if (!sel) return false;
-	return this.deleteTr(sel);
+	return this.deleteTr(tr, sel);
 };
 
 Editor.prototype.posFromDOM = function(dom) {
