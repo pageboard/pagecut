@@ -299,9 +299,13 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 		if (typeof pos != "number") return;
 		info = this.parents(tr, pos);
 	}
+	if (!info) {
+		return false;
 	}
-	if (!info) return false;
 	var root = info.root;
+	if (!root) {
+		return false;
+	}
 	var $pos = root.rpos;
 
 	var sel;
