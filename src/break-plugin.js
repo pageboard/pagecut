@@ -8,11 +8,14 @@ module.exports = function(main, options) {
 
 
 function breakCommand(state, dispatch, view) {
-	var sel = state.tr.selection;
+	var tr = state.tr;
+	var sel = tr.selection;
 	var bef = sel.$to.nodeBefore;
 	if (bef && bef.type.name == "hard_break") {
 		if (sel.empty && dispatch) {
-			dispatch(state.tr.delete(sel.$to.pos - 1, sel.$to.pos).scrollIntoView());
+			dispatch(
+				tr.delete(sel.$to.pos - 1, sel.$to.pos).scrollIntoView()
+			);
 		}
 		// do not split root blocks
 		var parent = sel.$to.parent;
@@ -20,7 +23,11 @@ function breakCommand(state, dispatch, view) {
 		// fall through
 		return false;
 	} else {
-		if (dispatch) dispatch(state.tr.replaceSelectionWith(state.schema.nodes.hard_break.create()).scrollIntoView());
+		if (dispatch) {
+			dispatch(
+				tr.replaceSelectionWith(state.schema.nodes.hard_break.create()).scrollIntoView()
+			);
+		}
 		// stop here
 		return true;
 	}
