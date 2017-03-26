@@ -291,7 +291,7 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 		info = this.selectionParents(tr, obj).shift();
 	} else {
 		if (obj instanceof Model.ResolvedPos) {
-			pos = pbj.pos;
+			pos = obj.pos;
 		} else {
 			if (obj instanceof Node) pos = this.posFromDOM(obj);
 			else pos = obj;
