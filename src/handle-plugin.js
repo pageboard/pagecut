@@ -35,9 +35,11 @@ Handler.prototype.mousedown = function(view, e) {
 	if (pos === false) {
 		return;
 	}
-	var cobj = this.main.parents(view.state.tr, pos);
-	var root = cobj.root;
-	if (root == null || cobj.content != null || cobj.wrap != null) {
+	var tr = view.state.tr;
+	var info = this.main.parents(tr, pos);
+	var root = info.root;
+
+	if (root == null || info.content != null || info.wrap != null) {
 		return;
 	}
 
@@ -52,8 +54,7 @@ Handler.prototype.mousedown = function(view, e) {
 	if (!handleDom) return;
 	if (!isParentOf(handleDom, e.target)) return;
 
-	// select root node
-	var tr = view.state.tr.setSelection(new State.NodeSelection(rposBefore));
+	tr = tr.setSelection(this.main.selectTr(tr, pos));
 	tr.addToHistory = false;
 	view.dispatch(tr);
 	// drag handle
