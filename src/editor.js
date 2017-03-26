@@ -138,6 +138,11 @@ function Editor(opts) {
 		DropCursor(opts)
 	);
 
+	opts.plugins = opts.plugins.map(function(plugin) {
+		if (!(plugin instanceof State.Plugin)) return new State.Plugin(plugin);
+		else return plugin;
+	});
+
 	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
 	var view = this.view = new View.EditorView({mount: place}, {
