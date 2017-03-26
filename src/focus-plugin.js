@@ -19,7 +19,6 @@ module.exports = function(main, options) {
 function Handler(main, options) {
 	this.main = main;
 
-	this.action = this.action.bind(this);
 	this.click = this.click.bind(this);
 }
 
