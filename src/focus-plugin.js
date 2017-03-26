@@ -1,8 +1,6 @@
-var State = require("prosemirror-state");
-
 module.exports = function(main, options) {
 	var handler = new Handler(main, options);
-	return new State.Plugin({
+	return {
 		props: {
 			handleClick: handler.click
 		},
@@ -13,7 +11,7 @@ module.exports = function(main, options) {
 			}
 			return handler.action(newState);
 		}
-	});
+	};
 };
 
 function Handler(main, options) {
