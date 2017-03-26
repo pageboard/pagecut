@@ -246,6 +246,7 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 	} else {
 		tr = tr.replaceWith(from, to, frag);
 		if (node) {
+			if (parent.isTextblock) from = from + 1; // because it splits text block
 			sel = this.selectTr(tr, from);
 			if (sel) tr = tr.setSelection(sel);
 		}
@@ -402,14 +403,7 @@ Editor.prototype.parents = function(tr, pos, all, before) {
 	while (level >= 0) {
 		if (!obj) obj = {};
 		if (level == depth) {
-			if (!before && !rpos.nodeAfter && !jumped) {
-				// check parent next node, this is a hack but it covers most of our needs
-				jumped = true;
-				rpos = tr.doc.resolve(pos+1);
-				depth = rpos.depth + 1;
-				level = depth;
-				continue;
-			}
+
 			node = before ? rpos.nodeBefore : rpos.nodeAfter;
 			type = node && node.type.spec.typeName;
 			if (!type) {
