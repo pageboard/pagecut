@@ -313,6 +313,8 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 		return false;
 	}
 	var $pos = root.rpos;
+	var $rootPos = root.level ? tr.doc.resolve(root.rpos.before(root.level)) : root.rpos;
+
 
 	var sel;
 	if (!$pos.nodeAfter) textSelection = true;
@@ -336,7 +338,7 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 			return tr.selection;
 		}
 	} else {
-		return new State.NodeSelection($pos);
+		return new State.NodeSelection($rootPos);
 	}
 };
 
