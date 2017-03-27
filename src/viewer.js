@@ -45,6 +45,7 @@ Viewer.prototype.render = function(block, edition) {
 	var dom = renderFn.call(el, this.doc, block);
 	if (!dom) return "";
 	var ndom = dom;
+	if (ndom.nodeType != Node.ELEMENT_NODE) return ndom;
 	for (var i=0; i < this.modifiers.length; i++) {
 		ndom = this.modifiers[i](this, block, ndom) || ndom;
 	}
