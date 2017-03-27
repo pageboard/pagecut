@@ -25,7 +25,7 @@ IdModule.prototype.from = function(rootBlock, resolver) {
 		}
 	};
 	var fragment = this.main.render(rootBlock);
-	var nodes = fragment.querySelectorAll('[block-id]');
+	var nodes = Array.prototype.slice.call(fragment.querySelectorAll('[block-id]'));
 	var me = this;
 
 	var list = [];
