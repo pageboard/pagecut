@@ -70,10 +70,10 @@ IdModule.prototype.to = function() {
 	var origModifiers = main.modifiers;
 	main.modifiers = origModifiers.concat([function(main, block, dom) {
 		if (block.id) {
-			var div = dom.ownerDocument.createElement('div');
-			div.setAttribute('block-id', block.id);
+			var ndom = dom.ownerDocument.createElement(main.map[block.type].inline ? 'span' : 'div');
+			ndom.setAttribute('block-id', block.id);
 			list.push(block);
-			return div;
+			return ndom;
 		}
 	}]);
 
