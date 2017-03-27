@@ -170,9 +170,8 @@ function Editor(opts) {
 Object.assign(Editor.prototype, Viewer.prototype);
 
 Editor.prototype.set = function(dom) {
-	var content = this.view.state.doc.content;
-	this.delete(new State.TextSelection(0, content.offsetAt(content.childCount)));
-	this.insert(dom, new State.NodeSelection(this.view.state.doc.resolve(0)));
+	var doc = this.view.state.doc;
+	this.insert(dom, State.TextSelection.create(doc, 0, doc.content.size));
 };
 
 Editor.prototype.get = function(edition) {
