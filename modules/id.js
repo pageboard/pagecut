@@ -51,19 +51,9 @@ IdModule.prototype.from = function(rootBlock, resolver) {
 		list.push(p.then(function(block) {
 			var node = this;
 			return me.from(block, resolver).then(function(child) {
+				node.parentNode.replaceChild(child, node);
 				if (child.childNodes.length == 0 && child.hasAttribute('block-content') == false) {
-					// block.type is inline
-					var attrs = node.attributes;
-					for (var j=0; j < attrs.length; j++) {
-						node.removeAttribute(attrs[j].name);
-					}
-					attrs = child.attributes;
-					for (var j=0; j < attrs.length; j++) {
-						node.setAttribute(attrs[j].name, attrs[j].value);
-					}
-				} else {
-					// block.type is block
-					node.parentNode.replaceChild(child, node);
+					while (node.firstChild) child.appendChild(node.firstChild);
 				}
 			});
 		}.bind(node)));
