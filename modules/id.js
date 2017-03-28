@@ -143,7 +143,8 @@ function IdModifier(main, block, dom) {
 		main.modules.id.set(block);
 	}
 	dom.setAttribute('block-id', block.id);
-	dom.setAttribute('block-type', block.type);
+	// when using id module, block-id is used to find the block and block.type
+	dom.removeAttribute('block-type');
 }
 
 

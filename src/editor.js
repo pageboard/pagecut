@@ -61,7 +61,7 @@ function Editor(opts) {
 	this.resolvers = opts.resolvers || [];
 	Viewer.call(this, opts);
 
-	this.modifiers.push(focusModifier, typeModifier);
+	this.modifiers.unshift(focusModifier, typeModifier);
 
 	var spec = {
 		nodes: opts.nodes,
