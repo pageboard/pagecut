@@ -314,19 +314,18 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 	var $pos = root.rpos;
 	var $rootPos = root.level ? tr.doc.resolve(root.rpos.before(root.level)) : root.rpos;
 
-
 	var sel;
 	if (!$pos.nodeAfter) textSelection = true;
-	if (root.node instanceof Model.Mark) {
+	if (root.mark) {
 		var nodeBefore = root.rpos.nodeBefore;
 		var nodeAfter = root.rpos.nodeAfter;
 
 		var start = root.rpos.pos;
-		if (nodeBefore && Model.Mark.sameSet(nodeBefore.marks, [root.node])) {
+		if (nodeBefore && Model.Mark.sameSet(nodeBefore.marks, [root.mark])) {
 			start = start - root.rpos.nodeBefore.nodeSize;
 		}
 		var end = root.rpos.pos;
-		if (nodeAfter && Model.Mark.sameSet(nodeAfter.marks, [root.node])) {
+		if (nodeAfter && Model.Mark.sameSet(nodeAfter.marks, [root.mark])) {
 			end = end + root.rpos.nodeAfter.nodeSize;
 		}
 		return State.TextSelection.create(tr.doc, start, end);
@@ -399,12 +398,12 @@ Editor.prototype.posToDOM = function(pos) {
 Editor.prototype.parents = function(tr, pos, all, before) {
 	var rpos = tr.doc.resolve(pos);
 	var depth = rpos.depth + 1;
-	var node, type, obj, level = depth, ret = [];
+	var mark, node, type, obj, level = depth, ret = [];
 	var jumped = false;
 	while (level >= 0) {
+		mark = null;
 		if (!obj) obj = {};
 		if (level == depth) {
-
 			node = before ? rpos.nodeBefore : rpos.nodeAfter;
 			type = node && node.type.spec.typeName;
 			if (!type) {
@@ -414,7 +413,7 @@ Editor.prototype.parents = function(tr, pos, all, before) {
 					for (var k=0; k < marks.length; k++) {
 						type = marks[k].type && marks[k].type.spec.typeName;
 						if (type) {
-							node = marks[k];
+							mark = marks[k];
 							break;
 						}
 					}
@@ -426,6 +425,7 @@ Editor.prototype.parents = function(tr, pos, all, before) {
 		}
 		if (type) {
 			obj[type] = {rpos: rpos, level: level, node: node};
+			if (mark) obj[type].mark = mark;
 		}
 		if (level != depth && node && node.attrs.block_content) {
 			if (!obj.content) obj.content = obj.root || {};

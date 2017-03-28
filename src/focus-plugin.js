@@ -40,14 +40,22 @@ FocusPlugin.prototype.action = function(state) {
 	return this.focus(tr, pos);
 };
 
-function focusRoot(tr, pos, node, focus) {
-	if (node.type.spec.inline) return tr; // if node is a Mark
-	var attrs = Object.assign({}, node.attrs);
-	if (focus) attrs.block_focused = focus;
-	else delete attrs.block_focused;
-	tr = tr.setNodeType(pos, null, attrs);
+FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
+	if (node.type.spec.inline) {
+		var sel = this.main.selectTr(tr, pos);
+		var attrs = Object.assign({}, node.attrs);
+		if (focus) attrs.block_focused = focus;
+		else delete attrs.block_focused;
+		tr = tr.removeMark(sel.from, sel.to, node.type);
+		tr = tr.addMark(sel.from, sel.to, node.type.create(attrs));
+	} else {
+		var attrs = Object.assign({}, node.attrs);
+		if (focus) attrs.block_focused = focus;
+		else delete attrs.block_focused;
+		tr = tr.setNodeType(pos, null, attrs);
+	}
 	return tr;
-}
+};
 
 FocusPlugin.prototype.focus = function(tr, pos) {
 	// do not unfocus if view or its document has lost focus
@@ -59,17 +67,23 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 	var pos = root && root.level && root.rpos.before(root.level);
 	var selectedRoot = root && tr.selection.node == root.node;
 
+	var me = this;
+
 	tr.doc.descendants(function(node, pos, parent) {
-		if (node.attrs.block_focused) tr = focusRoot(tr, pos, node, false);
+		if (node.attrs.block_focused) {
+			tr = me.focusRoot(tr, pos, node, false);
+		} else if (node.marks.length && node.marks[0].attrs.block_focused) {
+			tr = me.focusRoot(tr, pos, node.marks[0], false);
+		}
 	});
 
 	if (root) {
-		tr = focusRoot(tr, pos, root.node, "last");
+		tr = me.focusRoot(tr, pos, root.mark || root.node, "last");
 		var parent, cur;
 		for (var i=1; i < parents.length; i++) {
 			parent = parents[i];
 			cur = parent.root;
-			tr = focusRoot(tr, cur.rpos.before(cur.level), cur.node, i == parents.length - 1 ? "first" : "middle");
+			tr = me.focusRoot(tr, cur.rpos.before(cur.level), cur.mark || cur.node, i == parents.length - 1 ? "first" : "middle");
 		}
 	}
 	if (selectedRoot) {
