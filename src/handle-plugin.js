@@ -1,32 +1,22 @@
 module.exports = function(main, options) {
-	var handler = new Handler(main, options);
+	var plugin = new HandlePlugin(main, options);
 	return {
 		props: {
-			handleClick: handler.click,
+			handleClick: plugin.click,
 			handleDOMEvents: {
-				mousedown: handler.mousedown.bind(handler),
-				mouseup: handler.mouseup.bind(handler),
-				drop: handler.mouseup.bind(handler)
+				mousedown: plugin.mousedown.bind(plugin),
+				mouseup: plugin.mouseup.bind(plugin),
+				drop: plugin.mouseup.bind(plugin)
 			}
 		}
 	};
 };
 
-function Handler(main, options) {
+function HandlePlugin(main, options) {
 	this.main = main;
 }
 
-
-
-function createDOMHandle(doc, attrs) {
-	var div = doc.createElement("div");
-	div.innerHTML = "+";
-	div.className = "block-handle";
-	return div;
-}
-
-
-Handler.prototype.mousedown = function(view, e) {
+HandlePlugin.prototype.mousedown = function(view, e) {
 	this.main.dragging = true;
 	delete this.dragTarget;
 	var dom = e.target;
@@ -64,7 +54,7 @@ Handler.prototype.mousedown = function(view, e) {
 };
 
 
-Handler.prototype.mouseup = function(view, e) {
+HandlePlugin.prototype.mouseup = function(view, e) {
 	if (this.main.dragging) {
 		this.main.dragging = false;
 		if (this.dragTarget) {
