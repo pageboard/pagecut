@@ -78,6 +78,7 @@ IdModule.prototype.to = function() {
 	}]);
 
 	var domFragment = main.get();
+
 	main.modifiers = origModifiers;
 
 	var block;
