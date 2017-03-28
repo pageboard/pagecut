@@ -1,32 +1,32 @@
 module.exports = function(main, options) {
-	var handler = new Handler(main, options);
+	var plugin = new FocusPlugin(main, options);
 	return {
 		props: {
-			handleClick: handler.click
+			handleClick: plugin.click
 		},
 		appendTransaction: function(transactions, oldState, newState) {
 			// focus once per transaction
 			for (var i=0; i < transactions.length; i++) {
 				if (transactions[i].focus) return;
 			}
-			return handler.action(newState);
+			return plugin.action(newState);
 		}
 	};
 };
 
-function Handler(main, options) {
+function FocusPlugin(main, options) {
 	this.main = main;
 
 	this.click = this.click.bind(this);
 }
 
-Handler.prototype.click = function(view, pos, e) {
+FocusPlugin.prototype.click = function(view, pos, e) {
 	this.main.dragging = false;
 	var tr = this.focus(view.state.tr, pos);
 	if (tr) view.dispatch(tr);
 };
 
-Handler.prototype.action = function(state) {
+FocusPlugin.prototype.action = function(state) {
 	var tr = state.tr;
 	if (this.main.dragging) return;
 	var sel = tr.selection;
@@ -49,7 +49,7 @@ function focusRoot(tr, pos, node, focus) {
 	return tr;
 }
 
-Handler.prototype.focus = function(tr, pos) {
+FocusPlugin.prototype.focus = function(tr, pos) {
 	// do not unfocus if view or its document has lost focus
 	if (!this.main.view.hasFocus()) {
 		return;
