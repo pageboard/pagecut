@@ -72,6 +72,8 @@ IdModule.prototype.to = function() {
 		if (block.id) {
 			var ndom = dom.ownerDocument.createElement(main.map[block.type].inline ? 'span' : 'div');
 			ndom.setAttribute('block-id', block.id);
+			// make sure we don't accidentally store focused state
+			ndom.removeAttribute('block-focused');
 			list.push(block);
 			return ndom;
 		}
