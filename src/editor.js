@@ -124,7 +124,7 @@ function Editor(opts) {
 		edit: Model.DOMParser.fromSchema(editSchema)
 	};
 
-	opts.plugins.push(
+	this.plugins.push(
 		BreakPlugin(main, opts),
 		HandlePlugin(main, opts),
 		FocusPlugin(main, opts),
@@ -138,7 +138,7 @@ function Editor(opts) {
 		DropCursor(opts)
 	);
 
-	opts.plugins = opts.plugins.map(function(plugin) {
+	var plugins = opts.plugins.map(function(plugin) {
 		if (!(plugin instanceof State.Plugin)) return new State.Plugin(plugin);
 		else return plugin;
 	});
@@ -148,7 +148,7 @@ function Editor(opts) {
 	var view = this.view = new View.EditorView({mount: place}, {
 		state: State.EditorState.create({
 			schema: editSchema,
-			plugins: opts.plugins,
+			plugins: plugins,
 			doc: opts.content ? this.parsers.edit.parse(opts.content) : undefined
 		}),
 		domParser: this.parsers.edit,

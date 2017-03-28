@@ -14,6 +14,7 @@ function Viewer(opts) {
 
 	this.elements = opts.elements || [];
 	this.modifiers = opts.modifiers || [];
+	this.plugins = opts.plugins || [];
 
 	var main = this;
 	main.modules = {};
