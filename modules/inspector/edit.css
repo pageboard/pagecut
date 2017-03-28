@@ -1,6 +1,6 @@
 @import './font.css';
 
-div[block-type="inspector"] {
+.inspector {
 	display:inline-flex;
 	white-space: nowrap;
 	position:relative;
@@ -11,21 +11,21 @@ div[block-type="inspector"] {
 	max-width:100%;
 	margin:1px;
 }
-div[block-type="inspector"] [hidden] {
+.inspector [hidden] {
 	display:none !important;
 }
-div[block-type="inspector"][block-focused] {
+.inspector[block-focused] {
 	max-height:none;
 	box-shadow:1px 1px 1px #999;
 	border-color:#555;
 }
 
-div[block-type="inspector"] > header.ProseMirror-selectednode,
-div[block-type="inspector"] > aside.ProseMirror-selectednode {
+.inspector > header.ProseMirror-selectednode,
+.inspector > aside.ProseMirror-selectednode {
 	outline: 1px solid red; /* debugging purpose - should never happen */
 }
 
-div[block-type="inspector"] > header {
+.inspector > header {
 	cursor:move;
 	background:#888;
 	flex: 0 0 auto;
@@ -37,15 +37,15 @@ div[block-type="inspector"] > header {
 	display:flex;
 	flex-direction:column;
 }
-div[block-type="inspector"] a[href] > * {
+.inspector a[href] > * {
 	pointer-events: none;
 }
 
-div[block-type="inspector"].ProseMirror-selectednode > header {
+.inspector.ProseMirror-selectednode > header {
 	background-color:#555;
 }
 
-div[block-type="inspector"] > header > [name]:after {
+.inspector > header > [name]:after {
 	font-family: "component-font";
 	speak: none;
 	display: inline-block;
@@ -69,34 +69,34 @@ div[block-type="inspector"] > header > [name]:after {
 	}
 }
 
-div[block-type="inspector"][type="none"] > header > [name="type"]:after {
+.inspector[type="none"] > header > [name="type"]:after {
 	content: '\e832';
 	animation: block-link-spin 2s infinite linear;
 }
-div[block-type="inspector"][type=""] > header > [name="type"]:after { content: '\e832'; }
-div[block-type="inspector"][type="video"] > header > [name="type"]:after { content: '\e800'; }
-div[block-type="inspector"][type="link"] > header > [name="type"]:after { content: '\e801'; }
-div[block-type="inspector"][type="image"] > header > [name="type"]:after { content: '\e802'; }
-div[block-type="inspector"][type="audio"] > header > [name="type"]:after { content: '\e803'; }
-div[block-type="inspector"][type="embed"] > header > [name="type"]:after { content: '\f10e'; }
+.inspector[type=""] > header > [name="type"]:after { content: '\e832'; }
+.inspector[type="video"] > header > [name="type"]:after { content: '\e800'; }
+.inspector[type="link"] > header > [name="type"]:after { content: '\e801'; }
+.inspector[type="image"] > header > [name="type"]:after { content: '\e802'; }
+.inspector[type="audio"] > header > [name="type"]:after { content: '\e803'; }
+.inspector[type="embed"] > header > [name="type"]:after { content: '\f10e'; }
 
-div[block-type="inspector"][block-focused] > header > [name="preview"] {
+.inspector[block-focused] > header > [name="preview"] {
 	flex: 1 1 auto;
 	flex-direction:column;
 	justify-content:flex-end;
 	display:flex;
 }
-div[block-type="inspector"][block-focused] > header > [name="preview"]:after {
+.inspector[block-focused] > header > [name="preview"]:after {
 	content: '\f082';
 	left:0.2em;
 	width:1.2em;
 	display:block;
 	padding-bottom:.2em;
 }
-div[block-type="inspector"] > header > [title] {
+.inspector > header > [title] {
 	display:block;
 }
-div[block-type="inspector"] > header > [title] > img {
+.inspector > header > [title] > img {
 	max-width:1.2em;
 	display:inline-block;
 	margin:0 auto;
@@ -106,7 +106,7 @@ div[block-type="inspector"] > header > [title] > img {
 	margin-bottom:.2em;
 }
 
-div[block-type="inspector"] > aside {
+.inspector > aside {
 	background-color:#666;
 	flex: 0 2 auto;
 	display:flex;
@@ -116,7 +116,7 @@ div[block-type="inspector"] > aside {
 	cursor:pointer;
 }
 
-div[block-type="inspector"] > aside > figure {
+.inspector > aside > figure {
 	flex: 1 1 auto;
 	min-height:0;
 	min-width:66%;
@@ -124,17 +124,17 @@ div[block-type="inspector"] > aside > figure {
 	display:flex;
 	margin:0;
 }
-div[block-type="inspector"] > aside > figure:empty {
+.inspector > aside > figure:empty {
 	display:none;
 }
 
-div[block-type="inspector"] > aside > figure > img {
+.inspector > aside > figure > img {
 	width: 100%;
 	align-self:center;
 	max-height:8em;
 	box-shadow:0px 0px 3px white;
 }
-div[block-type="inspector"] > aside > div > p {
+.inspector > aside > div > p {
 	white-space: normal;
 	color:#eee;
 	margin: 0 0.3em;
@@ -145,7 +145,7 @@ div[block-type="inspector"] > aside > div > p {
 	text-align:left;
 	padding:.3em;
 }
-div[block-type="inspector"] > aside > div {
+.inspector > aside > div {
 	flex: 1 1 auto;
 	font-family: monospace;
 	white-space: normal;
@@ -153,10 +153,10 @@ div[block-type="inspector"] > aside > div {
 	min-width:50%;
 	color:#eee;
 }
-div[block-type="inspector"] > aside > div:empty {
+.inspector > aside > div:empty {
 	display:none;
 }
-div[block-type="inspector"] > aside > div > div {
+.inspector > aside > div > div {
 	float:right;
 	margin-right:0.15em;
 	background-color:#444;
@@ -164,19 +164,19 @@ div[block-type="inspector"] > aside > div > div {
 	border-bottom-left-radius:.3em;
 	padding:.1em;
 }
-div[block-type="inspector"] > aside > div > div > span {
+.inspector > aside > div > div > span {
 	float:right;
 	clear:both;
 	padding-left:0.2em;
 }
 
-div[block-type="inspector"] > div {
+.inspector > div {
 	flex: 1 1 auto;
 	padding-top:.1em;
 	background:#eee;
 	padding-right:.1em;
 }
-div[block-type="inspector"] > div > div[block-content] {
+.inspector > div > div[block-content] {
 	display: block;
 	overflow:hidden;
 	text-overflow:ellipsis;
@@ -188,56 +188,56 @@ div[block-type="inspector"] > div > div[block-content] {
 	font-size:.95em;
 	margin-top:0.1em;
 }
-div[block-type="inspector"][block-focused] > div > div[block-content] {
+.inspector[block-focused] > div > div[block-content] {
 	white-space: pre-wrap;
 }
 
-div[block-type="inspector"][block-focused] > div {
+.inspector[block-focused] > div {
 	background:#fff;
 }
 
-div[block-type="inspector"] > div > div[block-content]:before {
+.inspector > div > div[block-content]:before {
 	color:grey;
 	font-family:sans-serif;
 	letter-spacing:-1px;
 	font-size:0.8em;
 }
 
-div[block-type="inspector"] > div > div[block-content="title"]:before {
+.inspector > div > div[block-content="title"]:before {
 	content: 'Title: ';
 }
-div[block-type="inspector"] > div > div[block-content="content"] {
+.inspector > div > div[block-content="content"] {
 	display:none;
 }
 
 /* image type */
 
-div[block-type="inspector"][type="image"] > div > div[block-content="content"] {
+.inspector[type="image"] > div > div[block-content="content"] {
 	display:inline-block;
 }
-div[block-type="inspector"][type="image"] > div > div[block-content="content"]:before {
+.inspector[type="image"] > div > div[block-content="content"]:before {
 	content: 'Credit: ';
 }
 
 
 /* link type */
-div[block-type="inspector"][type="link"] > header > [name="preview"],
-div[block-type="inspector"]:not([block-focused])[type="link"] > header > [name="type"] {
+.inspector[type="link"] > header > [name="preview"],
+.inspector:not([block-focused])[type="link"] > header > [name="type"] {
 	display:none;
 }
-div[block-type="inspector"]:not([block-focused])[type="link"] {
+.inspector:not([block-focused])[type="link"] {
 	height:1.4em;
 }
-div[block-type="inspector"][type="link"]:not([block-focused]) > header {
+.inspector[type="link"]:not([block-focused]) > header {
 	display:flex;
 	align-items:center;
 }
-div[block-type="inspector"]:not([block-focused])[type="link"]> header > img {
+.inspector:not([block-focused])[type="link"]> header > img {
 	margin:0;
 }
-div[block-type="inspector"][type="link"] > div > div[block-content="content"] {
+.inspector[type="link"] > div > div[block-content="content"] {
 	display:block;
 }
-div[block-type="inspector"][type="link"] > div > div[block-content="content"]:before {
+.inspector[type="link"] > div > div[block-content="content"]:before {
 	content: 'Content: ';
 }
