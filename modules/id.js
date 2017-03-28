@@ -6,6 +6,22 @@ function IdModule(main) {
 	if (main.resolvers) main.resolvers.push(IdResolver);
 	main.modifiers.push(IdModifier);
 	main.elements.push(IdModule.element);
+
+	var me = this;
+
+	main.plugins.push({
+		props: {
+			transformPasted: function(pslice) {
+				pslice.content.forEach(function(child) {
+					me.pasteNode(child);
+					child.descendants(function(node, pos, parent) {
+						me.pasteNode(node);
+					});
+				});
+				return pslice;
+			}
+		}
+	});
 }
 
 IdModule.element = {
@@ -13,6 +29,27 @@ IdModule.element = {
 	view: function(doc, block) {
 		return doc.createElement("div");
 	}
+};
+
+IdModule.prototype.pasteNode = function(node) {
+	var id = node.attrs.block_id;
+	if (id == null && node.marks.length > 0) {
+		node = node.marks[0];
+		id = node.attrs.block_id;
+	}
+	if (id == null) return;
+	var block = this.get(id);
+	var dom = this.main.view.dom.querySelector('[block-id="'+id+'"]');
+	// if the block is not known, just do nothing
+	if (!block) {
+		// warn if there's a bug
+		if (dom) console.error("Unknown block but dom node exists", id);
+		return;
+	}
+	block = this.main.copy(block, true);
+	block.id = 'id' + Date.now();
+	this.main.modules.id.set(block);
+	node.attrs.block_id = block.id;
 };
 
 
