@@ -14,6 +14,7 @@ function Viewer(opts) {
 
 	this.elements = opts.elements || [];
 	this.modifiers = opts.modifiers || [];
+	this.modifiers.unshift(typeModifier);
 	this.plugins = opts.plugins || [];
 
 	var main = this;
@@ -100,3 +101,6 @@ function ContentModule(main) {
 	});
 }
 
+function typeModifier(main, block, dom) {
+	if (!dom.hasAttribute('block-type')) dom.setAttribute('block-type', block.type);
+}

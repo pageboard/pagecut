@@ -109,6 +109,7 @@ IdModule.prototype.to = function() {
 		if (block.id) {
 			var ndom = dom.ownerDocument.createElement(main.map[block.type].inline ? 'span' : 'div');
 			ndom.setAttribute('block-id', block.id);
+			ndom.setAttribute('block-type', block.type);
 			// make sure we don't accidentally store focused state
 			ndom.removeAttribute('block-focused');
 			list.push(block);
@@ -183,7 +184,6 @@ function IdModifier(main, block, dom) {
 	}
 	dom.setAttribute('block-id', block.id);
 	// when using id module, block-id is used to find the block and block.type
-	dom.removeAttribute('block-type');
 }
 
 

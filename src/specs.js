@@ -79,14 +79,13 @@ function createRootSpec(main, element, dom) {
 		defining: !element.inline,
 		attrs: Object.assign({}, defaultSpecAttrs, specAttrs(element.properties, "data-")),
 		parseDOM: [{
-			tag: '[block-type],[block-id]',
+			tag: '[block-type="'+element.name+'"]',
 			getAttrs: function(dom) {
 				var block = main.resolve(dom);
 				if (!block) {
 					console.info("unresolved dom node", dom);
 					return;
 				}
-				if (block.type != element.name) return false;
 				var newDom = main.render(block, true);
 				if (!element.inline) {
 					while (dom.firstChild) dom.removeChild(dom.firstChild);

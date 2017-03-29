@@ -61,7 +61,7 @@ function Editor(opts) {
 	this.resolvers = opts.resolvers || [];
 	Viewer.call(this, opts);
 
-	this.modifiers.unshift(focusModifier, typeModifier);
+	this.modifiers.unshift(focusModifier);
 
 	var spec = {
 		nodes: opts.nodes,
@@ -553,10 +553,6 @@ function actionAncestorBlock(main, tr) {
 function focusModifier(main, block, dom) {
 	if (block.focused) dom.setAttribute('block-focused', block.focused);
 	else dom.removeAttribute('block-focused');
-}
-
-function typeModifier(main, block, dom) {
-	if (!dom.hasAttribute('block-type')) dom.setAttribute('block-type', block.type);
 }
 
 function fragmentReplace(fragment, regexp, replacer) {
