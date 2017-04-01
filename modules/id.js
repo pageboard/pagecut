@@ -176,14 +176,8 @@ function IdResolver(editor, obj, cb) {
 	};
 }
 
-function IdModifier(main, block, dom) {
-	if (block.id == null) {
-		var id = "id" + Date.now();
-		block.id = id;
-		main.modules.id.set(block);
-	}
-	dom.setAttribute('block-id', block.id);
-	// when using id module, block-id is used to find the block and block.type
+function IdModifier(editor, block, dom) {
+	if (block.id) dom.setAttribute('block-id', block.id);
 }
 
 
