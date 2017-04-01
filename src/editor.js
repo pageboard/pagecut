@@ -23,6 +23,7 @@ var Specs = require("./specs");
 
 var Viewer = global.Pagecut && global.Pagecut.Viewer || require("./viewer");
 
+Editor.prototype = Object.create(View.EditorView.prototype);
 Object.assign(Editor.prototype, Viewer.prototype);
 
 Editor.defaults = {};
@@ -52,7 +53,7 @@ module.exports = {
 };
 
 function Editor(opts) {
-	var main = this;
+	var editor = this;
 
 	opts = Object.assign({
 		plugins: []
@@ -71,11 +72,13 @@ function Editor(opts) {
 	var nodeViews = {};
 
 	this.elements.forEach(function(el) {
-		Specs.define(main, el, spec);
+		Specs.define(editor, el, spec);
 		if (el.nodeView) nodeViews[el.name] = el.nodeView;
 	});
 
-	var editSchema = new Model.Schema(spec);
+	this.schemas = {};
+
+	this.schemas.edit = new Model.Schema(spec);
 
 	var viewNodes = spec.nodes;
 	spec.nodes.forEach(function(name, node) {
@@ -84,21 +87,21 @@ function Editor(opts) {
 			vnode.toDOM = function(node) {
 				var block = Specs.attrToBlock(node.attrs);
 				// nodeToContent calls serializeNode calls toDOM so it's recursive
-				block.content = Specs.nodeToContent(main.serializers.view, node);
-				return main.render(block);
+				block.content = Specs.nodeToContent(editor.serializers.view, node);
+				return editor.render(block);
 			};
 		}
 		viewNodes = viewNodes.update(name, vnode);
 	});
 
-	var viewSchema = new Model.Schema({
+	this.schemas.view = new Model.Schema({
 		nodes: viewNodes,
 		marks: spec.marks
 	});
 
 	this.serializers = {
-		edit: Model.DOMSerializer.fromSchema(editSchema),
-		view: Model.DOMSerializer.fromSchema(viewSchema)
+		edit: Model.DOMSerializer.fromSchema(this.schemas.edit),
+		view: Model.DOMSerializer.fromSchema(this.schemas.view)
 	};
 
 	this.serializers.view.renderStructure = function(structure, node, options) {
@@ -121,63 +124,65 @@ function Editor(opts) {
 	};
 
 	this.parsers = {
-		edit: Model.DOMParser.fromSchema(editSchema)
+		edit: Model.DOMParser.fromSchema(this.schemas.edit)
 	};
 
-	this.plugins.push(
-		BreakPlugin(main, opts),
-		HandlePlugin(main, opts),
-		FocusPlugin(main, opts),
-		Input.inputRules({
-			rules: Input.allInputRules.concat(Setup.buildInputRules(editSchema))
-		}),
-		keymap(Setup.buildKeymap(editSchema, opts.mapKeys)),
-		keymap(Commands.baseKeymap),
-		history(),
-		CreateResolversPlugin(main, opts),
-		DropCursor(opts)
-	);
+	this.plugins.push(BreakPlugin, HandlePlugin, FocusPlugin, function(editor) {
+		return Input.inputRules({
+			rules: Input.allInputRules.concat(Setup.buildInputRules(editor.schemas.edit))
+		});
+	}, function(editor, opts) {
+		return keymap(Setup.buildKeymap(editor.schemas.edit, opts.mapKeys));
+	}, function(editor) {
+		return keymap(Commands.baseKeymap);
+	}, function() {
+		return history();
+	}, CreateResolversPlugin, function(editor, opts) {
+		return DropCursor(opts);
+	});
 
 	var plugins = opts.plugins.map(function(plugin) {
-		if (!(plugin instanceof State.Plugin)) return new State.Plugin(plugin);
-		else return plugin;
+		if (plugin instanceof State.Plugin) return plugin;
+		if (typeof plugin == "function") {
+			plugin = plugin(editor, opts);
+		}
+		if (plugin instanceof State.Plugin) return plugin;
+		if (plugin.update || plugin.destroy) {
+			return new State.Plugin({view: function() {
+				return plugin;
+			}});
+		}
+		return new State.Plugin(plugin);
 	});
 
 	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
-	var view = this.view = new View.EditorView({mount: place}, {
+	View.EditorView.call(this, {mount: place}, {
 		state: State.EditorState.create({
-			schema: editSchema,
+			schema: this.schemas.edit,
 			plugins: plugins,
 			doc: opts.content ? this.parsers.edit.parse(opts.content) : undefined
 		}),
 		domParser: this.parsers.edit,
 		domSerializer: this.serializers.edit,
 		dispatchTransaction: function(tr) {
-			if (!opts.update || !opts.update(main, tr)) {
-				if (opts.change && tr.docChanged) {
-					var changedBlock = actionAncestorBlock(main, tr);
-					if (changedBlock) opts.change(main, changedBlock);
-				}
-				view.updateState(view.state.apply(tr));
-				if (main.menu) main.menu.update(view);
-			}
+			editor.updateState(editor.state.apply(tr));
 		},
 		nodeViews: nodeViews
 	});
 }
 
-Object.assign(Editor.prototype, Viewer.prototype);
+Object.assign(Editor.prototype, Viewer.prototype, View.EditorView);
 
 Editor.prototype.set = function(dom) {
-	var doc = this.view.state.doc;
+	var doc = this.state.doc;
 	this.insert(dom, State.TextSelection.create(doc, 0, doc.content.size));
 };
 
 Editor.prototype.get = function(edition) {
 	// in an offline document
 	var serializer = edition ? this.serializers.edit : this.serializers.view;
-	return serializer.serializeFragment(this.view.state.doc.content, {
+	return serializer.serializeFragment(this.state.doc.content, {
 		document: this.doc
 	});
 };
@@ -186,20 +191,20 @@ Editor.prototype.resolve = function(thing) {
 	var obj = {};
 	if (typeof thing == "string") obj.url = thing;
 	else obj.node = thing;
-	var main = this;
+	var editor = this;
 	var syncBlock;
 	this.resolvers.some(function(resolver) {
-		syncBlock = resolver(main, obj, function(err, block) {
+		syncBlock = resolver(editor, obj, function(err, block) {
 			var pos = syncBlock && syncBlock.pos;
 			if (pos == null) return;
 			delete syncBlock.pos;
 			if (err) {
 				console.error(err);
-				main.remove(pos);
+				editor.remove(pos);
 			} else {
 				if (syncBlock.focused) block.focused = true;
 				else delete block.focused;
-				main.replace(block, pos);
+				editor.replace(block, pos);
 			}
 		});
 		if (syncBlock) return true;
@@ -208,12 +213,11 @@ Editor.prototype.resolve = function(thing) {
 };
 
 Editor.prototype.insert = function(dom, sel) {
-	var tr = this.insertTr(this.view.state.tr, dom, sel);
-	if (tr) this.view.dispatch(tr);
+	var tr = this.insertTr(this.state.tr, dom, sel);
+	if (tr) this.dispatch(tr);
 };
 
 Editor.prototype.insertTr = function(tr, dom, sel) {
-	var view = this.view;
 	if (!sel) sel = tr.selection;
 	if (!(dom instanceof Node)) {
 		dom = this.render(dom, true);
@@ -238,7 +242,7 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 	if (shouldBeInline) {
 		var mark = node.marks[0];
 		if (!mark) return;
-		if (view.state.doc.rangeHasMark(from, to, mark.type)) {
+		if (this.state.doc.rangeHasMark(from, to, mark.type)) {
 			tr = tr.removeMark(from, to, mark.type);
 		}
 		return tr.addMark(from, to, mark.type.create(mark.attrs));
@@ -254,11 +258,10 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 };
 
 Editor.prototype.delete = function(sel) {
-	this.view.dispatch(this.deleteTr(this.view.state.tr, sel));
+	this.dispatch(this.deleteTr(this.state.tr, sel));
 };
 
 Editor.prototype.deleteTr = function(tr, sel) {
-	var view = this.view;
 	if (!sel) sel = tr.selection;
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
@@ -274,7 +277,7 @@ Editor.prototype.parse = function(dom, opts) {
 };
 
 Editor.prototype.refresh = function(dom) {
-	this.view.dispatch(this.refreshTr(this.view.state.tr, dom));
+	this.dispatch(this.refreshTr(this.state.tr, dom));
 };
 
 Editor.prototype.refreshTr = function(tr, dom) {
@@ -287,7 +290,7 @@ Editor.prototype.refreshTr = function(tr, dom) {
 
 
 Editor.prototype.select = function(obj, textSelection) {
-	return this.selectTr(this.view.state.tr, obj, textSelection);
+	return this.selectTr(this.state.tr, obj, textSelection);
 };
 
 Editor.prototype.selectTr = function(tr, obj, textSelection) {
@@ -341,7 +344,7 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 };
 
 Editor.prototype.replace = function(by, sel) {
-	this.view.dispatch(this.replaceTr(this.view.state.tr, by, sel));
+	this.dispatch(this.replaceTr(this.state.tr, by, sel));
 };
 
 Editor.prototype.replaceTr = function(tr, by, sel) {
@@ -352,7 +355,7 @@ Editor.prototype.replaceTr = function(tr, by, sel) {
 };
 
 Editor.prototype.remove = function(src) {
-	this.view.dispatch(this.removeTr(src));
+	this.dispatch(this.removeTr(src));
 };
 
 Editor.prototype.removeTr = function(src) {
@@ -363,14 +366,14 @@ Editor.prototype.removeTr = function(src) {
 
 Editor.prototype.posFromDOM = function(dom) {
 	var offset = 0;
-	if (dom != this.view.dom) {
+	if (dom != this.dom) {
 		var sib = dom;
 		while (sib = sib.previousSibling) offset++;
 		dom = dom.parentNode;
 	}
 	var pos;
 	try {
-		pos = this.view.docView.posFromDOM(dom, offset, 0);
+		pos = this.docView.posFromDOM(dom, offset, 0);
 	} catch(ex) {
 		console.info(ex);
 		pos = false;
@@ -381,7 +384,7 @@ Editor.prototype.posFromDOM = function(dom) {
 Editor.prototype.posToDOM = function(pos) {
 	if (pos == null) return;
 	try {
-		var fromPos = this.view.docView.domFromPos(pos);
+		var fromPos = this.docView.domFromPos(pos);
 		if (fromPos) {
 			var dom = fromPos.node;
 			var offset = fromPos.offset;
@@ -460,12 +463,12 @@ Editor.prototype.selectionParents = function(tr, sel) {
 
 Editor.prototype.nodeToBlock = function(node) {
 	var block = Specs.attrToBlock(node.attrs);
-	var main = this;
+	var editor = this;
 	if (node instanceof Model.Mark) return block;
 	Object.defineProperty(block, 'content', {
 		get: function() {
 			// this operation is not cheap
-			return Specs.nodeToContent(main.serializers.edit, node);
+			return Specs.nodeToContent(editor.serializers.edit, node);
 		}
 	});
 	return block;
@@ -504,12 +507,12 @@ Editor.prototype.markActive = function(state, type) {
 	}
 };
 
-function actionAncestorBlock(main, tr) {
+function actionAncestorBlock(editor, tr) {
 	// returns the ancestor block modified by this transaction
 	var steps = tr.steps;
 	var roots = [];
 	steps.forEach(function(step) {
-		var parents = main.parents(tr, step.from, true);
+		var parents = editor.parents(tr, step.from, true);
 		parents.forEach(function(obj) {
 			var root = obj.root;
 			if (!root) return;
@@ -534,7 +537,7 @@ function actionAncestorBlock(main, tr) {
 		return true;
 	});
 	if (rootNode) {
-		block = main.nodeToBlock(rootNode);
+		block = editor.nodeToBlock(rootNode);
 	} else {
 		block = {
 			type: 'fragment',
@@ -543,14 +546,14 @@ function actionAncestorBlock(main, tr) {
 		Object.defineProperty(block.content, 'fragment', {
 			get: function() {
 				// this operation is not cheap
-				return main.serializers.edit.serializeFragment(main.view.state.doc);
+				return editor.serializers.edit.serializeFragment(editor.state.doc);
 			}
 		});
 	}
 	return block;
 }
 
-function focusModifier(main, block, dom) {
+function focusModifier(editor, block, dom) {
 	if (block.focused) dom.setAttribute('block-focused', block.focused);
 	else dom.removeAttribute('block-focused');
 }
@@ -579,13 +582,13 @@ function fragmentReplace(fragment, regexp, replacer) {
 	return Model.Fragment.fromArray(list);
 }
 
-function CreateResolversPlugin(main, opts) {
+function CreateResolversPlugin(editor, opts) {
 	return new State.Plugin({
 		props: {
 			transformPasted: function(pslice) {
-				var sel = main.view.state.selection;
+				var sel = editor.state.tr.selection;
 				var frag = fragmentReplace(pslice.content, UrlRegex(), function(str, pos) {
-					var block = main.resolve(str);
+					var block = editor.resolve(str);
 					if (block) {
 						block.pos = pos + sel.from + 1;
 						return main.parse(main.render(block, true)).firstChild;

@@ -17,8 +17,8 @@ Object.assign(exports.inspector.element, {
 	}
 });
 
-function InspectorResolver(main, obj, cb) {
-	var inspector = main.modules.inspector;
+function InspectorResolver(editor, obj, cb) {
+	var inspector = editor.modules.inspector;
 	var url = obj.url || obj.node && obj.node.getAttribute('block-url');
 	if (!url) return;
 	var block = inspector.get(url);

@@ -5,14 +5,14 @@ exports.nodeToContent = nodeToContent;
 
 var index;
 
-function defineSpecs(main, element, schemaSpecs, dom) {
+function defineSpecs(editor, element, schemaSpecs, dom) {
 	var contents = [];
 	var contentName = dom && dom.getAttribute('block-content');
 	var specName, spec, recursive = false;
 	if (!dom) {
 		index = 0;
-		dom = main.render({ type: element.name }, true);
-		spec = createRootSpec(main, element, dom);
+		dom = editor.render({ type: element.name }, true);
+		spec = createRootSpec(editor, element, dom);
 		recursive = true;
 	} else if (contentName) {
 		spec = createContentSpec(element, dom);
@@ -33,7 +33,7 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 		for (var i=0, child; i < childs.length; i++) {
 			child = childs.item(i);
 			if (child.nodeType != Node.ELEMENT_NODE) continue;
-			contents.push(defineSpecs(main, element, schemaSpecs, child));
+			contents.push(defineSpecs(editor, element, schemaSpecs, child));
 		}
 		if (contents.length) {
 			spec.content = contents.join(" ");
@@ -63,7 +63,7 @@ function defineSpecs(main, element, schemaSpecs, dom) {
 	return specName;
 }
 
-function createRootSpec(main, element, dom) {
+function createRootSpec(editor, element, dom) {
 	var defaultAttrs = Object.assign({
 		block_id: null,
 		block_focused: null,
@@ -81,7 +81,7 @@ function createRootSpec(main, element, dom) {
 		parseDOM: [{
 			tag: '[block-type="'+element.name+'"]',
 			getAttrs: function(dom) {
-				var block = main.resolve(dom);
+				var block = editor.resolve(dom);
 				if (!block) {
 					console.info("unresolved dom node", dom);
 					return;
@@ -107,7 +107,7 @@ function createRootSpec(main, element, dom) {
 		toDOM: function(node) {
 			var block = attrToBlock(node.attrs);
 			// render without content, and keep the nodeName and attributes
-			var dom = main.render(block, true);
+			var dom = editor.render(block, true);
 			var attrs = nodeAttrs(dom);
 			prepareDom(element, dom);
 			return element.inline ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];

@@ -1,6 +1,6 @@
 var keymap = require("prosemirror-keymap").keymap;
 
-module.exports = function(main, options) {
+module.exports = function(editor, options) {
 	return keymap({
 		Enter: breakCommand
 	});

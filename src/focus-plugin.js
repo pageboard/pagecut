@@ -1,5 +1,5 @@
-module.exports = function(main, options) {
-	var plugin = new FocusPlugin(main, options);
+module.exports = function(editor, options) {
+	var plugin = new FocusPlugin(editor, options);
 	return {
 		props: {
 			handleClick: plugin.click
@@ -14,21 +14,21 @@ module.exports = function(main, options) {
 	};
 };
 
-function FocusPlugin(main, options) {
-	this.main = main;
+function FocusPlugin(editor, options) {
+	this.editor = editor;
 
 	this.click = this.click.bind(this);
 }
 
 FocusPlugin.prototype.click = function(view, pos, e) {
-	this.main.dragging = false;
+	this.editor.dragging = false;
 	var tr = this.focus(view.state.tr, pos);
 	if (tr) view.dispatch(tr);
 };
 
 FocusPlugin.prototype.action = function(state) {
 	var tr = state.tr;
-	if (this.main.dragging) return;
+	if (this.editor.dragging) return;
 	var sel = tr.selection;
 	var pos = null;
 	if (sel.node) {
@@ -42,7 +42,7 @@ FocusPlugin.prototype.action = function(state) {
 
 FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	if (node.type.spec.inline) {
-		var sel = this.main.selectTr(tr, pos);
+		var sel = this.editor.selectTr(tr, pos);
 		var attrs = Object.assign({}, node.attrs);
 		if (focus) attrs.block_focused = focus;
 		else delete attrs.block_focused;
@@ -59,10 +59,10 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 
 FocusPlugin.prototype.focus = function(tr, pos) {
 	// do not unfocus if view or its document has lost focus
-	if (!this.main.view.hasFocus()) {
+	if (!this.editor.hasFocus()) {
 		return;
 	}
-	var parents = this.main.parents(tr, pos, true);
+	var parents = this.editor.parents(tr, pos, true);
 	var root = parents.length && parents[0].root;
 	var pos = root && root.level && root.rpos.before(root.level);
 	var selectedRoot = root && tr.selection.node == root.node;
@@ -87,7 +87,7 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 		}
 	}
 	if (selectedRoot) {
-		tr = tr.setSelection(this.main.selectTr(tr, root.rpos));
+		tr = tr.setSelection(this.editor.selectTr(tr, root.rpos));
 	}
 	tr.focus = true;
 	return tr;

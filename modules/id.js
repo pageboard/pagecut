@@ -1,15 +1,15 @@
 module.exports = IdModule;
 
-function IdModule(main) {
+function IdModule(editor) {
 	this.store = {};
-	this.main = main;
-	if (main.resolvers) main.resolvers.push(IdResolver);
-	main.modifiers.push(IdModifier);
-	main.elements.push(IdModule.element);
+	this.editor = editor;
+	if (editor.resolvers) editor.resolvers.push(IdResolver);
+	editor.modifiers.push(IdModifier);
+	editor.elements.push(IdModule.element);
 
 	var me = this;
 
-	main.plugins.push({
+	editor.plugins.push({
 		props: {
 			transformPasted: function(pslice) {
 				pslice.content.forEach(function(child) {
@@ -39,16 +39,16 @@ IdModule.prototype.pasteNode = function(node) {
 	}
 	if (id == null) return;
 	var block = this.get(id);
-	var dom = this.main.view.dom.querySelector('[block-id="'+id+'"]');
+	var dom = this.editor.dom.querySelector('[block-id="'+id+'"]');
 	// if the block is not known, just do nothing
 	if (!block) {
 		// warn if there's a bug
 		if (dom) console.error("Unknown block but dom node exists", id);
 		return;
 	}
-	block = this.main.copy(block, true);
+	block = this.editor.copy(block, true);
 	block.id = 'id' + Date.now();
-	this.main.modules.id.set(block);
+	this.editor.modules.id.set(block);
 	node.attrs.block_id = block.id;
 };
 
@@ -61,7 +61,7 @@ IdModule.prototype.from = function(rootBlock, resolver) {
 			fragment: rootBlock
 		}
 	};
-	var fragment = this.main.render(rootBlock);
+	var fragment = this.editor.render(rootBlock);
 	var nodes = Array.prototype.slice.call(fragment.querySelectorAll('[block-id]'));
 	var me = this;
 
@@ -103,11 +103,11 @@ IdModule.prototype.from = function(rootBlock, resolver) {
 
 IdModule.prototype.to = function() {
 	var list = [];
-	var main = this.main;
-	var origModifiers = main.modifiers;
-	main.modifiers = origModifiers.concat([function(main, block, dom) {
+	var editor = this.editor;
+	var origModifiers = editor.modifiers;
+	editor.modifiers = origModifiers.concat([function(editor, block, dom) {
 		if (block.id) {
-			var ndom = dom.ownerDocument.createElement(main.map[block.type].inline ? 'span' : 'div');
+			var ndom = dom.ownerDocument.createElement(editor.map[block.type].inline ? 'span' : 'div');
 			ndom.setAttribute('block-id', block.id);
 			ndom.setAttribute('block-type', block.type);
 			// make sure we don't accidentally store focused state
@@ -117,14 +117,14 @@ IdModule.prototype.to = function() {
 		}
 	}]);
 
-	var domFragment = main.get();
+	var domFragment = editor.get();
 
-	main.modifiers = origModifiers;
+	editor.modifiers = origModifiers;
 
 	var block;
 	for (var i = list.length - 1; i >= 0; i--) {
 		block = list[i];
-		this.store[block.id] = main.copy(block, false);
+		this.store[block.id] = editor.copy(block, false);
 	}
 	var div = domFragment.ownerDocument.createElement("div");
 	div.appendChild(domFragment);
@@ -160,14 +160,14 @@ IdModule.prototype.set = function(data) {
 	}
 };
 
-function IdResolver(main, obj, cb) {
+function IdResolver(editor, obj, cb) {
 	var id = obj.node && obj.node.getAttribute('block-id');
 	if (!id) return;
-	var block = main.modules.id.get(id);
+	var block = editor.modules.id.get(id);
 	if (block) return block;
 	if (IdResolver.fetch) IdResolver.fetch(id, function(err, block) {
 		if (err) return cb(err);
-		main.modules.id.set(block);
+		editor.modules.id.set(block);
 		cb(null, block);
 	});
 	return {

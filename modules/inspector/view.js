@@ -2,10 +2,10 @@
 
 exports.inspector = InspectorModule;
 
-function InspectorModule(main) {
-	this.main = main;
-	main.elements.push(InspectorModule.element);
-	if (InspectorModule.resolver) main.resolvers.push(InspectorModule.resolver);
+function InspectorModule(editor) {
+	this.editor = editor;
+	editor.elements.push(InspectorModule.element);
+	if (InspectorModule.resolver) editor.resolvers.push(InspectorModule.resolver);
 	this.store = {};
 }
 
