@@ -62,40 +62,38 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	var contentNode = document.getElementById("content");
 
+	function DifferRender(id) {
+		this.id = id;
+	}
+
+	DifferRender.prototype.update = function(view) {
+		var from = document.getElementById(this.id);
+		var to = document.createElement('div');
+		to.id = this.id;
+		to.appendChild(view.get());
+		differ.apply(from, differ.diff(from, to));
+	};
+
 	// expose pagecut instance for debug purpose only
 	Pagecut.sample = new Pagecut.Editor({
 		place: "#editor",
-		update: function(me, transaction) {
-			if (!transaction.docChanged) return;
-			setTimeout(function() {
-				var from = document.getElementById('preview');
-				var to = document.createElement('div');
-				to.id = 'preview';
-				to.appendChild(me.get());
-				differ.apply(from, differ.diff(from, to));
-			});
-		},
-		change: function(me, block) {
-			// TODO
-			// 1) the document should be considered a block here, so root changes are received
-			// 2) update the online blocks store (which has DOM Nodes inside content, not html)
-			// 3) optimization: update preview by block
-
-			// console.log(block);
-		},
+		plugins: [
+			new DifferRender('preview'),
+			function(editor, opts) {
+				var items = Pagecut.Setup.buildMenuItems(editor.schemas.edit);
+				var menubar = new Pagecut.Menubar({
+					place: document.querySelector('#menubar'),
+					items: [
+						[items.toggleStrong, items.toggleEm, items.toggleCode],
+						[items.wrapBulletList, items.wrapOrderedList, items.wrapBlockQuote],
+						[Pagecut.Menubar.Menu.undoItem, Pagecut.Menubar.Menu.redoItem],
+					]
+				});
+				return menubar;
+			}
+		]
 		// content: contentNode // we need to seed inspector module before
 	});
-
-	var items = Pagecut.Setup.buildMenuItems(Pagecut.sample.view.state.schema);
-	Pagecut.sample.menu = new Pagecut.Menubar({
-		place: document.querySelector('#menubar'),
-		items: [
-			[items.toggleStrong, items.toggleEm, items.toggleCode],
-			[items.wrapBulletList, items.wrapOrderedList, items.wrapBlockQuote],
-			[Pagecut.Menubar.Menu.undoItem, Pagecut.Menubar.Menu.redoItem],
-		]
-	});
-	// Pagecut.sample.menu.update(Pagecut.sample.view);
 
 	Pagecut.test = function() {
 		var id = Pagecut.sample.modules.id;
