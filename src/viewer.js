@@ -17,16 +17,16 @@ function Viewer(opts) {
 	this.modifiers.unshift(typeModifier);
 	this.plugins = opts.plugins || [];
 
-	var main = this;
-	main.modules = {};
+	var viewer = this;
+	viewer.modules = {};
 
 	Object.keys(modules).forEach(function(k) {
 		var mod = modules[k];
 		if (typeof mod == "function") {
-			main.modules[k] = new modules[k](main);
+			viewer.modules[k] = new modules[k](viewer);
 		} else {
 			mod.name = k;
-			main.elements.push(mod);
+			viewer.elements.push(mod);
 		}
 	});
 
@@ -83,8 +83,8 @@ Viewer.prototype.copy = function(block, withDomContent) {
 	return copy;
 };
 
-function ContentModule(main) {
-	main.modifiers.push(function contentModifier(main, block, dom) {
+function ContentModule(viewer) {
+	viewer.modifiers.push(function contentModifier(viewer, block, dom) {
 		var contents = block.content;
 		if (!contents) return;
 		Object.keys(contents).forEach(function(name) {
@@ -101,6 +101,6 @@ function ContentModule(main) {
 	});
 }
 
-function typeModifier(main, block, dom) {
+function typeModifier(viewer, block, dom) {
 	if (!dom.hasAttribute('block-type')) dom.setAttribute('block-type', block.type);
 }
