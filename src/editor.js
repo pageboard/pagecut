@@ -66,7 +66,8 @@ function Editor(opts) {
 
 	var spec = {
 		nodes: opts.nodes,
-		marks: opts.marks
+		marks: opts.marks,
+		topNode: opts.topNode
 	};
 
 	var nodeViews = {};
@@ -96,7 +97,8 @@ function Editor(opts) {
 
 	this.schemas.view = new Model.Schema({
 		nodes: viewNodes,
-		marks: spec.marks
+		marks: spec.marks,
+		topNode: opts.topNode
 	});
 
 	this.serializers = {
