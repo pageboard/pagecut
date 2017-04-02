@@ -5,8 +5,8 @@ function Viewer(opts) {
 	this.doc = opts.document || document.implementation.createHTMLDocument();
 	var modules = Object.assign({
 		fragment: {
-			view: function renderFragment(document, block) {
-				return block.content.fragment || document.createElement("div");
+			view: function renderFragment(doc, block) {
+				return block.content.fragment || doc.createElement("div");
 			}
 		},
 		content: ContentModule
