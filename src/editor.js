@@ -220,7 +220,9 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 
 	var opts = {};
 	var parent = sel.$from.parent;
-	if (!parent.isTextblock || shouldBeInline) opts.topNode = parent;
+	if (!parent.isTextblock || shouldBeInline) {
+		opts.topNode = parent;
+	}
 	var frag = this.parse(dom, opts);
 	var node, type;
 	if (frag.content.length == 1) {
