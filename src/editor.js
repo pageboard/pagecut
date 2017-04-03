@@ -106,25 +106,6 @@ function Editor(opts) {
 		view: Model.DOMSerializer.fromSchema(this.schemas.view)
 	};
 
-	this.serializers.view.renderStructure = function(structure, node, options) {
-		// work around
-		// https://github.com/ProseMirror/prosemirror-model/commit/157db6cb36902ff0ae82774d79da820c4b9ef967
-		// won't be necessary with prosemirror-model 0.19.1
-		var ref = Model.DOMSerializer.renderSpec(options.document || window.document, structure);
-		var dom = ref.dom;
-		var contentDOM = ref.contentDOM;
-		if (node) {
-			if (contentDOM) {
-				if (options.onContent) {
-					options.onContent(node, contentDOM, options);
-				} else {
-					this.serializeFragment(node.content, options, contentDOM);
-				}
-			}
-		}
-		return dom;
-	};
-
 	this.parsers = {
 		edit: Model.DOMParser.fromSchema(this.schemas.edit)
 	};
