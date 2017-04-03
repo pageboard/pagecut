@@ -178,6 +178,11 @@ function Editor(opts) {
 
 Object.assign(Editor.prototype, Viewer.prototype, View.EditorView);
 
+
+Editor.prototype.getPlugin = function(key) {
+	return new State.PluginKey(key).get(this.state);
+};
+
 Editor.prototype.set = function(dom) {
 	var doc = this.state.doc;
 	this.insert(dom, State.TextSelection.create(doc, 0, doc.content.size));
