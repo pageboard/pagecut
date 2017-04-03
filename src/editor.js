@@ -262,9 +262,12 @@ Editor.prototype.deleteTr = function(tr, sel) {
 
 Editor.prototype.parse = function(dom, opts) {
 	if (!dom) return;
-	var parent = dom.ownerDocument.createDocumentFragment();
-	parent.appendChild(dom);
-	var node = this.parsers.edit.parse(parent, opts);
+	if (dom.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {
+		var parent = dom.ownerDocument.createDocumentFragment();
+		parent.appendChild(dom);
+		dom = parent;
+	}
+	var node = this.parsers.edit.parse(dom, opts);
 	return node.content;
 };
 
