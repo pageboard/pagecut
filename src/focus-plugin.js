@@ -83,6 +83,7 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 		for (var i=1; i < parents.length; i++) {
 			parent = parents[i];
 			cur = parent.root;
+			if (!cur.level) continue;
 			tr = me.focusRoot(tr, cur.rpos.before(cur.level), cur.mark || cur.node, i == parents.length - 1 ? "first" : "middle");
 		}
 	}
