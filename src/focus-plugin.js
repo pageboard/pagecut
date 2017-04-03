@@ -21,14 +21,14 @@ function FocusPlugin(editor, options) {
 }
 
 FocusPlugin.prototype.click = function(view, pos, e) {
-	this.editor.dragging = false;
+	this.editor.handleDragging = false;
 	var tr = this.focus(view.state.tr, pos);
 	if (tr) view.dispatch(tr);
 };
 
 FocusPlugin.prototype.action = function(state) {
 	var tr = state.tr;
-	if (this.editor.dragging) return;
+	if (this.editor.handleDragging) return;
 	var sel = tr.selection;
 	var pos = null;
 	if (sel.node) {

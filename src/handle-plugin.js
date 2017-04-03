@@ -17,7 +17,7 @@ function HandlePlugin(editor, options) {
 }
 
 HandlePlugin.prototype.mousedown = function(view, e) {
-	this.editor.dragging = true;
+	this.editor.handleDragging = true;
 	delete this.dragTarget;
 	var dom = e.target;
 	// get root node above target
@@ -55,8 +55,8 @@ HandlePlugin.prototype.mousedown = function(view, e) {
 
 
 HandlePlugin.prototype.mouseup = function(view, e) {
-	if (this.editor.dragging) {
-		this.editor.dragging = false;
+	if (this.editor.handleDragging) {
+		this.editor.handleDragging = false;
 		if (this.dragTarget) {
 			this.editor.select(this.dragTarget);
 			this.dragTarget.draggable = false;
