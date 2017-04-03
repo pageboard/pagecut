@@ -150,10 +150,12 @@ function Editor(opts) {
 		}
 		if (plugin instanceof State.Plugin) return plugin;
 		if (plugin.update || plugin.destroy) {
-			return new State.Plugin({view: function() {
-				return plugin;
-			}});
+			var obj = plugin;
+			plugin = {view: function() {
+				return this;
+			}.bind(plugin)};
 		}
+		if (plugin.key && typeof plugin.key == "string") plugin.key = new State.PluginKey(plugin.key);
 		return new State.Plugin(plugin);
 	});
 
