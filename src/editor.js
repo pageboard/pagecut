@@ -203,7 +203,8 @@ Editor.prototype.resolve = function(thing) {
 
 Editor.prototype.insert = function(dom, sel) {
 	var tr = this.insertTr(this.state.tr, dom, sel);
-	if (tr) this.dispatch(tr);
+	if (!tr) console.error("Cannot insert", dom);
+	else this.dispatch(tr);
 };
 
 Editor.prototype.insertTr = function(tr, dom, sel) {
@@ -249,7 +250,9 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 };
 
 Editor.prototype.delete = function(sel) {
-	this.dispatch(this.deleteTr(this.state.tr, sel));
+	var tr = this.deleteTr(this.state.tr, sel);
+	if (!tr) console.error("Cannot delete", sel);
+	else this.dispatch(tr);
 };
 
 Editor.prototype.deleteTr = function(tr, sel) {
@@ -271,7 +274,9 @@ Editor.prototype.parse = function(dom, opts) {
 };
 
 Editor.prototype.refresh = function(dom) {
-	this.dispatch(this.refreshTr(this.state.tr, dom));
+	var tr = this.refreshTr(this.state.tr, dom);
+	if (!tr) console.error("Cannot refresh", dom);
+	else this.dispatch(tr);
 };
 
 Editor.prototype.refreshTr = function(tr, dom) {
@@ -342,7 +347,9 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 };
 
 Editor.prototype.replace = function(by, sel) {
-	this.dispatch(this.replaceTr(this.state.tr, by, sel));
+	var tr = this.replaceTr(this.state.tr, by, sel);
+	if (!tr) console.error("Cannot replace", sel);
+	else this.dispatch(tr);
 };
 
 Editor.prototype.replaceTr = function(tr, by, sel) {
@@ -353,7 +360,9 @@ Editor.prototype.replaceTr = function(tr, by, sel) {
 };
 
 Editor.prototype.remove = function(src) {
-	this.dispatch(this.removeTr(src));
+	var tr = this.removeTr(src);
+	if (!tr) console.error("Cannot remove", src);
+	else this.dispatch(tr);
 };
 
 Editor.prototype.removeTr = function(src) {
