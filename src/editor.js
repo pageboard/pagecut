@@ -165,8 +165,7 @@ Editor.prototype.getPlugin = function(key) {
 };
 
 Editor.prototype.set = function(dom) {
-	var doc = this.state.doc;
-	this.insert(dom, State.TextSelection.create(doc, 0, doc.content.size));
+	this.replace(dom, new State.AllSelection(this.state.doc));
 };
 
 Editor.prototype.get = function(edition) {
@@ -334,7 +333,11 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 			return tr.selection;
 		}
 	} else {
-		return new State.NodeSelection($rootPos);
+		if (root.node == this.state.doc) {
+			return new State.AllSelection(root.node);
+		} else {
+			return new State.NodeSelection($rootPos);
+		}
 	}
 };
 
