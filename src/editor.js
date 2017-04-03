@@ -300,8 +300,15 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 		if (obj instanceof Model.ResolvedPos) {
 			pos = obj.pos;
 		} else {
-			if (obj instanceof Node) pos = this.posFromDOM(obj);
-			else pos = obj;
+			if (obj instanceof Node) {
+				if (obj == this.dom) {
+					return new State.AllSelection(tr.doc);
+				} else {
+					pos = this.posFromDOM(obj);
+				}
+			} else {
+				pos = obj;
+			}
 		}
 		if (typeof pos != "number") return;
 		info = this.parents(tr, pos);
