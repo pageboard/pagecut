@@ -165,7 +165,7 @@ Editor.prototype.getPlugin = function(key) {
 };
 
 Editor.prototype.set = function(dom) {
-	this.replace(dom, new State.AllSelection(this.state.doc));
+	this.insert(dom, new State.AllSelection(this.state.doc));
 };
 
 Editor.prototype.get = function(edition) {
