@@ -110,7 +110,11 @@ function Editor(opts) {
 		edit: Model.DOMParser.fromSchema(this.schemas.edit)
 	};
 
-	this.plugins.push(BreakPlugin, HandlePlugin, FocusPlugin, function(editor) {
+	this.plugins.push(
+		BreakPlugin,
+		HandlePlugin,
+		FocusPlugin,
+	function(editor) {
 		return Input.inputRules({
 			rules: Input.allInputRules.concat(Setup.buildInputRules(editor.schemas.edit))
 		});
