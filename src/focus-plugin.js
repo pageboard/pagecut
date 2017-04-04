@@ -11,7 +11,8 @@ module.exports = function(editor, options) {
 					return;
 				}
 			}
-			return plugin.action(newState);
+			var tr = plugin.action(newState.tr);
+			if (tr && tr != newState.tr) return tr;
 		}
 	};
 };
@@ -28,8 +29,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 	if (tr) view.dispatch(tr);
 };
 
-FocusPlugin.prototype.action = function(state) {
-	var tr = state.tr;
+FocusPlugin.prototype.action = function(tr) {
 	if (this.editor.handleDragging) return;
 	var sel = tr.selection;
 	var pos = null;
@@ -43,17 +43,19 @@ FocusPlugin.prototype.action = function(state) {
 };
 
 FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
+	var attrs = Object.assign({}, node.attrs);
+	var prev = attrs.block_focused;
+	if (prev == focus) return tr;
+	if (focus) attrs.block_focused = focus;
+	else delete attrs.block_focused;
 	if (node.type.spec.inline) {
 		var sel = this.editor.selectTr(tr, pos);
-		var attrs = Object.assign({}, node.attrs);
-		if (focus) attrs.block_focused = focus;
-		else delete attrs.block_focused;
 		tr = tr.removeMark(sel.from, sel.to, node.type);
 		tr = tr.addMark(sel.from, sel.to, node.type.create(attrs));
+	} else if (node == tr.doc) {
+		// prosemirror doesn't transform doc
+		node.attrs = attrs;
 	} else {
-		var attrs = Object.assign({}, node.attrs);
-		if (focus) attrs.block_focused = focus;
-		else delete attrs.block_focused;
 		tr = tr.setNodeType(pos, null, attrs);
 	}
 	return tr;
