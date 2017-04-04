@@ -66,6 +66,10 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 	}
 	var parents = this.editor.parents(tr, pos, true);
 	var root = parents.length && parents[0].root;
+	if (root && (root.mark || root.node).attrs.block_focused == "last") {
+		// already done
+		return;
+	}
 	var pos = root && root.level && root.rpos.before(root.level);
 	var selectedRoot = root && tr.selection.node == root.node;
 
