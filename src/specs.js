@@ -83,30 +83,34 @@ function createRootSpec(editor, element, dom) {
 			getAttrs: function(dom) {
 				var block = editor.resolve(dom);
 				if (!block) {
-					console.info("unresolved dom node", dom);
-					return;
+					// default resolver ?
+					block = {
+						type: element.name,
+						data: nodeAttrs(dom)
+					};
+					console.warn("Parsing unresolved block", block);
+				} else {
+					// raw unmodified rendered block
+					var newDom = (element.edit || element.view).call(element, editor.doc, editor.copy(block, true));
+					if (!element.inline) {
+						while (dom.firstChild) dom.removeChild(dom.firstChild);
+						while (newDom.firstChild) dom.appendChild(newDom.firstChild);
+					}
+					var domAttrs = dom.attributes;
+					for (var j=0; j < domAttrs.length; j++) {
+						dom.removeAttribute(domAttrs[j].name);
+					}
+					var newAttrs = newDom.attributes;
+					for (var k=0; k < newAttrs.length; k++) {
+						dom.setAttribute(newAttrs[k].name, newAttrs[k].value);
+					}
 				}
-				var newDom = main.render(block, true);
-				if (!element.inline) {
-					while (dom.firstChild) dom.removeChild(dom.firstChild);
-					while (newDom.firstChild) dom.appendChild(newDom.firstChild);
-				}
-				var domAttrs = dom.attributes;
-				for (var j=0; j < domAttrs.length; j++) {
-					dom.removeAttribute(domAttrs[j].name);
-				}
-				var newAttrs = newDom.attributes;
-				for (var k=0; k < newAttrs.length; k++) {
-					dom.setAttribute(newAttrs[k].name, newAttrs[k].value);
-				}
-
 				prepareDom(element, dom);
 				return blockToAttr(block);
 			}
 		}],
 		toDOM: function(node) {
 			var block = attrToBlock(node.attrs);
-			// render without content, and keep the nodeName and attributes
 			var dom = editor.render(block, true);
 			var attrs = nodeAttrs(dom);
 			prepareDom(element, dom);
