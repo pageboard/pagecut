@@ -126,15 +126,25 @@ IdModule.prototype.to = function() {
 		block = list[i];
 		this.store[block.id] = editor.copy(block, false);
 	}
+
 	var div = domFragment.ownerDocument.createElement("div");
 	div.appendChild(domFragment);
 
-	return {
-		type: 'fragment',
-		content: {
-			fragment: div.innerHTML
+	block = null;
+	var rootId = editor.dom.getAttribute('block-id');
+	if (rootId) {
+		block = editor.copy(this.get(rootId), false);
+		block.content = {};
+		block.content[editor.dom.getAttribute('block-content')] = div.innerHTML;
+	} else {
+		block = {
+			type: 'fragment',
+			content: {
+				fragment: div.innerHTML
+			}
 		}
-	};
+	}
+	return block;
 };
 
 IdModule.prototype.clear = function(id) {
