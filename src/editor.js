@@ -174,7 +174,13 @@ Editor.prototype.set = function(dom) {
 		while (dom.firstChild) frag.appendChild(dom.firstChild);
 		dom = frag;
 	}
-	this.insert(dom, new State.AllSelection(this.state.doc));
+	var tr = this.insertTr(this.state.tr, dom, new State.AllSelection(this.state.doc));
+	if (!tr) {
+		console.error("Cannot insert", dom);
+	} else {
+		tr.setMeta('addToHistory', false);
+		this.dispatch(tr);
+	}
 };
 
 Editor.prototype.get = function(edition) {
