@@ -187,7 +187,11 @@ function IdResolver(editor, obj, cb) {
 }
 
 function IdModifier(editor, block, dom) {
-	if (block.id) dom.setAttribute('block-id', block.id);
+	if (!block.id) {
+		block.id = "id" + Date.now();
+		editor.modules.id.set(block);
+	}
+	dom.setAttribute('block-id', block.id);
 }
 
 
