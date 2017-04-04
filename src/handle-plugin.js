@@ -45,7 +45,7 @@ HandlePlugin.prototype.mousedown = function(view, e) {
 	if (!isParentOf(handleDom, e.target)) return;
 
 	tr = tr.setSelection(this.editor.selectTr(tr, pos));
-	tr.addToHistory = false;
+	tr.setMeta('addToHistory', false);
 	view.dispatch(tr);
 	// drag handle
 	e.target.draggable = false;
