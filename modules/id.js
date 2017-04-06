@@ -12,14 +12,21 @@ function IdModule(editor) {
 	editor.plugins.push({
 		props: {
 			transformPasted: function(pslice) {
-				pslice.content.forEach(function(child) {
-					me.pasteNode(child);
-					child.descendants(function(node, pos, parent) {
-						me.pasteNode(node);
-					});
+				pslice.content.descendants(function(node) {
+					me.pasteNode(node);
 				});
 				return pslice;
+			},
+			/*
+			clipboardSerializer: {
+				serializeFragment: function(frag, opts) {
+					frag.descendants(function(node) {
+						// do something
+					});
+					return editor.serializers.edit.serializeFragment(frag, opts);
+				}
 			}
+			*/
 		}
 	});
 }
@@ -31,25 +38,30 @@ IdModule.element = {
 	}
 };
 
-IdModule.prototype.pasteNode = function(node) {
+function getIdBlockNode(node) {
 	var id = node.attrs.block_id;
 	if (id == null && node.marks.length > 0) {
 		node = node.marks[0];
 		id = node.attrs.block_id;
 	}
-	if (id == null) return;
-	var block = this.get(id);
-	var dom = this.editor.dom.querySelector('[block-id="'+id+'"]');
-	// if the block is not known, just do nothing
+	return {id: id, node: node};
+}
+
+IdModule.prototype.pasteNode = function(node) {
+	var bn = getIdBlockNode(node);
+	if (bn.id == null) return;
+	var block = this.get(bn.id);
 	if (!block) {
-		// warn if there's a bug
-		if (dom) console.error("Unknown block but dom node exists", id);
+		bn.node.attrs.id = 'id' + Date.now();
 		return;
 	}
-	block = this.editor.copy(block, true);
-	block.id = 'id' + Date.now();
-	this.editor.modules.id.set(block);
-	node.attrs.block_id = block.id;
+	var dom = this.editor.dom.querySelector('[block-id="'+bn.id+'"]');
+	if (dom) {
+		block = this.editor.copy(block, true);
+		block.id = bn.node.attrs.id = 'id' + Date.now();
+		this.editor.modules.id.set(block);
+	}
+	// else keep the id
 };
 
 
