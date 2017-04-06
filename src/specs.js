@@ -115,7 +115,6 @@ function createRootSpec(editor, element, dom) {
 			var block = attrToBlock(node.attrs);
 			var dom = editor.render(block, true);
 			var attrs = nodeAttrs(dom);
-			prepareDom(element, dom);
 			return element.inline ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];
 		}
 	};
