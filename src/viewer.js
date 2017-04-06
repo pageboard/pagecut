@@ -85,21 +85,25 @@ Viewer.prototype.copy = function(block, withDomContent) {
 	return copy;
 };
 
+Viewer.prototype.merge = function(block, dom) {
+	var contents = block.content;
+	if (!contents) return;
+	Object.keys(contents).forEach(function(name) {
+		var blockContent = dom.getAttribute('block-content');
+		var node;
+		if (blockContent) {
+			if (name == blockContent) node = dom;
+		} else {
+			node = dom.querySelector('[block-content="'+name+'"]');
+		}
+		if (!node) return;
+		node.appendChild(contents[name].cloneNode(true));
+	});
+};
+
 function ContentModule(viewer) {
 	viewer.modifiers.push(function contentModifier(viewer, block, dom) {
-		var contents = block.content;
-		if (!contents) return;
-		Object.keys(contents).forEach(function(name) {
-			var blockContent = dom.getAttribute('block-content');
-			var node;
-			if (blockContent) {
-				if (name == blockContent) node = dom;
-			} else {
-				node = dom.querySelector('[block-content="'+name+'"]');
-			}
-			if (!node) return;
-			node.appendChild(contents[name].cloneNode(true));
-		});
+		return viewer.merge(block, dom);
 	});
 }
 
