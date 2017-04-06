@@ -77,24 +77,52 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 
 	var me = this;
 
-	tr.doc.descendants(function(node, pos, parent) {
-		if (node.attrs.block_focused) {
-			tr = me.focusRoot(tr, pos, node, false);
-		} else if (node.marks.length && node.marks[0].attrs.block_focused) {
-			tr = me.focusRoot(tr, pos, node.marks[0], false);
-		}
-	});
+	var changes = [];
 
+	var newtr;
 	if (root) {
-		tr = me.focusRoot(tr, pos, root.mark || root.node, "last");
+		changes.push({
+			pos: pos,
+			node: root.mark || root.node,
+			focus: "last"
+		});
 		var parent, cur;
 		for (var i=1; i < parents.length; i++) {
 			parent = parents[i];
 			cur = parent.root;
 			if (!cur.level) continue;
-			tr = me.focusRoot(tr, cur.rpos.before(cur.level), cur.mark || cur.node, i == parents.length - 1 ? "first" : "middle");
+			changes.push({
+				pos: cur.rpos.before(cur.level),
+				node: cur.mark || cur.node,
+				focus: i == parents.length - 1 ? "first" : "middle"
+			});
 		}
 	}
+
+	tr.doc.descendants(function(node, pos, parent) {
+		if (node.type.spec.typeName) {
+			// node is good
+		} else if (node.marks.length && node.marks[0].type.spec.typeName) {
+			node = node.marks[0];
+		} else {
+			return;
+		}
+		var changed = false;
+		for (var i=0; i < changes.length; i++) {
+			if (node == changes[i].node) {
+				changed = true;
+				break;
+			}
+		}
+		if (!changed) changes.unshift({pos:pos, node:node, focus: false});
+	});
+
+	var change;
+	for (var i=0; i < changes.length; i++) {
+		change = changes[i];
+		tr = me.focusRoot(tr, change.pos, change.node, change.focus);
+	}
+
 	if (selectedRoot) {
 		tr = tr.setSelection(this.editor.selectTr(tr, root.rpos));
 	}
