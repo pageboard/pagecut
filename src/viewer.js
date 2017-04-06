@@ -74,8 +74,10 @@ Viewer.prototype.copy = function(block, withDomContent) {
 			}
 		} else if (isNode) {
 			var html = "";
-			for (var i=0; i < content.childNodes.length; i++) {
-				html += content.childNodes[i].outerHTML;
+			for (var i=0, child; i < content.childNodes.length; i++) {
+				child = content.childNodes[i];
+				if (child.nodeType == Node.TEXT_NODE) html += child.nodeValue;
+				else html += child.outerHTML;
 			}
 			contents[name] = html;
 		}
