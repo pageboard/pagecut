@@ -90,8 +90,10 @@ function createRootSpec(editor, element, dom) {
 					};
 					console.warn("Parsing unresolved block", block);
 				} else {
-					// raw unmodified rendered block
-					var newDom = (element.edit || element.view).call(element, editor.doc, editor.copy(block, true));
+					// what is really the usefulness of these ?
+					var copy = editor.copy(block, true);
+					var newDom = (element.edit || element.view).call(element, editor.doc, copy);
+					editor.merge(copy, newDom);
 					if (!element.inline) {
 						while (dom.firstChild) dom.removeChild(dom.firstChild);
 						while (newDom.firstChild) dom.appendChild(newDom.firstChild);
