@@ -2,7 +2,6 @@ module.exports = function(editor, options) {
 	var plugin = new HandlePlugin(editor, options);
 	return {
 		props: {
-			handleClick: plugin.click,
 			handleDOMEvents: {
 				mousedown: plugin.mousedown.bind(plugin),
 				mouseup: plugin.mouseup.bind(plugin),
