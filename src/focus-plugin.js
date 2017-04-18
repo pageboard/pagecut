@@ -98,11 +98,10 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 			});
 		}
 	}
-
-	tr.doc.descendants(function(node, pos, parent) {
-		if (node.type.spec.typeName) {
+	function hasChanged(node, pos) {
+		if (node.type.spec.typeName == "root") {
 			// node is good
-		} else if (node.marks.length && node.marks[0].type.spec.typeName) {
+		} else if (node.marks.length && node.marks[0].type.spec.typeName == "root") {
 			node = node.marks[0];
 		} else {
 			return;
@@ -115,7 +114,9 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 			}
 		}
 		if (!changed) changes.unshift({pos:pos, node:node, focus: false});
-	});
+	}
+	hasChanged(tr.doc);
+	tr.doc.descendants(hasChanged);
 
 	var change;
 	for (var i=0; i < changes.length; i++) {
