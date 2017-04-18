@@ -52,7 +52,7 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 		var sel = this.editor.selectTr(tr, pos);
 		tr = tr.removeMark(sel.from, sel.to, node.type);
 		tr = tr.addMark(sel.from, sel.to, node.type.create(attrs));
-	} else if (node == tr.doc) {
+	} else if (node.type.name == tr.doc.type.name) {
 		// prosemirror doesn't transform doc
 		node.attrs = attrs;
 	} else {
