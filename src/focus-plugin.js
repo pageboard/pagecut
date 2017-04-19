@@ -7,7 +7,7 @@ module.exports = function(editor, options) {
 		appendTransaction: function(transactions, oldState, newState) {
 			// focus once per transaction
 			for (var i=0; i < transactions.length; i++) {
-				if (transactions[i].getMeta('focus-plugin') == true) {
+				if (transactions[i].getMeta('focus-plugin')) {
 					return;
 				}
 			}
@@ -127,8 +127,7 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 	if (selectedRoot) {
 		tr = tr.setSelection(this.editor.selectTr(tr, root.rpos));
 	}
-	tr.setMeta('focus-plugin', true);
-	return tr;
+	return tr.setMeta('focus-plugin', parents);
 };
 
 function isParentOf(parent, node) {
