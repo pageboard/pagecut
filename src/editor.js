@@ -125,7 +125,14 @@ function Editor(opts) {
 	}, function() {
 		return history();
 	}, CreateResolversPlugin, function(editor, opts) {
-		return DropCursor(opts);
+		return DropCursor({
+			decorate: function($pos) {
+				var node = editor.root.createElement("span");
+				node.textContent = "\u200b";
+				node.style.cssText = "margin-left:-1px; margin-right:-1px; border-left:2px solid black; display: inline-block; pointer-events: none";
+				return View.Decoration.widget($pos.pos, node);
+			}
+		});
 	});
 
 	var plugins = opts.plugins.map(function(plugin) {
