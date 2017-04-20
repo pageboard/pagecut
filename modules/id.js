@@ -182,6 +182,43 @@ IdModule.prototype.set = function(data) {
 	}
 };
 
+IdModule.prototype.domQuery = function(id, opts) {
+	var doc = this.editor.dom;
+	var nodes, node;
+	if (doc.getAttribute('block-id') == id) {
+		// always focused
+		node = doc;
+	} else {
+		var sel = `[block-id="${id}"]`;
+		if (opts.focused) sel += '[block-focused]';
+		nodes = doc.querySelectorAll(sel);
+		if (nodes.length > 1) throw new Error(`Multiple nodes with same id are focused ${id}`);
+		if (!nodes.length) return;
+		node = nodes[0];
+	}
+	if (opts.content) {
+		if (node.getAttribute('block-content') == opts.content) {
+			return node;
+		} else {
+			return node.querySelector(`[block-content="${opts.content}"]`);
+		}
+	} else {
+		return node;
+	}
+};
+
+IdModule.prototype.domSelect = function(node) {
+	var editor = this.editor;
+	editor.focus();
+	var doc = editor.root;
+	var sel = doc.defaultView.getSelection();
+	var range = doc.createRange();
+	range.setStart(node, 0);
+	range.setEnd(node, 0);
+	sel.removeAllRanges();
+	sel.addRange(range);
+};
+
 function IdResolver(editor, obj, cb) {
 	var id = obj.node && obj.node.getAttribute('block-id');
 	if (!id) return;
