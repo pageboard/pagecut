@@ -97,7 +97,9 @@ Viewer.prototype.merge = function(block, dom) {
 			node = dom.querySelector('[block-content="'+name+'"]');
 		}
 		if (!node) return;
-		node.appendChild(contents[name].cloneNode(true));
+		var content = contents[name];
+		if (!content) return;
+		node.appendChild(content.cloneNode(true));
 	});
 };
 
