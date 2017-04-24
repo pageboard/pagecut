@@ -123,7 +123,9 @@ function Editor(opts) {
 	}, function(editor) {
 		return keymap(Commands.baseKeymap);
 	}, function() {
-		return history();
+		return history({
+			preserveItems: true // or else cancel does not keep selected node
+		});
 	}, CreateResolversPlugin, function(editor, opts) {
 		return DropCursor({
 			decorate: function($pos) {
