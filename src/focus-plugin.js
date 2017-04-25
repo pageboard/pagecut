@@ -11,8 +11,11 @@ module.exports = function(editor, options) {
 					return;
 				}
 			}
-			var tr = plugin.action(newState.tr);
-			if (tr && tr != newState.tr) return tr;
+			var tr = newState.tr;
+			var newtr = plugin.action(tr);
+			if (newtr && newtr != tr) {
+				return newtr;
+			}
 		}
 	};
 };
