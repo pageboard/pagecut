@@ -7,7 +7,7 @@ var Input = require("prosemirror-inputrules");
 var keymap = require("prosemirror-keymap").keymap;
 var Commands = require("prosemirror-commands");
 var DropCursor = require("prosemirror-dropcursor").dropCursor;
-var history = require("prosemirror-history").history;
+var History = require("prosemirror-history");
 
 var baseSchema = require("prosemirror-schema-basic").schema;
 var listSchema = require("prosemirror-schema-list");
@@ -38,6 +38,11 @@ Editor.defaults.nodes = listSchema.addListNodes(
 // );
 
 Editor.defaults.marks = baseSchema.spec.marks;
+
+
+Editor.defaults.mapKeys = {
+	// 'Shift-Mod-z': History.redo
+};
 
 module.exports = {
 	Editor: Editor,
@@ -123,7 +128,7 @@ function Editor(opts) {
 	}, function(editor) {
 		return keymap(Commands.baseKeymap);
 	}, function() {
-		return history({
+		return History.history({
 			preserveItems: true // or else cancel does not keep selected node
 		});
 	}, CreateResolversPlugin, function(editor, opts) {
