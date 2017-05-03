@@ -33,6 +33,7 @@ dist/pagecut-id.js: modules/id.js
 
 dist/pagecut-editor.js: src/*.js
 	#-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
+	rm -rf node_modules/prosemirror-dropcursor && ln -s @kapouer/prosemirror-dropcursor node_modules/
 	$(BROWSERIFY) --standalone Pagecut --outfile $@ src/editor.js
 
 dist/pagecut-viewer.js: src/viewer.js
