@@ -1,7 +1,7 @@
 module.exports = IdModule;
 
 function IdModule(editor) {
-	this.store = {};
+	this.blocks = {};
 	this.editor = editor;
 	if (editor.resolvers) editor.resolvers.push(IdResolver);
 	editor.modifiers.push(IdModifier);
@@ -13,9 +13,11 @@ function IdModule(editor) {
 		props: {
 			transformPasted: function(pslice) {
 				pslice.content.descendants(function(node) {
-					me.pasteNode(node);
+					node = me.pasteNode(node);
 				});
 				return pslice;
+
+
 			},
 			/*
 			clipboardSerializer: {
@@ -38,6 +40,23 @@ IdModule.element = {
 	}
 };
 
+function mutateNodes(fragment, fn) {
+	var len = fragment.childCount;
+	var child, childFragment;
+	for (var i=0; i < len; i++) {
+		child = fragment.child(i);
+		childFragment = mutateNodes(child.content, fn);
+		var attrs = fn(child);
+		if (attrs) {
+			child = child.copy(childFragment);
+			child.attrs = attrs;
+			fragment = fragment.replaceChild(i, child);
+		}
+	}
+	return fragment;
+}
+
+
 function getIdBlockNode(node) {
 	var id = node.attrs.block_id;
 	if (id == null && node.marks.length > 0) {
@@ -49,23 +68,33 @@ function getIdBlockNode(node) {
 
 IdModule.prototype.pasteNode = function(node) {
 	var bn = getIdBlockNode(node);
-	if (bn.id == null) return;
+	if (bn.id == null) {
+		// a block node must have an id, so it is not one
+		return;
+	}
 	var block = this.get(bn.id);
 	if (!block) {
-		bn.node.attrs.id = 'id' + Date.now();
+		// unknown block, let id module deserialize it later
+		bn.node.attrs.block_id = this.genId();
+		bn.node.attrs.block_status = "new";
 		return;
 	}
 	var dom = this.editor.dom.querySelector('[block-id="'+bn.id+'"]');
 	if (dom) {
+		// known block already exists, assume copy/paste
 		block = this.editor.copy(block, true);
-		block.id = bn.node.attrs.id = 'id' + Date.now();
+		block.id = bn.node.attrs.block_id = this.genId();
+		block.status = bn.node.attrs.block_status = "new";
 		this.editor.modules.id.set(block);
+	} else {
+		// known block is not in dom, assume cut/paste or drag/drop
 	}
-	// else keep the id
 };
 
 
-IdModule.prototype.from = function(rootBlock, resolver) {
+IdModule.prototype.from = function(rootBlock, blocks) {
+	if (blocks) this.blocks = blocks;
+	else blocks = this.blocks;
 	if (!rootBlock) rootBlock = "";
 	if (typeof rootBlock == "string") rootBlock = {
 		type: 'fragment',
@@ -73,47 +102,37 @@ IdModule.prototype.from = function(rootBlock, resolver) {
 			fragment: rootBlock
 		}
 	};
+	if (blocks) {
+		this.blocks = blocks;
+		if (rootBlock.id) this.blocks[rootBlock.id] = rootBlock;
+	} else {
+		blocks = this.blocks;
+	}
 	var fragment = this.editor.render(rootBlock);
 	var nodes = Array.prototype.slice.call(fragment.querySelectorAll('[block-id]'));
-	var me = this;
 
-	var list = [];
-
-	var block, id, node;
+	var block, id, node, child;
 	for (var i=0; i < nodes.length; i++) {
 		node = nodes[i];
 		id = node.getAttribute('block-id');
 		if (id === '' + rootBlock.id) {
 			continue;
 		}
-		block = this.store[id];
-		var p;
-		if (block) {
-			p = Promise.resolve(block);
-		} else if (resolver) {
-			p = Promise.resolve().then(function() {
-				return resolver(id, this.store);
-			});
-		} else {
-			p = Promise.reject(new Error("Unknown block id " + id));
+		block = blocks[id];
+		if (!block) {
+			console.warn("ignoring unknown block id", id);
+			continue;
 		}
-		list.push(p.then(function(block) {
-			var node = this;
-			return me.from(block, resolver).then(function(child) {
-				node.parentNode.replaceChild(child, node);
-				if (child.childNodes.length == 0 && child.hasAttribute('block-content') == false) {
-					while (node.firstChild) child.appendChild(node.firstChild);
-				}
-			});
-		}.bind(node)));
+		child = this.from(block);
+		node.parentNode.replaceChild(child, node);
+		if (child.childNodes.length == 0 && child.hasAttribute('block-content') == false) {
+			while (node.firstChild) child.appendChild(node.firstChild);
+		}
 	}
-
-	return Promise.all(list).then(function() {
-		return fragment;
-	});
+	return fragment;
 };
 
-IdModule.prototype.to = function() {
+IdModule.prototype.to = function(blocks) {
 	var list = [];
 	var editor = this.editor;
 	var origModifiers = editor.modifiers;
@@ -133,53 +152,63 @@ IdModule.prototype.to = function() {
 
 	editor.modifiers = origModifiers;
 
-	var block;
 	for (var i = list.length - 1; i >= 0; i--) {
-		block = list[i];
-		this.store[block.id] = editor.copy(block, false);
+		blocks[list[i].id] = editor.copy(list[i], false);
 	}
 
 	var div = domFragment.ownerDocument.createElement("div");
 	div.appendChild(domFragment);
 
-	block = null;
+	var rootBlock = null;
 	var rootId = editor.dom.getAttribute('block-id');
 	if (rootId) {
-		block = editor.copy(this.get(rootId), false);
-		block.content = {};
-		block.content[editor.dom.getAttribute('block-content')] = div.innerHTML;
+		rootBlock = this.blocks[rootId];
+		rootBlock = editor.copy(rootBlock, false);
+		rootBlock.content = {};
+		rootBlock.content[editor.dom.getAttribute('block-content')] = div.innerHTML;
+		blocks[rootBlock.id] = rootBlock;
 	} else {
-		block = {
+		rootBlock = {
 			type: 'fragment',
 			content: {
 				fragment: div.innerHTML
 			}
 		}
 	}
-	return block;
+	return rootBlock;
 };
 
 IdModule.prototype.clear = function(id) {
 	if (id === undefined) {
-		this.store = {};
+		this.blocks = {};
 	} else if (id == null || id == false) {
 		console.warn('id.clear expects undefined or something not null');
-	} else if (!this.store[id]) {
-		console.warn('id.clear expects store to contain id', id);
+	} else if (!this.blocks[id]) {
+		console.warn('id.clear expects blocks to contain id', id);
 	} else {
-		delete this.store[id];
+		delete this.blocks[id];
 	}
 };
 
 IdModule.prototype.get = function(id) {
-	return this.store[id];
+	return this.blocks[id];
 };
 
 IdModule.prototype.set = function(data) {
-	if (data && data.id) data = [data];
-	for (var i = 0; i < data.length; i++) {
-		this.store[data[i].id] = data[i];
+	if (!Array.isArray(data)) data = [data];
+	for (var i = 0, cur; i < data.length; i++) {
+		cur = data[i];
+		if (cur.id == null) {
+			cur.id = this.genId();
+			cur.status = "new";
+		}
+		this.blocks[cur.id] = cur;
 	}
+};
+
+IdModule.prototype.genId = function() {
+	// weak and simple unique id generator
+	return Date.now() + Math.round(Math.random() * 1e4);
 };
 
 IdModule.prototype.domQuery = function(id, opts) {
@@ -237,10 +266,8 @@ function IdResolver(editor, obj, cb) {
 
 function IdModifier(editor, block, dom) {
 	if (!block.id) {
-		block.id = "id" + Date.now();
 		editor.modules.id.set(block);
 	}
 	dom.setAttribute('block-id', block.id);
 }
-
 
