@@ -152,6 +152,7 @@ IdModule.prototype.to = function(blocks) {
 
 	editor.modifiers = origModifiers;
 
+	// the order is important here - not an optimization
 	for (var i = list.length - 1; i >= 0; i--) {
 		blocks[list[i].id] = editor.copy(list[i], false);
 	}
