@@ -92,38 +92,40 @@ IdModule.prototype.pasteNode = function(node) {
 };
 
 
-IdModule.prototype.from = function(rootBlock, blocks) {
-	if (blocks) this.blocks = blocks;
-	else blocks = this.blocks;
-	if (!rootBlock) rootBlock = "";
-	if (typeof rootBlock == "string") rootBlock = {
+IdModule.prototype.from = function(block, blocks) {
+	if (!blocks) blocks = this.blocks = {};
+	var childBlock;
+	if (block.children) {
+		for (var i=0; i < block.children.length; i++) {
+			childBlock = block.children[i];
+			blocks[childBlock.id] = childBlock;
+		}
+	}
+	if (!block) block = "";
+	if (typeof block == "string") block = {
 		type: 'fragment',
 		content: {
-			fragment: rootBlock
+			fragment: block
 		}
 	};
-	if (blocks) {
-		this.blocks = blocks;
-		if (rootBlock.id) this.blocks[rootBlock.id] = rootBlock;
-	} else {
-		blocks = this.blocks;
-	}
-	var fragment = this.editor.render(rootBlock);
+	if (block.id) blocks[block.id] = block;
+
+	var fragment = this.editor.render(block);
 	var nodes = Array.prototype.slice.call(fragment.querySelectorAll('[block-id]'));
 
-	var block, id, node, child;
+	var id, node, child;
 	for (var i=0; i < nodes.length; i++) {
 		node = nodes[i];
 		id = node.getAttribute('block-id');
-		if (id === '' + rootBlock.id) {
+		if (id === '' + block.id) {
 			continue;
 		}
-		block = blocks[id];
-		if (!block) {
+		childBlock = blocks[id];
+		if (!childBlock) {
 			console.warn("ignoring unknown block id", id);
 			continue;
 		}
-		child = this.from(block);
+		child = this.from(childBlock, blocks);
 		node.parentNode.replaceChild(child, node);
 		if (child.childNodes.length == 0 && child.hasAttribute('block-content') == false) {
 			while (node.firstChild) child.appendChild(node.firstChild);
@@ -152,31 +154,33 @@ IdModule.prototype.to = function(blocks) {
 
 	editor.modifiers = origModifiers;
 
-	// the order is important here - not an optimization
-	for (var i = list.length - 1; i >= 0; i--) {
-		blocks[list[i].id] = editor.copy(list[i], false);
-	}
-
 	var div = domFragment.ownerDocument.createElement("div");
 	div.appendChild(domFragment);
 
-	var rootBlock = null;
-	var rootId = editor.dom.getAttribute('block-id');
-	if (rootId) {
-		rootBlock = this.blocks[rootId];
-		rootBlock = editor.copy(rootBlock, false);
-		rootBlock.content = {};
-		rootBlock.content[editor.dom.getAttribute('block-content')] = div.innerHTML;
-		blocks[rootBlock.id] = rootBlock;
+	var block = null;
+	var id = editor.dom.getAttribute('block-id');
+	if (id) {
+		block = editor.copy(this.blocks[id], false);
+		block.content = {};
+		block.content[editor.dom.getAttribute('block-content')] = div.innerHTML;
+		if (blocks) blocks[block.id] = block;
 	} else {
-		rootBlock = {
+		block = {
 			type: 'fragment',
 			content: {
 				fragment: div.innerHTML
 			}
 		}
 	}
-	return rootBlock;
+	// the order is important here - not an optimization
+	var item;
+	if (!blocks) block.children = [];
+	for (var i = list.length - 1; i >= 0; i--) {
+		item = editor.copy(list[i], false);
+		if (blocks) blocks[item.id] = item;
+		else block.children.push(item);
+	}
+	return block;
 };
 
 IdModule.prototype.clear = function(id) {
