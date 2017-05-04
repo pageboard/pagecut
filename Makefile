@@ -1,4 +1,4 @@
-BROWSERIFY = $(shell node -p 'require.resolve("browserify/bin/cmd.js")')
+BROWSERIFY = $(shell node -p 'require.resolve("browserify/bin/cmd.js")') -t [ babelify --presets [ es2015 ] ]
 BUNDLEDOM = $(shell node -p 'require.resolve("bundledom/bin/bundledom.js")')
 FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
