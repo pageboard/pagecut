@@ -56,8 +56,8 @@ Viewer.prototype.render = function(block, edition) {
 
 Viewer.prototype.copy = function(block, withDomContent) {
 	var copy = Object.assign({}, block);
-	delete copy.focused; // do not copy that attribute
 	copy.data = Object.assign({}, block.data);
+	if (!withDomContent) delete copy.focused; // do not copy that attribute
 	copy.content = Object.assign({}, block.content);
 	var contents = copy.content;
 	var name, content, div, frag, isNode;
