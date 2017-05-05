@@ -174,11 +174,11 @@ IdModule.prototype.to = function(blocks) {
 	}
 	// the order is important here - not an optimization
 	var item;
-	if (!blocks) block.children = [];
+	block.children = [];
 	for (var i = list.length - 1; i >= 0; i--) {
 		item = editor.copy(list[i], false);
+		block.children.push(item);
 		if (blocks) blocks[item.id] = item;
-		else block.children.push(item);
 	}
 	return block;
 };
