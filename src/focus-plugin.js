@@ -40,6 +40,9 @@ FocusPlugin.prototype.action = function(tr) {
 		pos = sel.from;
 	} else if (sel.empty) {
 		pos = sel.to;
+	} else {
+		// TODO not sure about that
+		pos = sel.from;
 	}
 	if (pos === null) return;
 	return this.focus(tr, pos);
@@ -73,7 +76,7 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 	var root = parents.length && parents[0].root;
 	if (root && (root.mark || root.node).attrs.block_focused == "last") {
 		// already done
-		return;
+		// return;
 	}
 	var pos = root && root.level && root.rpos.before(root.level);
 	var selectedRoot = root && tr.selection.node == root.node;
