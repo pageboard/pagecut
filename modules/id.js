@@ -140,7 +140,7 @@ IdModule.prototype.to = function(blocks) {
 	var origModifiers = editor.modifiers;
 	editor.modifiers = origModifiers.concat([function(editor, block, dom) {
 		if (block.id) {
-			var ndom = dom.ownerDocument.createElement(editor.map[block.type].inline ? 'span' : 'div');
+			var ndom = dom.ownerDocument.createElement(dom.nodeName);
 			ndom.setAttribute('block-id', block.id);
 			ndom.setAttribute('block-type', block.type);
 			// make sure we don't accidentally store focused state
