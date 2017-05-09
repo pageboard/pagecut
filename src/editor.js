@@ -191,10 +191,12 @@ Editor.prototype.set = function(dom) {
 	var tr = this.insertTr(this.state.tr, dom, new State.AllSelection(this.state.doc));
 	if (!tr) {
 		console.error("Cannot insert", dom);
-	} else {
-		tr.setMeta('addToHistory', false);
-		this.dispatch(tr);
+		return;
 	}
+	var sel = tr.selection;
+	if (!sel.empty) tr = tr.setSelection(State.Selection.atStart(this.state.doc));
+	tr.setMeta('addToHistory', false);
+	this.dispatch(tr);
 };
 
 Editor.prototype.get = function(edition) {
