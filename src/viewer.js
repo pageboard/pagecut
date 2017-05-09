@@ -100,7 +100,7 @@ Viewer.prototype.merge = function(block, dom) {
 		if (!node) return;
 		var content = contents[name];
 		if (!content) return;
-		node.appendChild(content.cloneNode(true));
+		node.appendChild(node.ownerDocument.adoptNode(content));
 	});
 };
 
