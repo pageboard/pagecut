@@ -11,7 +11,11 @@ function defineSpecs(editor, element, schemaSpecs, dom) {
 	var specName, spec, recursive = false;
 	if (!dom) {
 		index = 0;
-		dom = editor.render({ type: element.name }, true);
+		dom = (element.edit || element.view).call(element, editor.doc, {
+			type: element.name,
+			data: {},
+			content: {}
+		});
 		spec = createRootSpec(editor, element, dom);
 		recursive = true;
 	} else if (contentName) {
@@ -90,9 +94,12 @@ function createRootSpec(editor, element, dom) {
 					};
 					console.warn("Parsing unresolved block", block);
 				} else {
-					// what is really the usefulness of these ?
+					// all these is view.render without modifiers
+					// ensure the block is on-shell
 					var copy = editor.copy(block, true);
+					// avoid modifiers
 					var newDom = (element.edit || element.view).call(element, editor.doc, copy);
+					// call merge ourselves
 					editor.merge(copy, newDom);
 					if (!element.inline) {
 						while (dom.firstChild) dom.removeChild(dom.firstChild);
@@ -113,7 +120,18 @@ function createRootSpec(editor, element, dom) {
 		}],
 		toDOM: function(node) {
 			var block = attrToBlock(node.attrs);
-			var dom = editor.render(block, true);
+			block.content = {};
+			var dom = (element.edit || element.view).call(element, editor.doc, block);
+			var ndom = dom;
+			if (ndom.nodeType == Node.ELEMENT_NODE) {
+				for (var i=0; i < editor.modifiers.length; i++) {
+					ndom = editor.modifiers[i](editor, block, ndom) || ndom;
+				}
+				if (ndom) dom = ndom;
+			}
+			// update node attrs
+			var mAttrs = blockToAttr(block);
+			for (var k in mAttrs) node.attrs[k] = mAttrs[k];
 			var attrs = nodeAttrs(dom);
 			return element.inline ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];
 		}
