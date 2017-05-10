@@ -94,6 +94,7 @@ IdModule.prototype.pasteNode = function(node) {
 
 IdModule.prototype.from = function(block, blocks) {
 	if (!blocks) blocks = this.blocks = {};
+	if (this.blocks != blocks) this.blocks = blocks;
 	var childBlock;
 	if (block.children) {
 		for (var i=0; i < block.children.length; i++) {
