@@ -185,7 +185,9 @@ Editor.prototype.getPlugin = function(key) {
 Editor.prototype.set = function(dom) {
 	if (dom.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {
 		var frag = dom.ownerDocument.createDocumentFragment();
-		while (dom.firstChild) frag.appendChild(dom.firstChild);
+		while (dom.firstChild) {
+			frag.appendChild(dom.firstChild);
+		}
 		dom = frag;
 	}
 	var tr = this.insertTr(this.state.tr, dom, new State.AllSelection(this.state.doc));
