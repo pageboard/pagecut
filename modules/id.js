@@ -76,7 +76,6 @@ IdModule.prototype.pasteNode = function(node) {
 	if (!block) {
 		// unknown block, let id module deserialize it later
 		bn.node.attrs.block_id = this.genId();
-		bn.node.attrs.block_status = "new";
 		return;
 	}
 	var dom = this.editor.dom.querySelector('[block-id="'+bn.id+'"]');
@@ -84,7 +83,6 @@ IdModule.prototype.pasteNode = function(node) {
 		// known block already exists, assume copy/paste
 		block = this.editor.copy(block, true);
 		block.id = bn.node.attrs.block_id = this.genId();
-		block.status = bn.node.attrs.block_status = "new";
 		this.editor.modules.id.set(block);
 	} else {
 		// known block is not in dom, assume cut/paste or drag/drop
@@ -206,7 +204,6 @@ IdModule.prototype.set = function(data) {
 		cur = data[i];
 		if (cur.id == null) {
 			cur.id = this.genId();
-			cur.status = "new";
 		}
 		this.blocks[cur.id] = cur;
 	}
