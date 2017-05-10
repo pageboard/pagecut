@@ -242,13 +242,7 @@ IdModule.prototype.domQuery = function(id, opts) {
 IdModule.prototype.domSelect = function(node) {
 	var editor = this.editor;
 	editor.focus();
-	var doc = editor.root;
-	var sel = doc.defaultView.getSelection();
-	var range = doc.createRange();
-	range.setStart(node, 0);
-	range.setEnd(node, 0);
-	sel.removeAllRanges();
-	sel.addRange(range);
+	editor.selectDom(node);
 };
 
 function IdResolver(editor, obj, cb) {

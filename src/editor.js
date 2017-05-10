@@ -318,6 +318,18 @@ Editor.prototype.refreshTr = function(tr, dom) {
 	return tr.setNodeType(pos, null, Specs.blockToAttr(block));
 };
 
+Editor.prototype.selectDom = function(node) {
+	var pos = this.posFromDOM(node);
+	var tr = this.state.tr;
+	var $pos = tr.doc.resolve(pos);
+	var sel;
+	if (node.nodeType != Node.ELEMENT_NODE) {
+		sel = new State.TextSelection($pos);
+	} else {
+		sel = new State.NodeSelection($pos);
+	}
+	this.dispatch(tr.setSelection(sel));
+};
 
 Editor.prototype.select = function(obj, textSelection) {
 	return this.selectTr(this.state.tr, obj, textSelection);
@@ -475,7 +487,7 @@ Editor.prototype.parents = function(tr, pos, all, before) {
 			obj[type] = {rpos: rpos, level: level, node: node};
 			if (mark) obj[type].mark = mark;
 		}
-		if (level != depth && node && node.attrs.block_content) {
+		if ((type == "content" || level != depth) && node && node.attrs.block_content) {
 			if (!obj.content) obj.content = obj.root || {};
 			obj.content.name = node.attrs.block_content;
 		}
