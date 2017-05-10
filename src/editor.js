@@ -639,7 +639,7 @@ function CreateResolversPlugin(editor, opts) {
 						return main.parse(main.render(block, true)).firstChild;
 					}
 				});
-				return new Model.Slice(frag, pslice.openLeft, pslice.openRight);
+				return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
 			}
 		}
 	});
