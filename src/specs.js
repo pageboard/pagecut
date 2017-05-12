@@ -81,6 +81,7 @@ function createRootSpec(editor, element, dom) {
 		typeName: "root",
 		inline: !!element.inline,
 		defining: !element.inline,
+		isolating: !element.inline,
 		attrs: Object.assign({}, defaultSpecAttrs, specAttrs(element.properties, "data-")),
 		parseDOM: [{
 			tag: '[block-type="'+element.name+'"]',
