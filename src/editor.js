@@ -246,7 +246,7 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 		dom = this.render(dom, true);
 	}
 	var shouldBeInline = false;
-	if (dom.childNodes.length == 0 && dom.hasAttribute('block-content') == false) {
+	if (dom.nodeType == Node.ELEMENT_NODE && dom.childNodes.length == 0 && dom.hasAttribute('block-content') == false) {
 		dom.textContent = '-';
 		shouldBeInline = true;
 	}
