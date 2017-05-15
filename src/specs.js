@@ -158,11 +158,10 @@ function createRootSpec(editor, element, dom) {
 			return {
 				dom: dom,
 				update: function(node, decorations) {
-					console.log("updating node")
 					return true;
 				},
 				ignoreMutation: function(record) {
-					console.log("view mutation", record);
+					// or else face a loop
 					return true;
 				}
 			};
