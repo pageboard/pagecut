@@ -87,6 +87,10 @@ function createRootSpec(editor, element, dom) {
 			tag: '[block-type="'+element.name+'"]',
 			getAttrs: function(dom) {
 				var block = editor.resolve(dom);
+				if (element.foreign) {
+					// just ignore the whole thing
+					return blockToAttr(block);
+				}
 				if (!block) {
 					// default resolver ?
 					block = {
@@ -134,10 +138,36 @@ function createRootSpec(editor, element, dom) {
 			var mAttrs = blockToAttr(block);
 			for (var k in mAttrs) node.attrs[k] = mAttrs[k];
 			var attrs = nodeAttrs(dom);
-			return element.inline ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];
+			return element.inline || element.foreign ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];
 		}
 	};
 	if (element.group) spec.group = element.group;
+	if (element.foreign) {
+		spec.isLeaf = true;
+		element.nodeView = function(node, view, getPos, decorations) {
+			var block = attrToBlock(node.attrs);
+			block.content = {};
+			var dom = (element.edit || element.view).call(element, editor.doc, block);
+			var ndom = dom;
+			if (ndom.nodeType == Node.ELEMENT_NODE) {
+				for (var i=0; i < editor.modifiers.length; i++) {
+					ndom = editor.modifiers[i](editor, block, ndom) || ndom;
+				}
+				if (ndom) dom = ndom;
+			}
+			return {
+				dom: dom,
+				update: function(node, decorations) {
+					console.log("updating node")
+					return true;
+				},
+				ignoreMutation: function(record) {
+					console.log("view mutation", record);
+					return true;
+				}
+			};
+		};
+	}
 	return spec;
 }
 

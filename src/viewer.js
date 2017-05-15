@@ -14,7 +14,7 @@ function Viewer(opts) {
 
 	this.elements = opts.elements || [];
 	this.modifiers = opts.modifiers || [];
-	this.modifiers.unshift(typeModifier);
+	this.modifiers.unshift(typeModifier, foreignModifier);
 	this.plugins = opts.plugins || [];
 
 	var viewer = this;
@@ -112,4 +112,9 @@ function ContentModule(viewer) {
 
 function typeModifier(viewer, block, dom) {
 	if (!dom.hasAttribute('block-type')) dom.setAttribute('block-type', block.type);
+}
+
+function foreignModifier(viewer, block, dom) {
+	var el = viewer.map[block.type];
+	if (el && el.foreign) el.foreign(dom);
 }
