@@ -279,7 +279,7 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 		if (this.state.doc.rangeHasMark(from, to, mark.type)) {
 			tr = tr.removeMark(from, to, mark.type);
 		}
-		if (textContent) {
+		if (textContent && from == to) {
 			tr = tr.insertText(textContent, from, to);
 			to = from + textContent.length;
 		}
