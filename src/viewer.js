@@ -116,5 +116,5 @@ function typeModifier(viewer, block, dom) {
 
 function foreignModifier(viewer, block, dom) {
 	var el = viewer.map[block.type];
-	if (el && el.foreign) el.foreign(dom);
+	if (el && el.foreign) el.foreign(dom, block);
 }
