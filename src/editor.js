@@ -279,10 +279,11 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 		if (this.state.doc.rangeHasMark(from, to, mark.type)) {
 			tr = tr.removeMark(from, to, mark.type);
 		}
-		tr = tr.addMark(from, to, mark.type.create(mark.attrs));
 		if (textContent) {
 			tr = tr.insertText(textContent, from, to);
+			to = from + textContent.length;
 		}
+		tr = tr.addMark(from, to, mark.type.create(mark.attrs));
 		return tr;
 	} else {
 		if (el && node) frag = node; // not sure about that
