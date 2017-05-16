@@ -112,7 +112,7 @@ IdModule.prototype.from = function(block, blocks) {
 	var fragment = this.editor.render(block);
 	var nodes = Array.prototype.slice.call(fragment.querySelectorAll('[block-id]'));
 
-	var id, node, child;
+	var id, node, child, el;
 	for (var i=0; i < nodes.length; i++) {
 		node = nodes[i];
 		id = node.getAttribute('block-id');
@@ -126,7 +126,9 @@ IdModule.prototype.from = function(block, blocks) {
 		}
 		child = this.from(childBlock, blocks);
 		node.parentNode.replaceChild(child, node);
-		if (child.childNodes.length == 0 && child.hasAttribute('block-content') == false) {
+		el = this.editor.map[child.getAttribute('block-type')];
+		if (el && el.inline) {
+			while (child.firstChild) child.removeChild(child.firstChild);
 			while (node.firstChild) child.appendChild(node.firstChild);
 		}
 	}
