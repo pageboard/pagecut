@@ -412,9 +412,9 @@ Editor.prototype.replace = function(by, sel) {
 	else this.dispatch(tr);
 };
 
-Editor.prototype.replaceTr = function(tr, by, sel) {
+Editor.prototype.replaceTr = function(tr, by, sel, textSelection) {
 	// sel can be ResolvedPos or pos or dom node or a selection
-	sel = this.selectTr(tr, sel);
+	sel = this.selectTr(tr, sel, textSelection);
 	if (!sel) return false;
 	return this.insertTr(tr, by, sel);
 };
