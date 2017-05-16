@@ -245,40 +245,48 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 	if (!(dom instanceof Node)) {
 		dom = this.render(dom, true);
 	}
-	var shouldBeInline = false;
-	if (dom.nodeType == Node.ELEMENT_NODE && dom.childNodes.length == 0 && dom.hasAttribute('block-content') == false) {
-		dom.textContent = '-';
-		shouldBeInline = true;
+	var inline = false;
+	var el;
+	var textContent;
+	if (dom.nodeType == Node.ELEMENT_NODE) {
+		el = this.map[dom.getAttribute('block-type')];
+		if (el) {
+			if (el.inline) {
+				inline = true;
+				// parsing an empty inline node just ignores it
+				textContent = dom.textContent;
+				if (!textContent) dom.textContent = "-";
+			}
+		}
 	}
 
 	var opts = {};
 	var parent = sel.$from.parent;
-	if (!parent.isTextblock || shouldBeInline) {
+	if (!parent.isTextblock || inline) {
 		opts.topNode = parent;
 	}
 	var frag = this.parse(dom, opts);
-	var node, type;
+	var node;
 	if (frag.content.length == 1) {
 		node = frag.content[0];
 	}
 
 	var from = sel.from;
 	var to = sel.to;
-	if (shouldBeInline) {
+	if (inline) {
 		var mark = node.marks[0];
 		if (!mark) return;
 		if (this.state.doc.rangeHasMark(from, to, mark.type)) {
 			tr = tr.removeMark(from, to, mark.type);
 		}
-		return tr.addMark(from, to, mark.type.create(mark.attrs));
-	} else {
-		tr = tr.replaceWith(from, to, frag);
-		if (node) {
-			if (parent.isTextblock) from = from + 1; // because it splits text block
-			sel = this.selectTr(tr, from);
-			if (sel) tr = tr.setSelection(sel);
+		tr = tr.addMark(from, to, mark.type.create(mark.attrs));
+		if (textContent) {
+			tr = tr.insertText(textContent, from, to);
 		}
 		return tr;
+	} else {
+		if (el && node) frag = node; // not sure about that
+		return tr.replaceWith(from, to, frag);
 	}
 };
 
