@@ -141,7 +141,7 @@ function createRootSpec(editor, element, dom) {
 			var mAttrs = blockToAttr(block);
 			for (var k in mAttrs) node.attrs[k] = mAttrs[k];
 			var attrs = nodeAttrs(dom);
-			return element.inline || element.foreign ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];
+			return (element.inline || element.foreign) ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];
 		}
 	};
 	if (element.group) spec.group = element.group;
