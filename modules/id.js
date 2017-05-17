@@ -16,19 +16,7 @@ function IdModule(editor) {
 					node = me.pasteNode(node);
 				});
 				return pslice;
-
-
-			},
-			/*
-			clipboardSerializer: {
-				serializeFragment: function(frag, opts) {
-					frag.descendants(function(node) {
-						// do something
-					});
-					return editor.serializers.edit.serializeFragment(frag, opts);
-				}
 			}
-			*/
 		}
 	});
 }
@@ -78,7 +66,7 @@ IdModule.prototype.pasteNode = function(node) {
 		bn.node.attrs.block_id = this.genId();
 		return;
 	}
-	var dom = this.editor.dom.querySelector('[block-id="'+bn.id+'"]');
+	var dom = this.editor.dom.querySelector(`[block-id="${bn.id}"]`);
 	if (dom) {
 		// known block already exists, assume copy/paste
 		block = this.editor.copy(block, true);

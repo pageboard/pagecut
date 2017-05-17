@@ -131,7 +131,7 @@ function Editor(opts) {
 		return History.history({
 			preserveItems: true // or else cancel does not keep selected node
 		});
-	}, CreateResolversPlugin, function(editor, opts) {
+	}, function(editor, opts) {
 		return DropCursor({
 			decorate: function($pos) {
 				var node = editor.root.createElement("span");

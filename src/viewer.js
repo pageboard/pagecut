@@ -95,7 +95,7 @@ Viewer.prototype.merge = function(block, dom) {
 		if (blockContent) {
 			if (name == blockContent) node = dom;
 		} else {
-			node = dom.querySelector('[block-content="'+name+'"]');
+			node = dom.querySelector(`[block-content="${name}"]`);
 		}
 		if (!node) return;
 		var content = contents[name];

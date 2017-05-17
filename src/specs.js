@@ -22,9 +22,9 @@ function defineSpecs(editor, element, schemaSpecs, dom) {
 	} else if (contentName) {
 		spec = createContentSpec(element, dom);
 		var content = element.contents[contentName];
-		if (!content) throw new Error("Missing element.contents[" + contentName + "]");
+		if (!content) throw new Error(`Missing element.contents[${contentName}]`);
 		spec.content = content.spec;
-		specName = spec.specName + '[block_content="' + contentName + '"]';
+		specName = `${spec.specName}[block_content="${contentName}"]`;
 	} else if (dom.querySelector('[block-content]')) {
 		spec = createWrapSpec(element, dom);
 		recursive = true;
@@ -72,9 +72,9 @@ function createRootSpec(editor, element, dom) {
 	var defaultAttrs = Object.assign({
 		block_id: null,
 		block_focused: null,
-		block_url: null,
-		block_type: element.name
-	}, tagAttrs(dom));
+		block_type: element.name,
+		block_data: null
+	}, attrsFrom(dom));
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	var spec = {
@@ -83,22 +83,24 @@ function createRootSpec(editor, element, dom) {
 		inline: !!element.inline,
 		defining: !element.inline,
 		isolating: !element.inline,
-		attrs: Object.assign({}, defaultSpecAttrs, specAttrs(element.properties, "data-")),
+		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [{
-			tag: '[block-type="'+element.name+'"]',
+			tag: `[block-type="${element.name}"]`,
 			getAttrs: function(dom) {
 				var block = editor.resolve(dom);
 				if (element.foreign) {
 					// just ignore the whole thing
 					return blockToAttr(block);
 				}
+				// TODO id resolver screws us up big time
+				if (block.type == "id") {
+					console.trace("that should not happen");
+					block = null;
+				}
 				if (!block) {
-					// default resolver ?
-					block = {
-						type: element.name,
-						data: nodeAttrs(dom)
-					};
-					console.warn("Parsing unresolved block", block);
+					// happens when pasting something
+					block = attrToBlock(attrsFrom(dom));
+					block.type = element.name;
 				} else {
 					// all these is view.render without modifiers
 					// ensure the block is on-shell
@@ -112,9 +114,9 @@ function createRootSpec(editor, element, dom) {
 						while (dom.firstChild) dom.removeChild(dom.firstChild);
 						while (newDom.firstChild) dom.appendChild(newDom.firstChild);
 					}
-					var domAttrs = dom.attributes;
-					for (var j=0; j < domAttrs.length; j++) {
-						dom.removeAttribute(domAttrs[j].name);
+					var oldAttrs = dom.attributes;
+					for (var j=0; j < oldAttrs.length; j++) {
+						dom.removeAttribute(oldAttrs[j].name);
 					}
 					var newAttrs = newDom.attributes;
 					for (var k=0; k < newAttrs.length; k++) {
@@ -137,10 +139,10 @@ function createRootSpec(editor, element, dom) {
 				}
 				if (ndom) dom = ndom;
 			}
-			// update node attrs
-			var mAttrs = blockToAttr(block);
-			for (var k in mAttrs) node.attrs[k] = mAttrs[k];
-			var attrs = nodeAttrs(dom);
+			// update node attrs, a convenient way to keep blocks synched with model
+			Object.assign(node.attrs, blockToAttr(block));
+			// copy rendered dom attributes, and add converted node.attrs
+			var attrs = attrsTo(node.attrs);
 			return (element.inline || element.foreign) ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];
 		}
 	};
@@ -151,7 +153,7 @@ function createRootSpec(editor, element, dom) {
 			var block = attrToBlock(node.attrs);
 			block.content = {};
 			var dom = (element.edit || element.view).call(element, editor.doc, block);
-			if (!dom) throw new Error(element.name + " element must render a DOM Node");
+			if (!dom) throw new Error(`${element.name} element must render a DOM Node`);
 			var ndom = dom;
 			if (ndom.nodeType == Node.ELEMENT_NODE) {
 				for (var i=0; i < editor.modifiers.length; i++) {
@@ -176,29 +178,19 @@ function createRootSpec(editor, element, dom) {
 
 function blockToAttr(block) {
 	var attrs = {};
-	for (var k in block.data) {
-		attrs['data-' + k] = block.data[k];
-	}
-	for (var k in block) {
-		if (k != 'data' && k != 'content' && block[k]) {
-			attrs['block_' + k] = block[k];
-		}
-	}
+	if (block.id != null) attrs.block_id = block.id;
+	if (block.type != null) attrs.block_type = block.type;
+	if (block.data) attrs.block_data = JSON.stringify(block.data);
+	if (attrs.block_data == "{}") delete attrs.block_data;
 	return attrs;
 }
 
 function attrToBlock(attrs) {
-	var block = {data: {}};
-	var name;
-	for (var k in attrs) {
-		if (!attrs[k]) continue;
-		if (k.indexOf('data-') == 0) {
-			block.data[k.substring(5)] = attrs[k];
-		} else if (k.indexOf('block_') == 0) {
-			name = k.substring(6);
-			if (name != "content") block[name] = attrs[k];
-		}
-	}
+	var block = {};
+	if (attrs.block_id != null) block.id = attrs.block_id;
+	if (attrs.block_type != null) block.type = attrs.block_type;
+	if (attrs.block_data != null) block.data = JSON.parse(attrs.block_data);
+	else block.data = {};
 	return block;
 }
 
@@ -220,7 +212,7 @@ function nodeToContent(serializer, node, content) {
 }
 
 function createWrapSpec(element, dom) {
-	var defaultAttrs = tagAttrs(dom);
+	var defaultAttrs = attrsFrom(dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
@@ -228,20 +220,20 @@ function createWrapSpec(element, dom) {
 		typeName: "wrap",
 		attrs: defaultSpecAttrs,
 		parseDOM: [{
-			tag: domSelector(defaultAttrs),
+			tag: domSelector(dom.nodeName, defaultAttrs),
 			getAttrs: function(dom) {
 				if (!dom.pagecut || dom.pagecut.name != element.name || dom.pagecut.type != "wrap") return false;
-				return tagAttrs(dom);
+				return attrsFrom(dom);
 			}
 		}],
 		toDOM: function(node) {
-			return [node.attrs.tag, domAttrs(node.attrs), 0];
+			return [dom.nodeName, attrsTo(node.attrs), 0];
 		}
 	};
 }
 
 function createContentSpec(element, dom) {
-	var defaultAttrs = tagAttrs(dom);
+	var defaultAttrs = attrsFrom(dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	return {
@@ -249,23 +241,23 @@ function createContentSpec(element, dom) {
 		typeName: "content",
 		attrs: defaultSpecAttrs,
 		parseDOM: [{
-			tag: defaultAttrs.tag + '[block-content="'+defaultAttrs.block_content+'"]',
+			tag: `${dom.nodeName}[block-content="${defaultAttrs.block_content}"]`,
 			getAttrs: function(dom) {
 				if (!dom.pagecut || dom.pagecut.name != element.name || dom.pagecut.type != "content") return false;
-				return tagAttrs(dom);
+				return attrsFrom(dom);
 			}
 		}],
 		toDOM: function(node) {
-			return [node.attrs.tag, domAttrs(node.attrs), 0];
+			return [dom.nodeName, attrsTo(node.attrs), 0];
 		}
 	};
 }
 
 function createHoldSpec(element, dom) {
-	var defaultAttrs = tagAttrs(dom);
-	var sel = domSelector(defaultAttrs);
+	var defaultAttrs = attrsFrom(dom);
+	var sel = domSelector(dom.nodeName, defaultAttrs);
 	var defaultSpecAttrs = specAttrs(Object.assign(defaultAttrs, {
-		html: dom.outerHTML
+		block_html: dom.outerHTML
 	}));
 
 	return {
@@ -276,14 +268,14 @@ function createHoldSpec(element, dom) {
 		attrs: defaultSpecAttrs,
 		parseDOM: [{ tag: sel, getAttrs: function(dom) {
 			if (!dom.pagecut || dom.pagecut.name != element.name || dom.pagecut.type != "hold") return false;
-			var attrs = tagAttrs(dom);
-			attrs.html = dom.outerHTML;
-			if (defaultSpecAttrs.block_handle) dom.setAttribute('block-handle', '');
+			var attrs = attrsFrom(dom);
+			attrs.block_html = dom.outerHTML;
+			if (defaultSpecAttrs.handle) dom.setAttribute('block-handle', '');
 			return attrs;
 		}}],
 		toDOM: function(node) {
 			var div = document.createElement("div");
-			div.innerHTML = node.attrs.html;
+			div.innerHTML = node.attrs.block_html;
 			var elem = div.querySelector('*');
 			if (!elem) throw new Error("Wrong html on HoldType", node, defaultAttrs);
 			if (defaultSpecAttrs.block_handle) elem.setAttribute('block-handle', '');
@@ -312,51 +304,38 @@ function prepareDom(element, dom) {
 	}
 }
 
-function domAttrs(attrs) {
-	var obj = {};
-	Object.keys(attrs).forEach(function(k) {
-		if (k == 'tag' || k == 'html' || k.indexOf('data-') == 0) return;
-		obj[k.replace(/_/g, '-')] = attrs[k];
-	});
-	return obj;
+function attrsTo(attrs) {
+	var domAttrs = {};
+	for (var k in attrs) domAttrs[k.replace(/_/g, '-')] = attrs[k];
+	return domAttrs;
 }
 
-function tagAttrs(dom) {
-	var obj = nodeAttrs(dom, true);
-	obj.tag = dom.nodeName.toLowerCase();
-	return obj;
+function attrsFrom(dom) {
+	var domAttrs = dom.attributes;
+	var att, attrs = {}, name;
+	for (var i=0; i < domAttrs.length; i++) {
+		att = domAttrs[i];
+		attrs[att.name.replace(/-/g, '_')] = att.value;
+	}
+	return attrs;
 }
 
-function specAttrs(atts, prefix) {
+function specAttrs(atts) {
 	var obj = {};
-	prefix = prefix || "";
 	var val;
 	for (var k in atts) {
 		val = atts[k];
 		if (val && val.default !== undefined) val = val.default;
 		else if (typeof val != "string") val = null;
-		obj[prefix + k] = {
+		obj[k] = {
 			'default': val
 		};
 	}
 	return obj;
 }
 
-function nodeAttrs(node, convert) {
-	var obj = {};
-	var atts = node.attributes;
-	var att, name;
-	for (var i=0; i < atts.length; i++) {
-		att = atts[i];
-		name = att.name;
-		if (convert) name = name.replace(/-/g, '_');
-		obj[name] = att.value;
-	}
-	return obj;
-}
-
-function domSelector(attrs) {
-	var sel = attrs.tag;
+function domSelector(tag, attrs) {
+	var sel = tag.toLowerCase();
 	var className = attrs.class;
 	if (className) sel += "." + className.split(' ').join('.');
 	return sel;
