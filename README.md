@@ -165,6 +165,8 @@ A simple object with:
 and optionally, some extensions:
 - id (used by id module)
 - focused (used by focus modifier)
+- foreign: the block is not editable and the element defining the block exports
+a `foreign(dom, block)` function that can change the dom content.
 
 Application data should be stored in the data object, but the block object itself
 can be used to store runtime variables like these.
