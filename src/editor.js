@@ -246,11 +246,13 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 		dom = this.render(dom, true);
 	}
 	var inline = false;
+	var foreign = false;
 	var el;
 	var textContent;
 	if (dom.nodeType == Node.ELEMENT_NODE) {
 		el = this.map[dom.getAttribute('block-type')];
 		if (el) {
+			if (el.foreign) foreign = true;
 			if (el.inline) {
 				inline = true;
 				// parsing an empty inline node just ignores it
@@ -279,14 +281,12 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 		if (this.state.doc.rangeHasMark(from, to, mark.type)) {
 			tr = tr.removeMark(from, to, mark.type);
 		}
-		if (textContent && from == to) {
+		if (textContent && (from == to || foreign)) {
 			tr = tr.insertText(textContent, from, to);
 			to = from + textContent.length;
 		}
-		tr = tr.addMark(from, to, mark.type.create(mark.attrs));
-		return tr;
+		return tr.addMark(from, to, mark.type.create(mark.attrs));
 	} else {
-		if (el && node) frag = node; // not sure about that
 		return tr.replaceWith(from, to, frag);
 	}
 };
