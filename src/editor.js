@@ -354,7 +354,7 @@ Editor.prototype.selectTr = function(tr, obj, textSelection) {
 		} else {
 			if (obj instanceof Node) {
 				if (obj == this.dom) {
-					return new State.Selection.atStart(tr.doc);
+					return State.Selection.atStart(tr.doc);
 				} else {
 					pos = this.posFromDOM(obj);
 				}
