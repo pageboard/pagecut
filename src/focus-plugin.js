@@ -12,10 +12,8 @@ module.exports = function(editor, options) {
 				}
 			}
 			var tr = newState.tr;
-			var newtr = plugin.action(tr);
-			if (newtr && newtr != tr) {
-				return newtr;
-			}
+			var newTr = plugin.action(tr);
+			if (newTr) return newTr;
 		}
 	};
 };
@@ -42,6 +40,7 @@ FocusPlugin.prototype.action = function(tr) {
 		pos = sel.to;
 	} else {
 		// TODO not sure about that
+		console.log("Focusing non-empty TextSelection must be defined properly");
 		pos = sel.from;
 	}
 	if (pos === null) return;
@@ -50,9 +49,12 @@ FocusPlugin.prototype.action = function(tr) {
 
 FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	var isDoc = node.type.name == tr.doc.type.name;
+	// TODO create a new Step that updates doc.attrs
 	var attrs = isDoc ? node.attrs : Object.assign({}, node.attrs);
 	var prev = attrs.block_focused;
-	if (prev == focus) return tr;
+	if (prev == focus) {
+		return tr;
+	}
 	if (focus) attrs.block_focused = focus;
 	else delete attrs.block_focused;
 	if (node.type.spec.inline) {
