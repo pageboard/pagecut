@@ -88,43 +88,13 @@ function createRootSpec(editor, element, dom) {
 			tag: `[block-type="${element.name}"]`,
 			getAttrs: function(dom) {
 				var block = editor.resolve(dom);
-				if (element.foreign) {
-					// just ignore the whole thing
-					return blockToAttr(block);
-				}
-				// TODO id resolver screws us up big time
 				if (block.type == "id") {
-					console.trace("that should not happen");
 					block = null;
+					console.error("Fix id module");
 				}
-				if (!block) {
-					// happens when pasting something
-					block = attrToBlock(attrsFrom(dom));
-					block.type = element.name;
-				} else {
-					// all these is view.render without modifiers
-					// ensure the block is on-shell
-					var copy = editor.copy(block, true);
-					// avoid modifiers
-					var newDom = (element.edit || element.view).call(element, editor.doc, copy);
-					if (!newDom) throw new Error(element.name + " element must render a DOM Node");
-					// call merge ourselves
-					editor.merge(copy, newDom);
-					if (!element.inline) {
-						while (dom.firstChild) dom.removeChild(dom.firstChild);
-						while (newDom.firstChild) dom.appendChild(newDom.firstChild);
-					}
-					var oldAttrs = dom.attributes;
-					for (var j=0; j < oldAttrs.length; j++) {
-						dom.removeAttribute(oldAttrs[j].name);
-					}
-					var newAttrs = newDom.attributes;
-					for (var k=0; k < newAttrs.length; k++) {
-						dom.setAttribute(newAttrs[k].name, newAttrs[k].value);
-					}
-				}
+				var attrs = attrsFrom(dom);
 				prepareDom(element, dom);
-				return blockToAttr(block);
+				return Object.assign(block ? blockToAttr(block) : {}, attrs);
 			}
 		}],
 		toDOM: function(node) {
@@ -139,9 +109,8 @@ function createRootSpec(editor, element, dom) {
 				}
 				if (ndom) dom = ndom;
 			}
-			// update node attrs, a convenient way to keep blocks synched with model
-			// BAD IDEA, removing it
-			// Object.assign(node.attrs, blockToAttr(block));
+			// update node attrs because modifiers might update block
+			Object.assign(node.attrs, blockToAttr(block));
 
 			// build dom attributes from node attrs default values
 			// and from rendered dom attributes
