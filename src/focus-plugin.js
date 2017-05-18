@@ -51,7 +51,7 @@ FocusPlugin.prototype.action = function(tr) {
 		pos = sel.to;
 	} else {
 		// TODO not sure about that
-		console.log("Focusing non-empty TextSelection must be defined properly");
+		console.info("TODO deal with non-empty TextSelection across boundaries");
 		pos = sel.from;
 	}
 	if (pos === null) return;
