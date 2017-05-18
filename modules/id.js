@@ -214,6 +214,7 @@ IdModule.prototype.domQuery = function(id, opts) {
 		var sel = `[block-id="${id}"]`;
 		if (opts.focused) sel += '[block-focused]';
 		nodes = doc.querySelectorAll(sel);
+		if (opts.all) return nodes;
 		if (nodes.length > 1) throw new Error(`Multiple nodes with same id are focused ${id}`);
 		if (!nodes.length) return;
 		node = nodes[0];
