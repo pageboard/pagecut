@@ -224,8 +224,6 @@ Editor.prototype.resolve = function(thing) {
 				console.error(err);
 				editor.remove(pos);
 			} else {
-				if (syncBlock.focused) block.focused = true;
-				else delete block.focused;
 				editor.replace(block, pos);
 			}
 		});
