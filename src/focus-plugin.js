@@ -49,7 +49,8 @@ FocusPlugin.prototype.action = function(tr) {
 };
 
 FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
-	var attrs = Object.assign({}, node.attrs);
+	var isDoc = node.type.name == tr.doc.type.name;
+	var attrs = isDoc ? node.attrs : Object.assign({}, node.attrs);
 	var prev = attrs.block_focused;
 	if (prev == focus) return tr;
 	if (focus) attrs.block_focused = focus;
@@ -58,9 +59,8 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 		var sel = this.editor.selectTr(tr, pos);
 		tr = tr.removeMark(sel.from, sel.to, node.type);
 		tr = tr.addMark(sel.from, sel.to, node.type.create(attrs));
-	} else if (node.type.name == tr.doc.type.name) {
-		// prosemirror doesn't transform doc
-		node.attrs = attrs;
+	} else if (isDoc) {
+		// prosemirror doesn't transform doc, we just changed doc.attrs directly
 	} else {
 		tr = tr.setNodeType(pos, null, attrs);
 	}
