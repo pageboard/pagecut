@@ -140,10 +140,18 @@ function createRootSpec(editor, element, dom) {
 				if (ndom) dom = ndom;
 			}
 			// update node attrs, a convenient way to keep blocks synched with model
-			Object.assign(node.attrs, blockToAttr(block));
-			// copy rendered dom attributes, and add converted node.attrs
-			var attrs = attrsTo(node.attrs);
-			return (element.inline || element.foreign) ? [dom.nodeName, attrs] : [dom.nodeName, attrs, 0];
+			// BAD IDEA, removing it
+			// Object.assign(node.attrs, blockToAttr(block));
+
+			// build dom attributes from node attrs default values
+			// and from rendered dom attributes
+			var domAttrs = attrsTo(Object.assign(
+				{},
+				node.attrs,
+				attrsFrom(dom)
+			));
+
+			return (element.inline || element.foreign) ? [dom.nodeName, domAttrs] : [dom.nodeName, domAttrs, 0];
 		}
 	};
 	if (element.group) spec.group = element.group;
