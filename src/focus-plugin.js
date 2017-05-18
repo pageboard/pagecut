@@ -33,6 +33,8 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 FocusPlugin.prototype.action = function(tr) {
 	if (this.editor.handleDragging) return;
 	var sel = tr.selection;
+	// avoid unneeded changes
+	if (this.editor.state.tr.selection.eq(sel)) return;
 	var pos = null;
 	if (sel.node) {
 		pos = sel.from;
