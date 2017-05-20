@@ -15,7 +15,7 @@ function defineSpecs(editor, element, schemaSpecs, dom) {
 			type: element.name,
 			data: {},
 			content: {}
-		});
+		}, editor);
 		if (!dom) throw new Error(element.name + " element must render a DOM Node");
 		spec = createRootSpec(editor, element, dom);
 		recursive = true;
@@ -100,7 +100,7 @@ function createRootSpec(editor, element, dom) {
 		toDOM: function(node) {
 			var block = attrToBlock(node.attrs);
 			block.content = {};
-			var dom = (element.edit || element.view).call(element, editor.doc, block);
+			var dom = (element.edit || element.view).call(element, editor.doc, block, editor);
 			if (!dom) throw new Error(element.name + " element must render a DOM Node");
 			var ndom = dom;
 			if (ndom.nodeType == Node.ELEMENT_NODE) {
@@ -129,7 +129,7 @@ function createRootSpec(editor, element, dom) {
 		element.nodeView = function(node, view, getPos, decorations) {
 			var block = attrToBlock(node.attrs);
 			block.content = {};
-			var dom = (element.edit || element.view).call(element, editor.doc, block);
+			var dom = (element.edit || element.view).call(element, editor.doc, block, editor);
 			if (!dom) throw new Error(`${element.name} element must render a DOM Node`);
 			var ndom = dom;
 			if (ndom.nodeType == Node.ELEMENT_NODE) {
