@@ -77,6 +77,8 @@ function createRootSpec(editor, element, dom) {
 	}, attrsFrom(dom));
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
+	var noContent = Object.keys(element.contents || {}).length == 0;
+
 	var spec = {
 		specName: element.name,
 		typeName: "root",
@@ -112,6 +114,8 @@ function createRootSpec(editor, element, dom) {
 			// update node attrs because modifiers might update block
 			Object.assign(node.attrs, blockToAttr(block));
 
+			if (element.foreign || noContent) return dom;
+
 			// build dom attributes from node attrs default values
 			// and from rendered dom attributes
 			var domAttrs = attrsTo(Object.assign(
@@ -120,7 +124,7 @@ function createRootSpec(editor, element, dom) {
 				attrsFrom(dom)
 			));
 
-			return (element.inline || element.foreign) ? [dom.nodeName, domAttrs] : [dom.nodeName, domAttrs, 0];
+			return element.inline ? [dom.nodeName, domAttrs] : [dom.nodeName, domAttrs, 0];
 		}
 	};
 	if (element.group) spec.group = element.group;
