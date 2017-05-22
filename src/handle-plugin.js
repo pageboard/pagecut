@@ -40,7 +40,10 @@ HandlePlugin.prototype.mousedown = function(view, e) {
 	if (!rootDom) return;
 
 	var handleDom = rootDom.querySelector('[block-handle]');
-	if (!handleDom) return;
+	if (!handleDom) {
+		if (rootDom.hasAttribute('block-handle')) handleDom = rootDom;
+		else return;
+	}
 	if (!isParentOf(handleDom, e.target)) return;
 
 	tr = tr.setSelection(this.editor.selectTr(tr, pos));
