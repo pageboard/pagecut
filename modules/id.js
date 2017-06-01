@@ -97,10 +97,15 @@ IdModule.prototype.from = function(block, blocks) {
 	};
 	if (block.id) blocks[block.id] = block;
 
+	var el = this.editor.map[block.type];
+	if (el && el.from) {
+		block = el.from(block, this) || block;
+	}
+
 	var fragment = this.editor.render(block);
 	var nodes = Array.prototype.slice.call(fragment.querySelectorAll('[block-id]'));
 
-	var id, node, child, el;
+	var id, node, child;
 	for (var i=0; i < nodes.length; i++) {
 		node = nodes[i];
 		id = node.getAttribute('block-id');
@@ -112,9 +117,9 @@ IdModule.prototype.from = function(block, blocks) {
 			console.warn("ignoring unknown block id", id);
 			continue;
 		}
+		el = this.editor.map[childBlock.type];
 		child = this.from(childBlock, blocks);
 		node.parentNode.replaceChild(child, node);
-		el = this.editor.map[child.getAttribute('block-type')];
 		if (el && el.inline) {
 			while (child.firstChild) child.removeChild(child.firstChild);
 			while (node.firstChild) child.appendChild(node.firstChild);
@@ -146,9 +151,16 @@ IdModule.prototype.to = function(blocks) {
 	var div = domFragment.ownerDocument.createElement("div");
 	div.appendChild(domFragment);
 
+	var el;
 	var block = null;
+	// this is when the editor document is a block itself
 	var id = editor.dom.getAttribute('block-id');
 	if (id) {
+		block = this.blocks[id];
+		el = editor.map[block.type];
+		if (el && el.to) {
+			block = el.to(block, this) || block;
+		}
 		block = editor.copy(this.blocks[id], false);
 		block.content = {};
 		block.content[editor.dom.getAttribute('block-content')] = div.innerHTML;
@@ -165,7 +177,12 @@ IdModule.prototype.to = function(blocks) {
 	var item;
 	block.children = [];
 	for (var i = list.length - 1; i >= 0; i--) {
-		item = editor.copy(list[i], false);
+		item = list[i];
+		el = editor.map[item.type];
+		if (el && el.to) {
+			item = el.to(item, this) || item;
+		}
+		item = editor.copy(item, false);
 		block.children.push(item);
 		if (blocks) blocks[item.id] = item;
 	}
@@ -205,6 +222,7 @@ IdModule.prototype.genId = function() {
 };
 
 IdModule.prototype.domQuery = function(id, opts) {
+	if (!opts) opts = {};
 	var doc = this.editor.dom;
 	var nodes, node;
 	if (doc.getAttribute('block-id') == id) {
