@@ -114,15 +114,18 @@ function createRootSpec(editor, element, dom) {
 			// update node attrs because modifiers might update block
 			Object.assign(node.attrs, blockToAttr(block));
 
-			if (element.foreign || noContent) return dom;
-
-			// build dom attributes from node attrs default values
-			// and from rendered dom attributes
 			var domAttrs = attrsTo(Object.assign(
 				{},
 				node.attrs,
 				attrsFrom(dom)
 			));
+
+			if (element.foreign || noContent) {
+				for (var k in domAttrs) {
+					dom.setAttribute(k, domAttrs[k]);
+				}
+				return dom;
+			}
 
 			return element.inline ? [dom.nodeName, domAttrs] : [dom.nodeName, domAttrs, 0];
 		}
