@@ -256,6 +256,8 @@ in a shared cache,
 
 - id.to(store?) returns a block fragment of the editor root content, and
   optionally populates store with the blocks (by id) that have been referenced.
+  id.to also calls elements's to() function if present, and do not add blocks to
+  the root.children list when they have a true `orphan` property.
 
 - id.from(block or html, store, resolver?) renders the block, searches *all*
   descendents with a `block-id` attribute in the store, and if it doesn't find

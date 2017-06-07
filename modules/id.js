@@ -69,7 +69,8 @@ IdModule.prototype.pasteNode = function(node) {
 	var dom = this.editor.dom.querySelector(`[block-id="${bn.id}"]`);
 	if (dom) {
 		// known block already exists, assume copy/paste
-		block = this.editor.copy(block, true);
+		block = this.editor.copy(block);
+		block.content = this.editor.parseContent(block.content);
 		block.id = bn.node.attrs.block_id = this.genId();
 		this.editor.modules.id.set(block);
 	} else {
@@ -99,7 +100,8 @@ IdModule.prototype.from = function(block, blocks) {
 
 	var el = this.editor.map[block.type];
 	if (el && el.from) {
-		block = el.from(block, this) || block;
+		block = this.editor.copy(block);
+		el.from(block, this);
 	}
 
 	var fragment = this.editor.render(block);
@@ -132,6 +134,7 @@ IdModule.prototype.to = function(blocks) {
 	var list = [];
 	var editor = this.editor;
 	var origModifiers = editor.modifiers;
+
 	editor.modifiers = origModifiers.concat([function(editor, block, dom) {
 		if (block.id) {
 			var ndom = dom.ownerDocument.createElement(dom.nodeName);
@@ -151,17 +154,12 @@ IdModule.prototype.to = function(blocks) {
 	var div = domFragment.ownerDocument.createElement("div");
 	div.appendChild(domFragment);
 
-	var el;
 	var block = null;
 	// this is when the editor document is a block itself
 	var id = editor.dom.getAttribute('block-id');
 	if (id) {
 		block = this.blocks[id];
-		el = editor.map[block.type];
-		if (el && el.to) {
-			block = el.to(block, this) || block;
-		}
-		block = editor.copy(this.blocks[id], false);
+		block = editor.copy(this.blocks[id]);
 		block.content = {};
 		block.content[editor.dom.getAttribute('block-content')] = div.innerHTML;
 		if (blocks) blocks[block.id] = block;
@@ -174,16 +172,16 @@ IdModule.prototype.to = function(blocks) {
 		}
 	}
 	// the order is important here - not an optimization
-	var item;
+	var item, el;
 	block.children = [];
 	for (var i = list.length - 1; i >= 0; i--) {
-		item = list[i];
+		item = editor.copy(list[i]);
 		el = editor.map[item.type];
 		if (el && el.to) {
-			item = el.to(item, this) || item;
+			el.to(item, this);
 		}
-		item = editor.copy(item, false);
-		block.children.push(item);
+		item.content = editor.serializeContent(item.content);
+		if (!item.orphan) block.children.push(item);
 		if (blocks) blocks[item.id] = item;
 	}
 	return block;

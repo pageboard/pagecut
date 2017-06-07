@@ -43,7 +43,8 @@ Viewer.prototype.render = function(block, edition) {
 	if (!el) throw new Error("Missing element " + type);
 	var renderFn = edition && el.edit || el.view;
 	if (!renderFn) throw new Error("Missing render function for block type " + type);
-	block = this.copy(block, true);
+	block = this.copy(block);
+	block.content = this.parseContent(block.content);
 	var dom = renderFn.call(el, this.doc, block, this);
 	if (!dom) return "";
 	var ndom = dom;
@@ -54,33 +55,47 @@ Viewer.prototype.render = function(block, edition) {
 	return ndom;
 };
 
-Viewer.prototype.copy = function(block, withDomContent) {
+Viewer.prototype.copy = function(block) {
 	var copy = Object.assign({}, block);
 	copy.data = Object.assign({}, block.data);
 	copy.content = Object.assign({}, block.content);
-	var contents = copy.content;
-	var name, content, div, frag, isNode;
-	for (name in contents) {
+	return copy;
+};
+
+Viewer.prototype.serializeContent = function(contents) {
+	var copy = {};
+	var content, html, child;
+	for (var name in contents) {
 		content = contents[name];
-		if (!content) continue;
-		isNode = content instanceof Node;
-		if (withDomContent) {
-			if (!isNode) {
-				div = this.doc.createElement("div");
-				div.innerHTML = content;
-				frag = this.doc.createDocumentFragment();
-				while (div.firstChild) frag.appendChild(div.firstChild);
-				contents[name] = frag;
-			}
-		} else if (isNode) {
-			var html = "";
-			for (var i=0, child; i < content.childNodes.length; i++) {
+		if (content instanceof Node) {
+			html = "";
+			for (var i=0; i < content.childNodes.length; i++) {
 				child = content.childNodes[i];
 				if (child.nodeType == Node.TEXT_NODE) html += child.nodeValue;
 				else html += child.outerHTML;
 			}
-			contents[name] = html;
+		} else {
+			html = content;
 		}
+		copy[name] = html;
+	}
+	return copy;
+};
+
+Viewer.prototype.parseContent = function(contents) {
+	var copy = {};
+	var content, div, frag;
+	for (var name in contents) {
+		content = contents[name];
+		if (content instanceof Node) {
+			frag = content;
+		} else {
+			div = this.doc.createElement("div");
+			div.innerHTML = content;
+			frag = this.doc.createDocumentFragment();
+			while (div.firstChild) frag.appendChild(div.firstChild);
+		}
+		copy[name] = frag;
 	}
 	return copy;
 };
