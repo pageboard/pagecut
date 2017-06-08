@@ -104,7 +104,13 @@ IdModule.prototype.from = function(block, blocks) {
 		el.from(block, this);
 	}
 
-	var fragment = this.editor.render(block);
+	var fragment;
+	try {
+		fragment = this.editor.render(block);
+	} catch(ex) {
+		console.error(ex);
+		return;
+	}
 	var nodes = Array.prototype.slice.call(fragment.querySelectorAll('[block-id]'));
 
 	var id, node, child;
@@ -121,6 +127,7 @@ IdModule.prototype.from = function(block, blocks) {
 		}
 		el = this.editor.map[childBlock.type];
 		child = this.from(childBlock, blocks);
+		if (!child) continue;
 		node.parentNode.replaceChild(child, node);
 		if (el && el.inline) {
 			while (child.firstChild) child.removeChild(child.firstChild);
