@@ -11,7 +11,9 @@ function defineSpecs(editor, element, schemaSpecs, dom) {
 	var specName, spec, recursive = false;
 	if (!dom) {
 		index = 0;
-		dom = (element.edit || element.view).call(element, editor.doc, {
+		var renderFn = element.edit || element.view;
+		if (!renderFn) return;
+		dom = renderFn.call(element, editor.doc, {
 			type: element.name,
 			data: {},
 			content: {}
