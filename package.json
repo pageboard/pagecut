@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kapouer/pagecut.git"
+    "url": "git+https://github.com/pageboard/pagecut.git"
   },
   "keywords": [
     "edit",
@@ -22,9 +22,9 @@
   "author": "Jérémy Lal <kapouer@melix.org>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kapouer/pagecut/issues"
+    "url": "https://github.com/pageboard/pagecut/issues"
   },
-  "homepage": "https://github.com/kapouer/pagecut#readme",
+  "homepage": "https://github.com/pageboard/pagecut#readme",
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",
     "babelify": "^7.3.0",
