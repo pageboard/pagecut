@@ -1,6 +1,6 @@
 {
   "name": "pagecut",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Extensible web content editor",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/pageboard/pagecut.git"
   },
+  "files": ["dist/*"],
   "keywords": [
     "edit",
     "component",
