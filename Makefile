@@ -22,6 +22,7 @@ clean:
 	rm -rf dist/*
 
 predist:
+	mkdir -p dist/
 	cp src/*.css dist/
 	cp -r modules/inspector dist/
 
