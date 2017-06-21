@@ -2,7 +2,7 @@
   "name": "pagecut",
   "version": "1.0.0-alpha.1",
   "description": "Extensible web content editor",
-  "main": "dist/pagecut.js",
+  "main": "index.js",
   "scripts": {
     "prepublish": "make all",
     "test": "echo \"Error: no test specified\" && exit 1"
