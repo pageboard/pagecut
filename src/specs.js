@@ -1,165 +1,338 @@
-exports.define = defineSpecs;
+var commonAncestor = require('common-ancestor');
+exports.define = define;
 exports.attrToBlock = attrToBlock;
 exports.blockToAttr = blockToAttr;
 exports.nodeToContent = nodeToContent;
 
 var index;
 
-function defineSpecs(editor, element, schemaSpecs, dom) {
-	var contents = [];
-	var contentName = dom && dom.getAttribute('block-content');
-	var specName, spec, recursive = false;
-	if (!dom) {
-		index = 0;
-		var renderFn = element.edit || element.view;
-		if (!renderFn) return;
-		dom = renderFn.call(element, editor.doc, {
-			type: element.name,
-			data: {},
-			content: {}
-		}, editor);
-		if (!dom) throw new Error(element.name + " element must render a DOM Node");
-		spec = createRootSpec(editor, element, dom);
-		recursive = true;
-	} else if (contentName) {
-		spec = createContentSpec(element, dom);
-		var content = element.contents[contentName];
-		if (!content) throw new Error(`Missing element.contents[${contentName}]`);
-		spec.content = content.spec;
-		specName = `${spec.specName}[block_content="${contentName}"]`;
-	} else if (dom.querySelector('[block-content]')) {
-		spec = createWrapSpec(element, dom);
-		recursive = true;
-	} else {
-		spec = createHoldSpec(element, dom);
-	}
-	if (!specName) specName = spec.specName;
-
-	if (recursive) {
-		var childs = dom.childNodes;
-		for (var i=0, child; i < childs.length; i++) {
-			child = childs.item(i);
-			if (child.nodeType != Node.ELEMENT_NODE) continue;
-			contents.push(defineSpecs(editor, element, schemaSpecs, child));
+function define(editor, elt, schema) {
+	// ignore virtual elements
+	if (!elt.view) return;
+	var dom = elt.view(editor.doc, {
+		type: elt.name,
+		data: {},
+		content: {}
+	}, editor);
+	if (!dom) throw new Error(`${elt.name} element must render a DOM Node`);
+	var index = 0;
+	flagDom(dom, function(type, obj) {
+		var spec;
+		if (type == "root") {
+			spec = createRootSpec(editor, elt, obj);
+			spec.specName = elt.name;
+		} else if (type == "wrap") {
+			spec = createWrapSpec(editor, elt, obj);
+			spec.specName = `${elt.name}_${type}_${index++}`;
+		} else if (type == "container") {
+			spec = createContainerSpec(editor, elt, obj);
+			spec.specName = `${elt.name}_${type}_${index++}`;
 		}
-		if (contents.length) {
-			spec.content = contents.join(" ");
-		} else if (spec.typeName == "root" && element.contents) {
-			var specKeys = Object.keys(element.contents);
-			var contentName = dom.getAttribute('block-content');
+		if (obj.children.length) {
+			// this type of node has content that is wrap or container type nodes
+			spec.content = obj.children.map(function(child) {
+				return child.specName;
+			}).join(" ");
+		} else if (elt.contents) {
+			var specKeys = Object.keys(elt.contents);
+			var contentName = obj.dom.getAttribute('block-content');
 			if (specKeys.length == 1) {
 				if (contentName == specKeys[0]) {
-					spec.content = element.contents[contentName].spec;
+					spec.content = elt.contents[contentName].spec;
 				} else {
-					console.warn("element has no matching contents", element.contents, contentName);
+					console.warn(`element ${elt.name} has no matching contents`, contentName);
 				}
 			} else if (specKeys.length > 1) {
-				console.warn("element has multiple contents", element.contents, "only one default block-content is allowed");
+				console.warn(`element ${elt.name} cannot choose a default block-content among`, elt.contents);
 			}
 		}
-	}
-	if (spec) {
-		// use original specName here
-		if (spec.inline) {
-			schemaSpecs.marks = schemaSpecs.marks.addToEnd(spec.specName, spec);
-		} else {
-			schemaSpecs.nodes = schemaSpecs.nodes.addToEnd(spec.specName, spec);
-		}
 
-	}
-	return specName;
+		if (spec.inline) {
+			schema.marks = schema.marks.addToEnd(spec.specName, spec);
+		} else {
+			schema.nodes = schema.nodes.addToEnd(spec.specName, spec);
+		}
+		if (spec.nodeView) {
+			schema.views[elt.name] = spec.nodeView;
+		}
+	});
 }
 
-function createRootSpec(editor, element, dom) {
+function flagDom(dom, iterate) {
+	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return;
+	var obj = {};
+	obj.dom = dom;
+	var contents = [];
+	if (dom.hasAttribute('block-content')) contents.push(dom);
+	else contents = Array.from(dom.querySelectorAll('[block-content]'));
+
+	if (contents.length == 0) return; // ignore this
+
+	var anc = commonAncestor.apply(null, contents);
+	if (anc != dom) {
+		obj.contentDom = anc;
+		anc.setAttribute('block-ancestor', '');
+	}
+
+	if (!obj.children) obj.children = [];
+	var child;
+	for (var i=0; i < anc.childNodes.length; i++) {
+		child = flagDom(anc.childNodes[i], iterate);
+		if (child) obj.children.push(child);
+	}
+	if (iterate) {
+		if (!dom.parentNode) iterate('root', obj);
+		else if (contents.length == 1) iterate('container', obj);
+		else iterate('wrap', obj);
+	}
+	return obj;
+}
+
+/*
+--------------------------------------------------------------------
+During this root node's lifetime, all mapped dom nodes do not change
+--------------------------------------------------------------------
+The dom property always refers to the same dom node, so only attributes can change
+Same for contentDom.
+All other dom nodes between dom and contentDom can be changed arbitrarily.
+When rendering the block, dom nodes that are children of contentDom can change,
+in which case their prosemirror counterparts must be updated, and in turn, these
+pm nodes must update themselves using what was rendered in the first place.
+So instead of
+root node -> block -> update all dom
+we have
+root node -> block -> update dom between "dom" and "contentDom",
+                   -> update pm nodes children of root node
+                              -> which update their dom using their parent root node
+*/
+
+function createRootSpec(editor, elt, obj) {
 	var defaultAttrs = Object.assign({
 		block_id: null,
 		block_focused: null,
-		block_type: element.name,
+		block_type: elt.name,
 		block_data: null
-	}, attrsFrom(dom));
+	}, attrsFrom(obj.dom));
+
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
-	var noContent = Object.keys(element.contents || {}).length == 0;
-
-	var spec = {
-		specName: element.name,
-		typeName: "root",
-		inline: !!element.inline,
-		defining: !element.inline,
-		isolating: !element.inline,
-		attrs: Object.assign({}, defaultSpecAttrs),
-		parseDOM: [{
-			tag: `[block-type="${element.name}"]`,
-			getAttrs: function(dom) {
-				var block = editor.resolve(dom);
-				if (block.type == "id") {
-					block = null;
-					console.error("Fix id module");
-				}
-				var attrs = attrsFrom(dom);
-				prepareDom(element, dom);
-				return Object.assign(block ? blockToAttr(block) : {}, attrs);
+	var parseRule = {
+		tag: `[block-type="${elt.name}"]`,
+		getAttrs: function(dom) {
+			var block = editor.resolve(dom);
+			if (block.type == "id") {
+				block = null;
+				console.error("Fix id module");
 			}
-		}],
-		toDOM: function(node) {
-			var block = attrToBlock(node.attrs);
-			block.content = {};
-			var dom = (element.edit || element.view).call(element, editor.doc, block, editor);
-			if (!dom) throw new Error(element.name + " element must render a DOM Node");
-			var ndom = dom;
-			if (ndom.nodeType == Node.ELEMENT_NODE) {
-				for (var i=0; i < editor.modifiers.length; i++) {
-					ndom = editor.modifiers[i](editor, block, ndom) || ndom;
-				}
-				if (ndom) dom = ndom;
-			}
-			// update node attrs because modifiers might update block
-			Object.assign(node.attrs, blockToAttr(block));
-
-			var domAttrs = attrsTo(Object.assign(
-				{},
-				node.attrs,
-				attrsFrom(dom)
-			));
-
-			if (element.foreign || noContent) {
-				for (var k in domAttrs) {
-					dom.setAttribute(k, domAttrs[k]);
-				}
-				return dom;
-			}
-
-			return element.inline ? [dom.nodeName, domAttrs] : [dom.nodeName, domAttrs, 0];
+			var attrs = attrsFrom(dom);
+			return Object.assign(block ? blockToAttr(block) : {}, attrs);
 		}
 	};
-	if (element.group) spec.group = element.group;
-	if (element.foreign) {
-		spec.isLeaf = true;
-		element.nodeView = function(node, view, getPos, decorations) {
-			var block = attrToBlock(node.attrs);
-			block.content = {};
-			var dom = (element.edit || element.view).call(element, editor.doc, block, editor);
-			if (!dom) throw new Error(`${element.name} element must render a DOM Node`);
-			var ndom = dom;
-			if (ndom.nodeType == Node.ELEMENT_NODE) {
-				for (var i=0; i < editor.modifiers.length; i++) {
-					ndom = editor.modifiers[i](editor, block, ndom) || ndom;
-				}
-				if (ndom) dom = ndom;
-			}
-			return {
-				dom: dom,
-				update: function(node, decorations) {
-					return true;
-				},
-				ignoreMutation: function(record) {
-					// or else face a loop
-					return true;
-				}
-			};
-		};
+	if (obj.contentDom != obj.dom) {
+		parseRule.contentElement = '[block-ancestor]';
 	}
+
+	var spec = {
+		typeName: "root",
+		inline: !!elt.inline,
+		defining: !elt.inline,
+		isolating: !elt.inline,
+		attrs: Object.assign({}, defaultSpecAttrs),
+		parseDOM: [parseRule],
+		nodeView: createRootNodeView(elt, obj.dom)
+	};
+	if (elt.group) spec.group = elt.group;
+
 	return spec;
+}
+
+function createWrapSpec(editor, elt, obj) {
+	var defaultAttrs = Object.assign({
+		// TODO
+	}, attrsFrom(obj.dom));
+	var defaultSpecAttrs = specAttrs(defaultAttrs);
+
+	var parseRule = {
+		tag: domSelector(obj.dom.nodeName, defaultAttrs),
+		getAttrs: function(dom) {
+			return attrsFrom(dom);
+		}
+	};
+	if (obj.contentDom != obj.dom) {
+		parseRule.contentElement = '[block-ancestor]';
+	}
+
+	return {
+		typeName: "wrap",
+		attrs: defaultSpecAttrs,
+		parseDOM: [parseRule],
+		nodeView: createWrapNodeView(elt, obj.dom)
+	};
+}
+
+function createContainerSpec(editor, elt, obj) {
+	var defaultAttrs = Object.assign({
+		// TODO
+	}, attrsFrom(obj.dom));
+	var defaultSpecAttrs = specAttrs(defaultAttrs);
+
+	var parseRule = {
+		tag: `${obj.dom.nodeName}[block-content="${defaultAttrs.block_content}"]`,
+		getAttrs: function(dom) {
+			return attrsFrom(dom);
+		}
+	};
+	if (obj.contentDom != obj.dom) {
+		parseRule.contentElement = '[block-ancestor]';
+	}
+
+	return {
+		typeName: "container",
+		attrs: defaultSpecAttrs,
+		parseDOM: [parseRule],
+		nodeView: createContainerNodeView(elt, obj.dom)
+	};
+}
+
+function createRootNodeView(element, initialDom) {
+	return function rootNodeView(node, view, getPos, decorations) {
+		var nodeView = {};
+
+		nodeView.dom = initialDom.cloneNode(true);
+		nodeView.contentDom = nodeView.dom.querySelector('[block-ancestor]') || nodeView.dom;
+
+
+		nodeView.update = function(node, decorations) {
+			var uView = flagDom(nodeToDom(element, node, view));
+			// nodeView.dom, nodeView.contentDom must not change
+			mutateNodeView(nodeView, uView);
+			// nodeView.contentDom.childNodes match nodeView.children[i].dom
+			nodeView.contentDom._pagecut_nodeView_children = uView.children;
+			return true;
+		};
+
+		nodeView.ignoreMutation = function(record) {
+			return true;
+		};
+		return nodeView;
+	};
+}
+
+function createWrapNodeView(element, initialDom) {
+	return function wrapNodeView(node, view, getPos, decorations) {
+		// TODO
+		// problème: comment obtenir le DOM créé lors de rootNodeView à partir de ce node ?
+		// - soit le node est "neuf" - et une simple copie de dom suffit - il faut juste
+		// retrouver contentDom à partir de dom, ce qui peut être fait facilement
+		// parce que contentDom a obtenu un attribut lors de la construction des specs
+		// - soit le node est "parsé" - et node.attrs.viewId permet de retrouver
+		// le dom/contentDom qui ont été créés par le rendu du root node
+
+		var nodeView = {};
+		nodeView.dom = initialDom.cloneNode(true);
+		nodeView.contentDom = nodeView.dom.querySelector('[block-ancestor]') || nodeView.dom;
+
+		nodeView.update = function(node, decorations) {
+			// the nice thing here is that it just has to update to the "new" dom node
+			var uView = nodeView.dom.nodeView;
+			if (uView) {
+				delete nodeView.dom.nodeView;
+				mutateNodeView(nodeView, uView);
+			}
+			mergeNodeAttrsToDom(node.attrs, nodeView.dom);
+			return true;
+		};
+
+		nodeView.ignoreMutation = function(record) {
+			return true;
+		};
+		return nodeView;
+	};
+}
+
+function createContainerNodeView(element, initialDom) {
+	return function containerNodeView(node, view, getPos, decorations) {
+		var nodeView = {};
+		nodeView.dom = initialDom.cloneNode(true);
+		nodeView.contentDom = nodeView.dom.querySelector('[block-ancestor]') || nodeView.dom;
+
+		nodeView.update = function(node, decorations) {
+			// the nice thing here is that it just has to update to the "new" dom node
+			var uView = nodeView.dom.nodeView;
+			if (uView) {
+				delete nodeView.dom.nodeView;
+				mutateNodeView(nodeView, uView);
+			}
+			mergeNodeAttrsToDom(node.attrs, nodeView.dom);
+			return true;
+		};
+
+		nodeView.ignoreMutation = function(record) {
+			return true;
+		};
+		return nodeView;
+	};
+}
+
+function nodeToDom(element, node, view) {
+	var block = attrToBlock(node.attrs);
+	block.content = {};
+	// this is a root node, so the new dom comes from a rendered block
+	var dom = element.view(view.doc, block, view);
+	if (!dom) throw new Error(`${element.name} element must render a DOM Node`);
+	if (dom.nodeType != Node.ELEMENT_NODE) {
+		console.error("I don't know what to do if element.view() doesn't return an element_node");
+		return;
+	}
+	for (var i=0; i < view.modifiers.length; i++) {
+		dom = view.modifiers[i](view, block, dom) || dom;
+	}
+	Object.assign(node.attrs, blockToAttr(block));
+	mergeNodeAttrsToDom(node.attrs, dom);
+	return dom;
+}
+
+function mergeNodeAttrsToDom(attrs, dom) {
+	var domAttrs = attrsTo(Object.assign(
+		{},
+		attrs,
+		attrsFrom(dom)
+	));
+	for (var k in domAttrs) {
+		dom.setAttribute(k, domAttrs[k]);
+	}
+}
+
+function mutateNodeView(obj, nobj) {
+	// first upgrade attributes
+	mutateAttributes(obj.dom, nobj.dom);
+	// then upgrade descendants
+	if (!obj.contentDom || obj.dom == obj.contentDom) return; // our job is done
+	// there is something between dom and contentDom
+	var cont = obj.contentDom;
+	var ncont = nobj.contentDom;
+	var parent;
+	while (cont != obj.dom) {
+		mutateAttributes(cont, ncont);
+		parent = cont.parentNode;
+		while (cont.previousSibling) parent.removeChild(cont.previousSibling);
+		while (cont.nextSibling) parent.removeChild(cont.nextSibling);
+		while (ncont.previousSibling) parent.insertBefore(ncont.previousSibling, cont);
+		while (ncont.nextSibling) parent.appendChild(ncont.nextSibling);
+		cont = parent;
+		ncont = ncont.parentNode;
+	}
+}
+
+function mutateAttributes(dom, ndom) {
+	var atts = dom.attributes;
+	while (atts.length > 0) {
+		dom.removeAttribute(atts[0].name);
+	}
+	var natts = ndom.attributes;
+	for (var k=0; k < natts.length; k++) {
+		dom.setAttribute(natts[k].name, natts[k].value);
+	}
 }
 
 function blockToAttr(block) {
@@ -183,7 +356,7 @@ function attrToBlock(attrs) {
 function nodeToContent(serializer, node, content) {
 	var type = node.type.spec.typeName;
 
-	if (type == "content") {
+	if (type == "container") {
 		content[node.attrs.block_content] = serializer.serializeFragment(node.content);
 	} else if (type == "root" && node.attrs.block_content) {
 		if (!content) content = {};
@@ -195,99 +368,6 @@ function nodeToContent(serializer, node, content) {
 		});
 	}
 	return content;
-}
-
-function createWrapSpec(element, dom) {
-	var defaultAttrs = attrsFrom(dom);
-	var defaultSpecAttrs = specAttrs(defaultAttrs);
-
-	return {
-		specName: "wrap_" + element.name + index++,
-		typeName: "wrap",
-		attrs: defaultSpecAttrs,
-		parseDOM: [{
-			tag: domSelector(dom.nodeName, defaultAttrs),
-			getAttrs: function(dom) {
-				if (!dom.pagecut || dom.pagecut.name != element.name || dom.pagecut.type != "wrap") return false;
-				return attrsFrom(dom);
-			}
-		}],
-		toDOM: function(node) {
-			return [dom.nodeName, attrsTo(node.attrs), 0];
-		}
-	};
-}
-
-function createContentSpec(element, dom) {
-	var defaultAttrs = attrsFrom(dom);
-	var defaultSpecAttrs = specAttrs(defaultAttrs);
-
-	return {
-		specName: "content_" + element.name + index++,
-		typeName: "content",
-		attrs: defaultSpecAttrs,
-		parseDOM: [{
-			tag: `${dom.nodeName}[block-content="${defaultAttrs.block_content}"]`,
-			getAttrs: function(dom) {
-				if (!dom.pagecut || dom.pagecut.name != element.name || dom.pagecut.type != "content") return false;
-				return attrsFrom(dom);
-			}
-		}],
-		toDOM: function(node) {
-			return [dom.nodeName, attrsTo(node.attrs), 0];
-		}
-	};
-}
-
-function createHoldSpec(element, dom) {
-	var defaultAttrs = attrsFrom(dom);
-	var sel = domSelector(dom.nodeName, defaultAttrs);
-	var defaultSpecAttrs = specAttrs(Object.assign(defaultAttrs, {
-		block_html: dom.outerHTML
-	}));
-
-	return {
-		specName: "hold_" + element.name + index++,
-		typeName: "hold",
-		selectable: false,
-		isLeaf: true, // replaces readonly patch
-		attrs: defaultSpecAttrs,
-		parseDOM: [{ tag: sel, getAttrs: function(dom) {
-			if (!dom.pagecut || dom.pagecut.name != element.name || dom.pagecut.type != "hold") return false;
-			var attrs = attrsFrom(dom);
-			attrs.block_html = dom.outerHTML;
-			if (defaultSpecAttrs.handle) dom.setAttribute('block-handle', '');
-			return attrs;
-		}}],
-		toDOM: function(node) {
-			var div = document.createElement("div");
-			div.innerHTML = node.attrs.block_html;
-			var elem = div.querySelector('*');
-			if (!elem) throw new Error("Wrong html on HoldType", node, defaultAttrs);
-			if (defaultSpecAttrs.block_handle) elem.setAttribute('block-handle', '');
-			elem.setAttribute('contenteditable', 'false');
-			return elem;
-		}
-	};
-}
-
-function prepareDom(element, dom) {
-	var name;
-	for (var i=0, child; i < dom.childNodes.length; i++) {
-		child = dom.childNodes.item(i);
-		if (child.nodeType != Node.ELEMENT_NODE) continue;
-		name = child.getAttribute('block-content');
-		if (!child.pagecut) child.pagecut = {};
-		child.pagecut.name = element.name;
-		if (name) {
-			child.pagecut.type = "content";
-		} else if (child.querySelector('[block-content]')) {
-			child.pagecut.type = "wrap";
-			prepareDom(element, child);
-		} else {
-			child.pagecut.type = "hold";
-		}
-	}
 }
 
 function attrsTo(attrs) {
