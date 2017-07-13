@@ -72,48 +72,33 @@ function Editor(opts) {
 	var spec = {
 		nodes: opts.nodes,
 		marks: opts.marks,
-		topNode: opts.topNode
+		topNode: opts.topNode,
+		views: {}
 	};
-
-	var nodeViews = {};
 
 	this.elements.forEach(function(el) {
 		Specs.define(editor, el, spec);
-		if (el.nodeView) nodeViews[el.name] = el.nodeView;
 	});
 
-	this.schemas = {};
+	this.schema = new Model.Schema(spec);
 
-	this.schemas.edit = new Model.Schema(spec);
+//	var viewNodes = spec.nodes;
+//	spec.nodes.forEach(function(name, node) {
+//		var vnode = Object.assign({}, node);
+//		if (vnode.typeName == "root") {
+//			console.log("THIS IS WRONG, WE ARE USING NODE VIEWS NOW");
+//			vnode.toDOM = function(node) {
+//				var block = Specs.attrToBlock(node.attrs);
+//				// nodeToContent calls serializeNode calls toDOM so it's recursive
+//				block.content = Specs.nodeToContent(editor.serializers.view, node);
+//				return editor.render(block);
+//			};
+//		}
+//		viewNodes = viewNodes.update(name, vnode);
+//	});
 
-	var viewNodes = spec.nodes;
-	spec.nodes.forEach(function(name, node) {
-		var vnode = Object.assign({}, node);
-		if (vnode.typeName == "root") {
-			vnode.toDOM = function(node) {
-				var block = Specs.attrToBlock(node.attrs);
-				// nodeToContent calls serializeNode calls toDOM so it's recursive
-				block.content = Specs.nodeToContent(editor.serializers.view, node);
-				return editor.render(block);
-			};
-		}
-		viewNodes = viewNodes.update(name, vnode);
-	});
-
-	this.schemas.view = new Model.Schema({
-		nodes: viewNodes,
-		marks: spec.marks,
-		topNode: opts.topNode
-	});
-
-	this.serializers = {
-		edit: Model.DOMSerializer.fromSchema(this.schemas.edit),
-		view: Model.DOMSerializer.fromSchema(this.schemas.view)
-	};
-
-	this.parsers = {
-		edit: Model.DOMParser.fromSchema(this.schemas.edit)
-	};
+	this.serializer = Model.DOMSerializer.fromSchema(this.schema);
+	this.parser = Model.DOMParser.fromSchema(this.schema);
 
 	this.plugins.push(
 		BreakPlugin,
@@ -121,10 +106,10 @@ function Editor(opts) {
 		FocusPlugin,
 	function(editor) {
 		return Input.inputRules({
-			rules: Input.allInputRules.concat(Setup.buildInputRules(editor.schemas.edit))
+			rules: Input.allInputRules.concat(Setup.buildInputRules(editor.schema))
 		});
 	}, function(editor, opts) {
-		return keymap(Setup.buildKeymap(editor.schemas.edit, opts.mapKeys));
+		return keymap(Setup.buildKeymap(editor.schema, opts.mapKeys));
 	}, function(editor) {
 		return keymap(Commands.baseKeymap);
 	}, function() {
@@ -162,16 +147,16 @@ function Editor(opts) {
 
 	View.EditorView.call(this, {mount: place}, {
 		state: State.EditorState.create({
-			schema: this.schemas.edit,
+			schema: this.schema,
 			plugins: plugins,
-			doc: opts.content ? this.parsers.edit.parse(opts.content) : undefined
+			doc: opts.content ? this.parser.parse(opts.content) : undefined
 		}),
-		domParser: this.parsers.edit,
-		domSerializer: this.serializers.edit,
+		domParser: this.parser,
+		domSerializer: this.serializer,
 		dispatchTransaction: function(tr) {
 			editor.updateState(editor.state.apply(tr));
 		},
-		nodeViews: nodeViews
+		nodeViews: spec.views
 	});
 }
 
@@ -201,10 +186,9 @@ Editor.prototype.set = function(dom) {
 	this.dispatch(tr);
 };
 
-Editor.prototype.get = function(edition) {
+Editor.prototype.get = function() {
 	// in an offline document
-	var serializer = edition ? this.serializers.edit : this.serializers.view;
-	return serializer.serializeFragment(this.state.doc.content, {
+	return this.serializer.serializeFragment(this.state.doc.content, {
 		document: this.doc
 	});
 };
@@ -250,7 +234,9 @@ Editor.prototype.insertTr = function(tr, dom, sel) {
 	if (dom.nodeType == Node.ELEMENT_NODE) {
 		el = this.map[dom.getAttribute('block-type')];
 		if (el) {
-			if (el.foreign) foreign = true;
+			if (el.foreign) {
+				foreign = true;
+			}
 			if (el.inline) {
 				inline = true;
 				// parsing an empty inline node just ignores it
@@ -309,7 +295,7 @@ Editor.prototype.parse = function(dom, opts) {
 		parent.appendChild(dom);
 		dom = parent;
 	}
-	var node = this.parsers.edit.parse(dom, opts);
+	var node = this.parser.parse(dom, opts);
 	return node.content;
 };
 
@@ -612,7 +598,7 @@ function actionAncestorBlock(editor, tr) {
 		Object.defineProperty(block.content, 'fragment', {
 			get: function() {
 				// this operation is not cheap
-				return editor.serializers.edit.serializeFragment(editor.state.doc);
+				return editor.serializer.serializeFragment(editor.state.doc);
 			}
 		});
 	}

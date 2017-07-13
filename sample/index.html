@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		plugins: [
 			new DifferRender('preview'),
 			function(editor, opts) {
-				var items = Pagecut.Setup.buildMenuItems(editor.schemas.edit);
+				var items = Pagecut.Setup.buildMenuItems(editor.schema);
 				var menubar = new Pagecut.Menubar({
 					place: document.querySelector('#menubar'),
 					items: [
