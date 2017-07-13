@@ -6,7 +6,7 @@ exports.inspector.resolver = InspectorResolver;
 
 Object.assign(exports.inspector.element, {
 	group: 'block',
-	edit: InspectorEdit,
+	view: InspectorEdit,
 	contents: {
 		title: {
 			spec: "inline<_>*"
