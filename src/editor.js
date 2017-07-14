@@ -72,12 +72,12 @@ function Editor(opts) {
 	var spec = {
 		nodes: opts.nodes,
 		marks: opts.marks,
-		topNode: opts.topNode,
-		views: {}
+		topNode: opts.topNode
 	};
+	var views = {};
 
 	this.elements.forEach(function(el) {
-		Specs.define(editor, el, spec);
+		Specs.define(editor, el, spec, views);
 	});
 
 	this.schema = new Model.Schema(spec);
@@ -156,7 +156,7 @@ function Editor(opts) {
 		dispatchTransaction: function(tr) {
 			editor.updateState(editor.state.apply(tr));
 		},
-		nodeViews: spec.views
+		nodeViews: views
 	});
 }
 

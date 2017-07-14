@@ -6,7 +6,7 @@ exports.nodeToContent = nodeToContent;
 
 var index;
 
-function define(editor, elt, schema) {
+function define(editor, elt, schema, views) {
 	// ignore virtual elements
 	if (!elt.view) return;
 	var dom = elt.view(editor.doc, {
@@ -53,7 +53,7 @@ function define(editor, elt, schema) {
 			schema.nodes = schema.nodes.addToEnd(spec.specName, spec);
 		}
 		if (spec.nodeView) {
-			schema.views[elt.name] = spec.nodeView;
+			views[elt.name] = spec.nodeView;
 		}
 	});
 }
