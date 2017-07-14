@@ -20,37 +20,44 @@ function define(editor, elt, schema, views) {
 		var spec;
 		if (type == "root") {
 			spec = createRootSpec(editor, elt, obj);
-			spec.specName = elt.name;
+			obj.name = elt.name;
 		} else if (type == "wrap") {
 			spec = createWrapSpec(editor, elt, obj);
-			spec.specName = `${elt.name}_${type}_${index++}`;
+			obj.name = `${elt.name}_${type}_${index++}`;
 		} else if (type == "container") {
 			spec = createContainerSpec(editor, elt, obj);
-			spec.specName = `${elt.name}_${type}_${index++}`;
+			obj.name = `${elt.name}_${type}_${index++}`;
 		}
 		if (obj.children.length) {
 			// this type of node has content that is wrap or container type nodes
 			spec.content = obj.children.map(function(child) {
-				return child.specName;
+				return child.name;
 			}).join(" ");
 		} else if (elt.contents) {
-			var specKeys = Object.keys(elt.contents);
 			var contentName = obj.dom.getAttribute('block-content');
-			if (specKeys.length == 1) {
-				if (contentName == specKeys[0]) {
-					spec.content = elt.contents[contentName].spec;
-				} else {
-					console.warn(`element ${elt.name} has no matching contents`, contentName);
+			if (!contentName) {
+				var specKeys = Object.keys(elt.contents);
+				if (specKeys.length == 1) {
+					contentName = specKeys[0];
+				} else if (specKeys.length > 1) {
+					console.warn(`element ${elt.name} cannot choose a default block-content among`, elt.contents);
+					return;
 				}
-			} else if (specKeys.length > 1) {
-				console.warn(`element ${elt.name} cannot choose a default block-content among`, elt.contents);
+			}
+			if (contentName) {
+				if (!elt.contents[contentName]) {
+					console.warn(`element ${elt.name} has no matching contents`, contentName);
+					return;
+				} else {
+					spec.content = elt.contents[contentName].spec;
+				}
 			}
 		}
 
 		if (spec.inline) {
-			schema.marks = schema.marks.addToEnd(spec.specName, spec);
+			schema.marks = schema.marks.addToEnd(obj.name, spec);
 		} else {
-			schema.nodes = schema.nodes.addToEnd(spec.specName, spec);
+			schema.nodes = schema.nodes.addToEnd(obj.name, spec);
 		}
 		if (spec.nodeView) {
 			views[elt.name] = spec.nodeView;
@@ -88,23 +95,19 @@ function flagDom(dom, iterate) {
 	return obj;
 }
 
-/*
---------------------------------------------------------------------
-During this root node's lifetime, all mapped dom nodes do not change
---------------------------------------------------------------------
-The dom property always refers to the same dom node, so only attributes can change
-Same for contentDom.
-All other dom nodes between dom and contentDom can be changed arbitrarily.
-When rendering the block, dom nodes that are children of contentDom can change,
-in which case their prosemirror counterparts must be updated, and in turn, these
-pm nodes must update themselves using what was rendered in the first place.
-So instead of
-root node -> block -> update all dom
-we have
-root node -> block -> update dom between "dom" and "contentDom",
-                   -> update pm nodes children of root node
-                              -> which update their dom using their parent root node
-*/
+function toDOMOutputSpec(obj, node) {
+	var out = 0;
+	var dom = obj.contentDom;
+	var isLeaf = node.type.isLeaf;
+	while (dom) {
+		var attrs = dom == obj.dom ? attrsTo(node.attrs) : domAttrsMap(dom);
+		if (isLeaf) return [dom.nodeName, attrs];
+		out = [dom.nodeName, attrs, out];
+		if (dom == obj.dom) break;
+		dom = dom.parentNode;
+	}
+	return out;
+}
 
 function createRootSpec(editor, elt, obj) {
 	var defaultAttrs = Object.assign({
@@ -139,7 +142,10 @@ function createRootSpec(editor, elt, obj) {
 		isolating: !elt.inline,
 		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [parseRule],
-		nodeView: createRootNodeView(elt, obj.dom)
+		nodeView: createRootNodeView(elt, obj.dom),
+		toDOM: function(node) {
+			return toDOMOutputSpec(obj, node);
+		}
 	};
 	if (elt.group) spec.group = elt.group;
 
@@ -166,7 +172,10 @@ function createWrapSpec(editor, elt, obj) {
 		typeName: "wrap",
 		attrs: defaultSpecAttrs,
 		parseDOM: [parseRule],
-		nodeView: createWrapNodeView(elt, obj.dom)
+		nodeView: createWrapNodeView(elt, obj.dom),
+		toDOM: function(node) {
+			return toDOMOutputSpec(obj, node);
+		}
 	};
 }
 
@@ -190,7 +199,10 @@ function createContainerSpec(editor, elt, obj) {
 		typeName: "container",
 		attrs: defaultSpecAttrs,
 		parseDOM: [parseRule],
-		nodeView: createContainerNodeView(elt, obj.dom)
+		nodeView: createContainerNodeView(elt, obj.dom),
+		toDOM: function(node) {
+			return toDOMOutputSpec(obj, node);
+		}
 	};
 }
 
@@ -368,6 +380,15 @@ function nodeToContent(serializer, node, content) {
 		});
 	}
 	return content;
+}
+
+function domAttrsMap(dom) {
+	var map = {};
+	var atts = dom.attributes;
+	for (var k=0; k < atts.length; k++) {
+		map[atts[k].name] = map[atts[k].value];
+	}
+	return map;
 }
 
 function attrsTo(attrs) {
