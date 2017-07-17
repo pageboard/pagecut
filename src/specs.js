@@ -75,7 +75,9 @@ function flagDom(dom, iterate) {
 	if (dom.hasAttribute('block-content')) contents.push(dom);
 	else contents = Array.from(dom.querySelectorAll('[block-content]'));
 
-	if (contents.length == 0) return; // ignore this
+	if (contents.length == 0) {
+		return; // ignore this
+	}
 
 	var anc = commonAncestor.apply(null, contents);
 	if (anc != dom) {
