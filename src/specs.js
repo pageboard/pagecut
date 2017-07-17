@@ -226,19 +226,23 @@ function createRootNodeView(element, initialDom) {
 		nodeView.dom = initialDom.cloneNode(true);
 		nodeView.contentDom = nodeView.dom.querySelector('[block-ancestor]') || nodeView.dom;
 
+		updateNodeView(node, decorations);
 
-		nodeView.update = function(node, decorations) {
+		nodeView.update = updateNodeView;
+
+		nodeView.ignoreMutation = function(record) {
+			return true;
+		};
+
+		function updateNodeView(node, decorations) {
 			var uView = flagDom(nodeToDom(element, node, view));
 			// nodeView.dom, nodeView.contentDom must not change
 			mutateNodeView(nodeView, uView);
 			// nodeView.contentDom.childNodes match nodeView.children[i].dom
 			nodeView.contentDom._pagecut_nodeView_children = uView.children;
 			return true;
-		};
+		}
 
-		nodeView.ignoreMutation = function(record) {
-			return true;
-		};
 		return nodeView;
 	};
 }
