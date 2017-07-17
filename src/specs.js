@@ -385,7 +385,7 @@ function domAttrsMap(dom) {
 	var map = {};
 	var atts = dom.attributes;
 	for (var k=0; k < atts.length; k++) {
-		map[atts[k].name] = map[atts[k].value];
+		map[atts[k].name] = atts[k].value;
 	}
 	return map;
 }
