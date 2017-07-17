@@ -150,11 +150,11 @@ function createRootSpec(editor, elt, obj) {
 		isolating: !elt.inline,
 		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [parseRule],
-		nodeView: createRootNodeView(elt, obj.dom),
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
 		}
 	};
+	if (obj.dom != obj.contentDom) spec.nodeView = createRootNodeView(elt, obj.dom);
 	if (elt.group) spec.group = elt.group;
 
 	return spec;
@@ -176,15 +176,16 @@ function createWrapSpec(editor, elt, obj) {
 		parseRule.contentElement = '[block-ancestor]';
 	}
 
-	return {
+	var spec = {
 		typeName: "wrap",
 		attrs: defaultSpecAttrs,
 		parseDOM: [parseRule],
-		nodeView: createWrapNodeView(elt, obj.dom),
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
 		}
 	};
+	if (obj.dom != obj.contentDom) spec.nodeView = createWrapNodeView(elt, obj.dom);
+	return spec;
 }
 
 function createContainerSpec(editor, elt, obj) {
@@ -203,15 +204,16 @@ function createContainerSpec(editor, elt, obj) {
 		parseRule.contentElement = '[block-ancestor]';
 	}
 
-	return {
+	var spec = {
 		typeName: "container",
 		attrs: defaultSpecAttrs,
 		parseDOM: [parseRule],
-		nodeView: createContainerNodeView(elt, obj.dom),
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
 		}
 	};
+	if (obj.dom != obj.contentDom) spec.nodeView = createContainerNodeView(elt, obj.dom);
+	return spec;
 }
 
 function createRootNodeView(element, initialDom) {
