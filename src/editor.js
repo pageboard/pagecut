@@ -420,8 +420,14 @@ Editor.prototype.posFromDOM = function(dom) {
 	var offset = 0;
 	if (dom != this.dom) {
 		var sib = dom;
-		while (sib = sib.previousSibling) offset++;
+		while (sib = sib.previousSibling) {
+			offset++;
+		}
 		dom = dom.parentNode;
+	}
+	if (!dom) {
+		console.warn("FIXME", "cannot find posFromDOM of a dom node without parent", dom);
+		return false;
 	}
 	var pos;
 	try {
