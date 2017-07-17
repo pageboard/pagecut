@@ -72,8 +72,12 @@ function flagDom(dom, iterate) {
 	};
 	dom.setAttribute('contenteditable', 'false');
 	var contents = [];
-	if (dom.hasAttribute('block-content')) contents.push(dom);
-	else contents = Array.from(dom.querySelectorAll('[block-content]'));
+	if (dom.hasAttribute('block-content')) {
+		contents.push(dom);
+		dom.setAttribute('contenteditable', 'true');
+	}	else {
+		contents = Array.from(dom.querySelectorAll('[block-content]'));
+	}
 
 	if (contents.length == 0) {
 		return; // ignore this
@@ -83,16 +87,7 @@ function flagDom(dom, iterate) {
 	if (anc != dom) {
 		obj.contentDom = anc;
 		anc.setAttribute('block-ancestor', '');
-		var cur = anc;
-		while (cur = cur.previousSibling) {
-			if (cur.nodeType == Node.ELEMENT_NODE) cur.setAttribute('contenteditable', 'false');
-		}
-		cur = anc;
-		while (cur = cur.nextSibling) {
-			if (cur.nodeType == Node.ELEMENT_NODE) cur.setAttribute('contenteditable', 'false');
-		}
 	}
-	obj.contentDom.setAttribute('contenteditable', 'true');
 
 	if (!obj.children) obj.children = [];
 	var child;
