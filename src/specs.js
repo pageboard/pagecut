@@ -23,11 +23,10 @@ function define(editor, elt, schema, views) {
 			obj.name = elt.name;
 		} else if (type == "wrap") {
 			spec = createWrapSpec(editor, elt, obj);
-			obj.name = `${elt.name}_${type}_${index++}`;
 		} else if (type == "container") {
 			spec = createContainerSpec(editor, elt, obj);
-			obj.name = `${elt.name}_${type}_${index++}`;
 		}
+		if (!obj.name) obj.name = `${elt.name}_${type}_${index++}`;
 		if (obj.children.length) {
 			// this type of node has content that is wrap or container type nodes
 			spec.content = obj.children.map(function(child) {
@@ -60,7 +59,7 @@ function define(editor, elt, schema, views) {
 			schema.nodes = schema.nodes.addToEnd(obj.name, spec);
 		}
 		if (spec.nodeView) {
-			views[elt.name] = spec.nodeView;
+			views[obj.name] = spec.nodeView;
 		}
 	});
 }
