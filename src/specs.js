@@ -133,7 +133,7 @@ function createRootSpec(editor, elt, obj) {
 			var block = editor.resolve(dom);
 			if (block.type == "id") {
 				block = null;
-				console.error("Fix id module");
+				console.warn("FIXME", "id module shouldn't take over the type");
 			}
 			var attrs = attrsFrom(dom);
 			return Object.assign(block ? blockToAttr(block) : {}, attrs);
