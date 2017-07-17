@@ -336,14 +336,18 @@ function mutateNodeView(obj, nobj) {
 }
 
 function mutateAttributes(dom, ndom) {
-	var atts = dom.attributes;
-	while (atts.length > 0) {
-		dom.removeAttribute(atts[0].name);
-	}
+	var oldMap = domAttrsMap(dom);
 	var natts = ndom.attributes;
+	var attr, oldVal;
 	for (var k=0; k < natts.length; k++) {
-		dom.setAttribute(natts[k].name, natts[k].value);
+		attr = natts[k];
+		oldVal = oldMap[attr.name];
+		if (oldVal != null) {
+			delete oldMap[attr.name];
+		}
+		if (oldVal != attr.value) dom.setAttribute(attr.name, attr.value);
 	}
+	for (var name in oldMap) dom.removeAttribute(name);
 }
 
 function blockToAttr(block) {
