@@ -374,9 +374,10 @@ function blockToAttr(block) {
 
 function attrToBlock(attrs) {
 	var block = {};
-	if (attrs.block_id != null) block.id = attrs.block_id;
-	if (attrs.block_type != null) block.type = attrs.block_type;
-	if (attrs.block_data != null) block.data = JSON.parse(attrs.block_data);
+	for (var name in attrs) {
+		if (name.startsWith('block_')) block[name.substring(6)] = attrs[name];
+	}
+	if (block.data) block.data = JSON.parse(block.data);
 	else block.data = {};
 	return block;
 }
