@@ -66,8 +66,10 @@ function define(editor, elt, schema, views) {
 
 function flagDom(dom, iterate) {
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return;
-	var obj = {};
-	obj.dom = dom;
+	var obj = {
+		dom: dom,
+		contentDom: dom
+	};
 	var contents = [];
 	if (dom.hasAttribute('block-content')) contents.push(dom);
 	else contents = Array.from(dom.querySelectorAll('[block-content]'));
