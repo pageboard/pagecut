@@ -320,7 +320,7 @@ function mutateNodeView(obj, nobj) {
 	// first upgrade attributes
 	mutateAttributes(obj.dom, nobj.dom);
 	// then upgrade descendants
-	if (!obj.contentDom || obj.dom == obj.contentDom) return; // our job is done
+	if (obj.dom == obj.contentDom) return; // our job is done
 	// there is something between dom and contentDom
 	var cont = obj.contentDom;
 	var ncont = nobj.contentDom;
