@@ -60,7 +60,7 @@ function InspectorEdit(document, block) {
 	var data = block.data;
 	var node = document.createElement('div');
 	node.setAttribute('class', 'inspector');
-	if (block.url) node.setAttribute('block-url', block.url);
+	node.setAttribute('block-url', block.url || ""); // block-level attributes must be present event if block is empty
 	node.innerHTML = ownDoc.body.innerHTML;
 	var link = node.querySelector('header > a[title]');
 
