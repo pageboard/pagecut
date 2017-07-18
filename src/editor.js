@@ -488,7 +488,7 @@ Editor.prototype.parents = function(tr, pos, all, before) {
 			obj[type] = {rpos: rpos, level: level, node: node};
 			if (mark) obj[type].mark = mark;
 		}
-		if ((type == "content" || level != depth) && node && node.attrs.block_content) {
+		if ((type == "container" || level != depth) && node && node.attrs.block_content) {
 			if (!obj.content) obj.content = obj.root || {};
 			obj.content.name = node.attrs.block_content;
 		}
