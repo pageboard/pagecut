@@ -68,7 +68,7 @@ function flagDom(dom, iterate) {
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return;
 	var obj = {
 		dom: dom,
-		contentDom: dom
+		contentDOM: dom
 	};
 	dom.setAttribute('contenteditable', 'false');
 	var contents = [];
@@ -85,7 +85,7 @@ function flagDom(dom, iterate) {
 
 	var anc = commonAncestor.apply(null, contents);
 	if (anc != dom) {
-		obj.contentDom = anc;
+		obj.contentDOM = anc;
 		anc.setAttribute('block-ancestor', '');
 	}
 
@@ -105,7 +105,7 @@ function flagDom(dom, iterate) {
 
 function toDOMOutputSpec(obj, node) {
 	var out = 0;
-	var dom = obj.contentDom;
+	var dom = obj.contentDOM;
 	var isLeaf = node.type.isLeaf;
 	while (dom) {
 		var attrs = dom == obj.dom ? attrsTo(node.attrs) : domAttrsMap(dom);
@@ -139,7 +139,7 @@ function createRootSpec(editor, elt, obj) {
 			return Object.assign(block ? blockToAttr(block) : {}, attrs);
 		}
 	};
-	if (obj.contentDom != obj.dom) {
+	if (obj.contentDOM != obj.dom) {
 		parseRule.contentElement = '[block-ancestor]';
 	}
 
@@ -154,7 +154,7 @@ function createRootSpec(editor, elt, obj) {
 			return toDOMOutputSpec(obj, node);
 		}
 	};
-	if (obj.dom != obj.contentDom) spec.nodeView = createRootNodeView(elt, obj.dom);
+	if (obj.dom != obj.contentDOM) spec.nodeView = createRootNodeView(elt, obj.dom);
 	if (elt.group) spec.group = elt.group;
 
 	return spec;
@@ -172,7 +172,7 @@ function createWrapSpec(editor, elt, obj) {
 			return attrsFrom(dom);
 		}
 	};
-	if (obj.contentDom != obj.dom) {
+	if (obj.contentDOM != obj.dom) {
 		parseRule.contentElement = '[block-ancestor]';
 	}
 
@@ -184,7 +184,7 @@ function createWrapSpec(editor, elt, obj) {
 			return toDOMOutputSpec(obj, node);
 		}
 	};
-	if (obj.dom != obj.contentDom) spec.nodeView = createWrapNodeView(elt, obj.dom);
+	if (obj.dom != obj.contentDOM) spec.nodeView = createWrapNodeView(elt, obj.dom);
 	return spec;
 }
 
@@ -200,7 +200,7 @@ function createContainerSpec(editor, elt, obj) {
 			return attrsFrom(dom);
 		}
 	};
-	if (obj.contentDom != obj.dom) {
+	if (obj.contentDOM != obj.dom) {
 		parseRule.contentElement = '[block-ancestor]';
 	}
 
@@ -212,7 +212,7 @@ function createContainerSpec(editor, elt, obj) {
 			return toDOMOutputSpec(obj, node);
 		}
 	};
-	if (obj.dom != obj.contentDom) spec.nodeView = createContainerNodeView(elt, obj.dom);
+	if (obj.dom != obj.contentDOM) spec.nodeView = createContainerNodeView(elt, obj.dom);
 	return spec;
 }
 
@@ -221,7 +221,11 @@ function createRootNodeView(element, initialDom) {
 		var nodeView = {};
 
 		nodeView.dom = initialDom.cloneNode(true);
-		nodeView.contentDom = nodeView.dom.querySelector('[block-ancestor]') || nodeView.dom;
+		nodeView.contentDOM = nodeView.dom.querySelector('[block-ancestor]');
+		if (!nodeView.contentDOM) {
+			console.warn("Missing [block-ancestor] for root", element.name, initialDom);
+			nodeView.contentDOM = nodeView.dom;
+		}
 
 		updateNodeView(node, decorations);
 
@@ -249,14 +253,18 @@ function createWrapNodeView(element, initialDom) {
 		// TODO
 		// problème: comment obtenir le DOM créé lors de rootNodeView à partir de ce node ?
 		// - soit le node est "neuf" - et une simple copie de dom suffit - il faut juste
-		// retrouver contentDom à partir de dom, ce qui peut être fait facilement
-		// parce que contentDom a obtenu un attribut lors de la construction des specs
+		// retrouver contentDOM à partir de dom, ce qui peut être fait facilement
+		// parce que contentDOM a obtenu un attribut lors de la construction des specs
 		// - soit le node est "parsé" - et node.attrs.viewId permet de retrouver
-		// le dom/contentDom qui ont été créés par le rendu du root node
+		// le dom/contentDOM qui ont été créés par le rendu du root node
 
 		var nodeView = {};
 		nodeView.dom = initialDom.cloneNode(true);
-		nodeView.contentDom = nodeView.dom.querySelector('[block-ancestor]') || nodeView.dom;
+		nodeView.contentDOM = nodeView.dom.querySelector('[block-ancestor]');
+		if (!nodeView.contentDOM) {
+			console.warn("Missing [block-ancestor] for wrap", element.name, initialDom);
+			nodeView.contentDOM = nodeView.dom;
+		}
 
 		nodeView.update = function(node, decorations) {
 			// the nice thing here is that it just has to update to the "new" dom node
@@ -280,7 +288,11 @@ function createContainerNodeView(element, initialDom) {
 	return function containerNodeView(node, view, getPos, decorations) {
 		var nodeView = {};
 		nodeView.dom = initialDom.cloneNode(true);
-		nodeView.contentDom = nodeView.dom.querySelector('[block-ancestor]') || nodeView.dom;
+		nodeView.contentDOM = nodeView.dom.querySelector('[block-ancestor]');
+		if (!nodeView.contentDOM) {
+			console.warn("Missing [block-ancestor] for container", element.name, initialDom);
+			nodeView.contentDOM = nodeView.dom;
+		}
 
 		nodeView.update = function(node, decorations) {
 			// the nice thing here is that it just has to update to the "new" dom node
@@ -333,10 +345,10 @@ function mutateNodeView(obj, nobj) {
 	// first upgrade attributes
 	mutateAttributes(obj.dom, nobj.dom);
 	// then upgrade descendants
-	if (obj.dom == obj.contentDom) return; // our job is done
-	// there is something between dom and contentDom
-	var cont = obj.contentDom;
-	var ncont = nobj.contentDom;
+	if (obj.dom == obj.contentDOM) return; // our job is done
+	// there is something between dom and contentDOM
+	var cont = obj.contentDOM;
+	var ncont = nobj.contentDOM;
 	var parent;
 	while (cont != obj.dom) {
 		mutateAttributes(cont, ncont);
