@@ -47,8 +47,8 @@
     "prosemirror-schema-list": "^0.22.0",
     "prosemirror-schema-table": "^0.22.0",
     "prosemirror-state": "^0.22.0",
-    "prosemirror-view": "^0.22.0",
     "prosemirror-transform": "^0.22.2",
+    "prosemirror-view": "^0.22.0",
     "url-regex": "^3.2.0",
     "window-agent": "^1.2.0"
   }
