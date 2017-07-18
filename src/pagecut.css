@@ -22,3 +22,6 @@
 	overflow:visible;
 }
 
+[contenteditable="true"]:focus {
+	outline: none;
+}
