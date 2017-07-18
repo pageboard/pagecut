@@ -237,10 +237,7 @@ function createRootNodeView(element, initialDom) {
 
 		function updateNodeView(node, decorations) {
 			var uView = flagDom(nodeToDom(element, node, view));
-			// nodeView.dom, nodeView.contentDom must not change
 			mutateNodeView(nodeView, uView);
-			// nodeView.contentDom.childNodes match nodeView.children[i].dom
-			nodeView.contentDom._pagecut_nodeView_children = uView.children;
 			return true;
 		}
 
