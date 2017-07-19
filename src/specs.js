@@ -15,7 +15,9 @@ function define(editor, elt, schema, views) {
 		content: {}
 	}, editor);
 	if (!dom) throw new Error(`${elt.name} element must render a DOM Node`);
+	if (dom.parentNode) throw new Error(`${elt.name} element must render an orphaned DOM Node`);
 	var index = 0;
+
 	flagDom(dom, function(type, obj) {
 		var spec;
 		if (type == "root") {
