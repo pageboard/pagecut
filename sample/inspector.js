@@ -2,13 +2,6 @@
 
 exports.inspector = InspectorModule;
 
-function InspectorModule(editor) {
-	this.editor = editor;
-	editor.elements.push(inspectorElement);
-	editor.resolvers.push(this.resolver.bind(this));
-	this.store = {};
-}
-
 var StringType = {
 	type: 'string'
 };
@@ -45,6 +38,13 @@ var inspectorElement = {
 	},
 	required: ['url']
 };
+
+function InspectorModule(editor) {
+	this.editor = editor;
+	editor.elements.push(inspectorElement);
+	editor.resolvers.push(this.resolver.bind(this));
+	this.store = {};
+}
 
 // this is exposed for clients, pagecut does not know about this interface
 InspectorModule.prototype.store = {};

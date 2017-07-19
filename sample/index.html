@@ -19,13 +19,6 @@
 
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
-	if (window.GET && window.diffDOM) {
-		document.getElementById('install').remove();
-	}
-	if (/github\.io/.test(document.location.hostname)) {
-		document.body.insertAdjacentHTML('afterbegin', '<iframe src="https://ghbtns.com/github-btn.html?user=kapouer&repo=pagecut&type=star" frameborder="0" scrolling="0" width="170px" height="20px"></iframe>');
-	}
-
 	var differ = new window.diffDOM({
 		filterOuterDiff: function(from, to, diffs) {
 			// do not diff inside a rendered co-link, attributes will change anyway
@@ -94,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			console.error(err);
 		});
 	};
+
 	Pagecut.sample.modules.inspector.set([{
 		id: 1,
 		type: 'inspector',
@@ -136,8 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	Pagecut.sample.set(contentNode);
 	contentNode.hidden = true;
-
-
 });
 	</script>
 </head>
@@ -145,7 +137,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 Pagecut demo.
 <br />
-<code id="install">npm install window-agent diff-dom</code>
 
 <div id="menubar" class="ProseMirror-menu"></div>
 <div id="editor"></div>
@@ -179,9 +170,6 @@ Pagecut demo.
 		</div>
 		<figure><img src="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg" /></figure>
 	</aside>
-	<script type="text/html"><img src="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg" alt="cat-1551783__340.jpg" /></script>
-
-
 </div>
 			<p><span>et avec du texte en dessous aussi</span></p>
 		</div>
@@ -197,7 +185,6 @@ Pagecut demo.
 		</div>
 		<figure></figure>
 	</aside>
-	<script type="text/html"><a href="https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale">SESAM-Vitale — Wikipédia</a></script>
 </div>
 <p>hahaha</p>
 </div>
