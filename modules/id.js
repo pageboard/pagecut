@@ -264,15 +264,17 @@ function IdResolver(editor, obj, cb) {
 	if (!id) return;
 	var block = editor.modules.id.get(id);
 	if (block) return block;
-	if (IdResolver.fetch) IdResolver.fetch(id, function(err, block) {
-		if (err) return cb(err);
-		editor.modules.id.set(block);
-		cb(null, block);
-	});
-	return {
-		type: 'id',
-		id: id
-	};
+	if (IdResolver.fetch) {
+		IdResolver.fetch(id, function(err, block) {
+			if (err) return cb(err);
+			editor.modules.id.set(block);
+			cb(null, block);
+		});
+		return {
+			type: 'id',
+			id: id
+		};
+	}
 }
 
 function IdModifier(editor, block, dom) {
