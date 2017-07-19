@@ -489,8 +489,8 @@ Editor.prototype.parents = function(tr, pos, all, before) {
 			if (mark) obj[type].mark = mark;
 		}
 		if ((type == "container" || level != depth) && node && node.attrs.block_content) {
-			if (!obj.content) obj.content = obj.root || {};
-			obj.content.name = node.attrs.block_content;
+			if (!obj.container) obj.container = obj.root || {};
+			obj.container.name = node.attrs.block_content;
 		}
 		if (type == "root") {
 			if (!all) break;
