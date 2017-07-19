@@ -1,22 +1,14 @@
 BROWSERIFY = $(shell node -p 'require.resolve("browserify/bin/cmd.js")') -t [ babelify --presets [ es2015 ] ]
-BUNDLEDOM = $(shell node -p 'require.resolve("bundledom/bin/bundledom.js")')
+
 FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
 .PHONY: build
 build: predist dist/pagecut-menu.js dist/pagecut-editor.js dist/pagecut-viewer.js dist/pagecut-id.js
-	#dist/pagecut-inspector.js
 
 .PHONY: all
+
 all: clean build
-	$(BUNDLEDOM) sample/index.html \
-	--html index.html \
-	--root dist/ \
-	--js pagecut.min.js \
-	--css pagecut.min.css \
-	--ignore agent.js \
-	--ignore diffDOM.js \
-	--ignore .
 
 clean:
 	rm -rf dist/*
@@ -24,10 +16,6 @@ clean:
 predist:
 	mkdir -p dist/
 	cp src/*.css dist/
-	cp -r modules/inspector dist/
-
-#dist/pagecut-inspector.js: modules/inspector/index.js
-	#$(BROWSERIFY) --standalone Pagecut.modules.inspector --outfile $@ modules/inspector/index.js
 
 dist/pagecut-id.js: modules/id.js
 	$(BROWSERIFY) --standalone Pagecut.modules.id --outfile $@ modules/id.js

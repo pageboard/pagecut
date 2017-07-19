@@ -1,0 +1,30 @@
+html {
+	height:100%;
+}
+body {
+	display:flex;
+	flex-direction:column;
+	height:100%;
+	margin:0;
+}
+#editor {
+	flex: 1 1 auto;
+	margin:1em;
+	border:1px solid silver;
+}
+.ProseMirror-content {
+	margin:0.1em;
+	padding:0.1em;
+}
+#preview {
+	flex: 1 1 auto;
+	margin:1em;
+	border:2px solid black;
+	overflow:auto;
+	max-height:100%;
+}
+#menubar {
+	margin:1em;
+	margin-bottom:0;
+	border:1px solid gray;
+}

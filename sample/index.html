@@ -3,46 +3,20 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Sample editor</title>
-	<link href="../dist/pagecut.css" rel="stylesheet" />
-	<link href="../dist/pagecut-menu.css" rel="stylesheet" />
+	<link rel="stylesheet" href="../dist/pagecut.css" />
+	<link rel="stylesheet" href="../dist/pagecut-menu.css" />
+	<link rel="stylesheet" href="inspector.css" />
+	<link rel="stylesheet" href="index.css" />
+
 	<script src="../dist/pagecut-editor.js"></script>
 	<script src="../dist/pagecut-menu.js"></script>
-	<link rel="import" href="../modules/inspector/import.html" />
 	<script src="../dist/pagecut-id.js"></script>
+
 	<script src="agent.js"></script>
 	<script src="diffDOM.js"></script>
-	<style>
-html {
-	height:100%;
-}
-body {
-	display:flex;
-	flex-direction:column;
-	height:100%;
-	margin:0;
-}
-#editor {
-	flex: 1 1 auto;
-	margin:1em;
-	border:1px solid silver;
-}
-.ProseMirror-content {
-	margin:0.1em;
-	padding:0.1em;
-}
-#preview {
-	flex: 1 1 auto;
-	margin:1em;
-	border:2px solid black;
-	overflow:auto;
-	max-height:100%;
-}
-#menubar {
-	margin:1em;
-	margin-bottom:0;
-	border:1px solid gray;
-}
-	</style>
+	<script src="dom-template-strings.js"></script>
+	<script src="inspector.js"></script>
+
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
 	if (window.GET && window.diffDOM) {
@@ -186,7 +160,7 @@ Pagecut demo.
 		<a name="preview"></a>
 	</header>
 	<div block-ancestor>
-		<div block-content="title" contenteditable="true"><span>SESdAM-Vitale — Wikipédia</span></div>
+		<div block-content="title"><span>SESdAM-Vitale — Wikipédia</span></div>
 		<div block-content="content"><p><span>Ceci est un lien qui contient une image</span></p>
 			<div class="inspector" block-url="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg" type="image" block-type="inspector" block-id="2">
 	<header block-handle="">
