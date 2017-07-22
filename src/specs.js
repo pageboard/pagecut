@@ -132,9 +132,10 @@ function createRootSpec(editor, elt, obj) {
 	var parseRule = {
 		tag: `[block-type="${elt.name}"]`,
 		getAttrs: function(dom) {
-			var block = editor.resolve(dom);
-			var attrs = attrsFrom(dom);
-			return Object.assign(block ? blockToAttr(block) : {}, attrs);
+			return Object.assign(
+				blockToAttr(editor.resolve(dom)),
+				attrsFrom(dom)
+			);
 		}
 	};
 	if (obj.contentDOM != obj.dom) {
@@ -150,9 +151,11 @@ function createRootSpec(editor, elt, obj) {
 		parseDOM: [parseRule],
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
+		},
+		nodeView: function(node, view, getPos, decorations) {
+			return new RootNodeView(node, view, elt, obj.dom);
 		}
 	};
-	if (obj.dom != obj.contentDOM) spec.nodeView = createRootNodeView(elt, obj.dom);
 	if (elt.group) spec.group = elt.group;
 
 	return spec;
@@ -180,9 +183,11 @@ function createWrapSpec(editor, elt, obj) {
 		parseDOM: [parseRule],
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
+		},
+		nodeView: function(node, view, getPos, decorations) {
+			return new WrapNodeView(node, view, elt, obj.dom);
 		}
 	};
-	if (obj.dom != obj.contentDOM) spec.nodeView = createWrapNodeView(elt, obj.dom);
 	return spec;
 }
 
@@ -208,122 +213,92 @@ function createContainerSpec(editor, elt, obj) {
 		parseDOM: [parseRule],
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
+		},
+		nodeView: function(node, view, getPos, decorations) {
+			return new ContainerNodeView(node, view, elt, obj.dom);
 		}
 	};
-	if (obj.dom != obj.contentDOM) spec.nodeView = createContainerNodeView(elt, obj.dom);
 	return spec;
 }
 
-function createRootNodeView(element, initialDom) {
-	return function rootNodeView(node, view, getPos, decorations) {
-		var nodeView = {};
-
-		nodeView.dom = initialDom.cloneNode(true);
-		nodeView.contentDOM = nodeView.dom.querySelector('[block-ancestor]');
-		if (!nodeView.contentDOM) {
-			console.warn("Missing [block-ancestor] for root", element.name, initialDom);
-			nodeView.contentDOM = nodeView.dom;
-		}
-
-		updateNodeView(node, decorations);
-
-		nodeView.update = updateNodeView;
-
-		nodeView.ignoreMutation = function(record) {
-			return true;
-		};
-
-		function updateNodeView(node, decorations) {
-			var uView = flagDom(nodeToDom(element, node, view));
-			mutateNodeView(nodeView, uView);
-			return true;
-		}
-
-		return nodeView;
-	};
+function RootNodeView(node, view, element, domModel) {
+	this.dom = domModel.cloneNode(true);
+	this.view = view;
+	this.element = element;
+	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
+	this.update(node);
 }
 
-function createWrapNodeView(element, initialDom) {
-	return function wrapNodeView(node, view, getPos, decorations) {
-		// TODO
-		// problème: comment obtenir le DOM créé lors de rootNodeView à partir de ce node ?
-		// - soit le node est "neuf" - et une simple copie de dom suffit - il faut juste
-		// retrouver contentDOM à partir de dom, ce qui peut être fait facilement
-		// parce que contentDOM a obtenu un attribut lors de la construction des specs
-		// - soit le node est "parsé" - et node.attrs.viewId permet de retrouver
-		// le dom/contentDOM qui ont été créés par le rendu du root node
-
-		var nodeView = {};
-		nodeView.dom = initialDom.cloneNode(true);
-		nodeView.contentDOM = nodeView.dom.querySelector('[block-ancestor]');
-		if (!nodeView.contentDOM) {
-			console.warn("Missing [block-ancestor] for wrap", element.name, initialDom);
-			nodeView.contentDOM = nodeView.dom;
-		}
-
-		nodeView.update = function(node, decorations) {
-			// the nice thing here is that it just has to update to the "new" dom node
-			var uView = nodeView.dom.nodeView;
-			if (uView) {
-				delete nodeView.dom.nodeView;
-				mutateNodeView(nodeView, uView);
-			}
-			mergeNodeAttrsToDom(node.attrs, nodeView.dom);
-			return true;
-		};
-
-		nodeView.ignoreMutation = function(record) {
-			return true;
-		};
-		return nodeView;
-	};
-}
-
-function createContainerNodeView(element, initialDom) {
-	return function containerNodeView(node, view, getPos, decorations) {
-		var nodeView = {};
-		nodeView.dom = initialDom.cloneNode(true);
-		nodeView.contentDOM = nodeView.dom.querySelector('[block-ancestor]');
-		if (!nodeView.contentDOM) {
-			console.warn("Missing [block-ancestor] for container", element.name, initialDom);
-			nodeView.contentDOM = nodeView.dom;
-		}
-
-		nodeView.update = function(node, decorations) {
-			// the nice thing here is that it just has to update to the "new" dom node
-			var uView = nodeView.dom.nodeView;
-			if (uView) {
-				delete nodeView.dom.nodeView;
-				mutateNodeView(nodeView, uView);
-			}
-			mergeNodeAttrsToDom(node.attrs, nodeView.dom);
-			return true;
-		};
-
-		nodeView.ignoreMutation = function(record) {
-			return true;
-		};
-		return nodeView;
-	};
-}
-
-function nodeToDom(element, node, view) {
+RootNodeView.prototype.update = function(node, decorations) {
+	var self = this;
+	if (isNodeAttrsEqual(self.state, node.attrs)) return true;
+	self.state = Object.assign({}, node.attrs);
 	var block = attrToBlock(node.attrs);
-	block.content = {};
-	// this is a root node, so the new dom comes from a rendered block
-	var dom = element.view(view.doc, block, view);
-	if (!dom) throw new Error(`${element.name} element must render a DOM Node`);
-	if (dom.nodeType != Node.ELEMENT_NODE) {
-		console.error("I don't know what to do if element.view() doesn't return an element_node");
-		return;
+	var uView = flagDom(this.view.render(block));
+	mutateNodeView(self, uView);
+	uView.children.forEach(function(childView, i) {
+		var child = node.child(i);
+		child.uView = childView;
+	});
+	return true;
+};
+
+RootNodeView.prototype.stopEvent = function(e) {
+	var tg = e.target;
+	if (!tg.closest) tg = tg.parentNode;
+	var handle = tg.closest('[draggable]');
+	var ownHandle = this.dom.querySelector('[draggable]');
+	if (handle && ownHandle && handle == ownHandle) {
+		var tr = this.view.state.tr;
+		tr = tr.setSelection(State.NodeSelection.create(tr.doc, getPos()));
+		tr.setMeta('addToHistory', false);
+		this.view.dispatch(tr);
 	}
-	for (var i=0; i < view.modifiers.length; i++) {
-		dom = view.modifiers[i](view, block, dom) || dom;
-	}
-	Object.assign(node.attrs, blockToAttr(block));
-	mergeNodeAttrsToDom(node.attrs, dom);
-	return dom;
+};
+
+//RootNodeView.prototype.ignoreMutation = function(record) {
+//	// TODO mutations can be used to update blocks contents ?
+//	var node = record.target;
+//	if (node.nodeType != 1 && node.parentNode) node = node.parentNode;
+//	var content = node.closest('[block-content]');
+//	if (content) {
+//		console.log(content.outerHTML);
+//	}
+//	return false;
+//};
+
+function WrapNodeView(node, view, element, domModel) {
+	this.dom = domModel.cloneNode(true);
+	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
+	this.update(node);
 }
+
+WrapNodeView.prototype.update = function(node, decorations) {
+	if (node.uView) {
+		mutateNodeView(this, node.uView);
+		delete node.uView;
+	}
+	return true;
+};
+
+function ContainerNodeView(node, view, element, domModel) {
+	this.dom = domModel.cloneNode(true);
+	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
+	this.update(node);
+}
+
+ContainerNodeView.prototype.update = function(node, decorations) {
+	if (node.uView) {
+		mutateNodeView(this, node.uView);
+		delete node.uView;
+	}
+	// mergeNodeAttrsToDom(node.attrs, nodeView.dom);
+	return true;
+};
+
+ContainerNodeView.prototype.ignoreMutation = function(record) {
+	return true;
+};
 
 function mergeNodeAttrsToDom(attrs, dom) {
 	var domAttrs = attrsTo(Object.assign(
@@ -372,8 +347,21 @@ function mutateAttributes(dom, ndom) {
 	for (var name in oldMap) dom.removeAttribute(name);
 }
 
+function isNodeAttrsEqual(a, b) {
+	if (!a || !b) return false;
+	// nothing smart here, move along
+	for (var j in a) {
+		if (b[j] !== a[j]) return false;
+	}
+	for (var k in b) {
+		if (a[k] !== b[k]) return false;
+	}
+	return true;
+}
+
 function blockToAttr(block) {
 	var attrs = {};
+	if (!block) return attrs;
 	if (block.id != null) attrs.block_id = block.id;
 	if (block.type != null) attrs.block_type = block.type;
 	if (block.data) attrs.block_data = JSON.stringify(block.data);
