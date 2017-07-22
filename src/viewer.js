@@ -36,16 +36,16 @@ function Viewer(opts) {
 	}
 }
 
-Viewer.prototype.render = function(block, edition) {
+Viewer.prototype.render = function(block) {
 	var type = block.type;
 	if (!type) throw new Error("Missing block type");
 	var el = this.map[type];
 	if (!el) throw new Error("Missing element " + type);
-	var renderFn = edition && el.edit || el.view;
-	if (!renderFn) throw new Error("Missing render function for block type " + type);
+	if (!el.view) throw new Error("Missing view function for block type " + type);
+	// copy block and revive its content if needed
 	block = this.copy(block);
 	block.content = this.parseContent(block.content);
-	var dom = renderFn.call(el, this.doc, block, this);
+	var dom = el.view(this.doc, block, this);
 	if (!dom) return "";
 	var ndom = dom;
 	if (ndom.nodeType != Node.ELEMENT_NODE) return ndom;

@@ -225,7 +225,7 @@ Editor.prototype.insert = function(dom, sel) {
 Editor.prototype.insertTr = function(tr, dom, sel) {
 	if (!sel) sel = tr.selection;
 	if (!(dom instanceof Node)) {
-		dom = this.render(dom, true);
+		dom = this.render(dom);
 	}
 	var inline = false;
 	var el;
@@ -522,7 +522,7 @@ Editor.prototype.nodeToBlock = function(node) {
 	Object.defineProperty(block, 'content', {
 		get: function() {
 			// this operation is not cheap
-			return Specs.nodeToContent(editor.serializers.edit, node);
+			return Specs.nodeToContent(editor.serializer, node);
 		}
 	});
 	return block;
@@ -645,7 +645,7 @@ function CreateResolversPlugin(editor, opts) {
 					var block = editor.resolve(str);
 					if (block) {
 						block.pos = pos + sel.from + 1;
-						return main.parse(main.render(block, true)).firstChild;
+						return main.parse(main.render(block)).firstChild;
 					}
 				});
 				return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
