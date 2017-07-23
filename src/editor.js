@@ -102,7 +102,7 @@ function Editor(opts) {
 
 	this.plugins.push(
 		BreakPlugin,
-		HandlePlugin,
+//		HandlePlugin,
 		FocusPlugin,
 	function(editor) {
 		return Input.inputRules({

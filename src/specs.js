@@ -6,14 +6,14 @@ exports.nodeToContent = nodeToContent;
 
 var index;
 
-function define(editor, elt, schema, views) {
+function define(view, elt, schema, views) {
 	// ignore virtual elements
 	if (!elt.view) return;
-	var dom = elt.view(editor.doc, {
+	var dom = elt.view(view.doc, {
 		type: elt.name,
 		data: {},
 		content: {}
-	}, editor);
+	}, view);
 	if (!dom) throw new Error(`${elt.name} element must render a DOM Node`);
 	if (dom.parentNode) throw new Error(`${elt.name} element must render an orphaned DOM Node`);
 	var index = 0;
@@ -21,12 +21,12 @@ function define(editor, elt, schema, views) {
 	flagDom(dom, function(type, obj) {
 		var spec;
 		if (type == "root") {
-			spec = createRootSpec(editor, elt, obj);
+			spec = createRootSpec(view, elt, obj);
 			obj.name = elt.name;
 		} else if (type == "wrap") {
-			spec = createWrapSpec(editor, elt, obj);
+			spec = createWrapSpec(view, elt, obj);
 		} else if (type == "container") {
-			spec = createContainerSpec(editor, elt, obj);
+			spec = createContainerSpec(view, elt, obj);
 		}
 		if (!obj.name) obj.name = `${elt.name}_${type}_${index++}`;
 		if (obj.children.length) {
@@ -119,7 +119,7 @@ function toDOMOutputSpec(obj, node) {
 	return out;
 }
 
-function createRootSpec(editor, elt, obj) {
+function createRootSpec(view, elt, obj) {
 	var defaultAttrs = Object.assign({
 		block_id: null,
 		block_focused: null,
@@ -133,7 +133,7 @@ function createRootSpec(editor, elt, obj) {
 		tag: `[block-type="${elt.name}"]`,
 		getAttrs: function(dom) {
 			return Object.assign(
-				blockToAttr(editor.resolve(dom)),
+				blockToAttr(view.resolve(dom)),
 				attrsFrom(dom)
 			);
 		}
@@ -161,7 +161,7 @@ function createRootSpec(editor, elt, obj) {
 	return spec;
 }
 
-function createWrapSpec(editor, elt, obj) {
+function createWrapSpec(view, elt, obj) {
 	var defaultAttrs = Object.assign({
 		// TODO
 	}, attrsFrom(obj.dom));
@@ -191,7 +191,7 @@ function createWrapSpec(editor, elt, obj) {
 	return spec;
 }
 
-function createContainerSpec(editor, elt, obj) {
+function createContainerSpec(view, elt, obj) {
 	var defaultAttrs = Object.assign({
 		// TODO
 	}, attrsFrom(obj.dom));
