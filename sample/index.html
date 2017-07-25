@@ -10,7 +10,6 @@
 
 	<script src="../dist/pagecut-editor.js"></script>
 	<script src="../dist/pagecut-menu.js"></script>
-	<script src="../dist/pagecut-id.js"></script>
 
 	<script src="agent.js"></script>
 	<script src="diffDOM.js"></script>
@@ -45,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	Pagecut.sample = new Pagecut.Editor({
 		place: "#editor",
 		plugins: [
-			new DifferRender('preview'),
+			// new DifferRender('preview'),
 			function(editor, opts) {
 				var items = Pagecut.Setup.buildMenuItems(editor.schema);
 				var menubar = new Pagecut.Menubar({
@@ -62,37 +61,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		// content: contentNode // we need to seed inspector module before
 	});
 
-	Pagecut.test = function() {
-		var id = Pagecut.sample.modules.id;
-		var fragmentBlock = id.to();
-		var storedBlocks = id.store;
-		console.log("Document exported as", fragmentBlock, storedBlocks);
-		id.store = storedBlocks;
-		id.from(fragmentBlock).then(function(fragment) {
-			console.log("Exported document rendered as", fragment);
-		}).catch(function(err) {
-			console.error(err);
-		});
-
-		// example with a really async resolver
-		id.from(fragmentBlock, function(id) {
-			return new Promise(function(resolve) {
-				setTimeout(function() {
-					resolve(storedBlocks[id]);
-				}, 100);
-			});
-		}).then(function(fragment) {
-			console.log("Exported document asynchronously rendered as", fragment);
-		}).catch(function(err) {
-			console.error(err);
-		});
-	};
-
-	Pagecut.sample.modules.inspector.set([{
-		id: 1,
+	var blocks = {};
+	blocks['1'] = {
 		type: 'inspector',
-		url: "https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale",
 		data: {
+			url: "https://fr.wikipedia.org/wiki/GIE_SESAM-Vitale",
 			mime: 'text/html; charset=UTF-8',
 			type: 'link',
 			title: 'SESAM-Vitale — Wikipédia',
@@ -106,11 +79,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			title: '<span>overriden title</span>',
 			content: '<p>Toto la praline</p><div block-type="inspector" block-url="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg"></div>'
 		}
-	}, {
-		id: 2,
+	};
+	blocks['2'] = {
 		type: "inspector",
-		url: "https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg",
 		data: {
+			url: "https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg",
 			mime: 'image/jpeg',
 			type: 'image',
 			thumbnail: 'https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg',
@@ -123,12 +96,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			html: '<img src="https://pixabay.com/static/uploads/photo/2016/07/29/09/37/cat-1551783__340.jpg" alt="cat-1551783__340.jpg" />',
 			icon: 'https://pixabay.com/favicon-32x32.png'
 		}
-	}]);
-
-	Pagecut.sample.modules.inspector.inspect = function(url, cb) {
-		GET("https://inspector.eda.sarl/inspector", {url: url}, cb);
 	};
-	Pagecut.sample.set(contentNode);
+
+	//Pagecut.sample.modules.inspector.inspect = function(url, cb) {
+	//	GET("https://inspector.eda.sarl/inspector", {url: url}, cb);
+	//};
+	Pagecut.sample.set(Pagecut.sample.store.from({
+		type: 'fragment',
+		content: {
+			fragment: contentNode
+		}
+	}, blocks));
 	contentNode.hidden = true;
 });
 	</script>

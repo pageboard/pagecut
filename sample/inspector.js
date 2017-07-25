@@ -11,7 +11,7 @@ var OptStringType = {
 
 var inspectorElement = {
 	name: 'inspector',
-	view: inspectorView,
+	render: inspectorRender,
 	group: 'block',
 	contents: {
 		title: {
@@ -42,7 +42,7 @@ var inspectorElement = {
 function InspectorModule(editor) {
 	this.editor = editor;
 	editor.elements.push(inspectorElement);
-	editor.resolvers.push(this.resolver.bind(this));
+//	editor.resolvers.push(this.resolver.bind(this)); // TODO re-enable resolvers when id module is embedded
 	this.store = {};
 }
 
@@ -97,7 +97,7 @@ function defaultInspector(url, cb) {
 	});
 }
 
-function inspectorView(doc, block) {
+function inspectorRender(doc, block) {
 	var data = block.data;
 	var node = doc.dom`<div class="inspector"
 		block-url="${block.url}"

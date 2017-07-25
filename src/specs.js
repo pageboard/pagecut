@@ -1,4 +1,6 @@
 var commonAncestor = require('common-ancestor');
+var State = require('prosemirror-state');
+
 exports.define = define;
 exports.attrToBlock = attrToBlock;
 exports.blockToAttr = blockToAttr;
@@ -8,8 +10,8 @@ var index;
 
 function define(view, elt, schema, views) {
 	// ignore virtual elements
-	if (!elt.view) return;
-	var dom = elt.view(view.doc, {
+	if (!elt.render) return;
+	var dom = elt.render(view.doc, {
 		type: elt.name,
 		data: {},
 		content: {}
@@ -72,17 +74,15 @@ function flagDom(dom, iterate) {
 		dom: dom,
 		contentDOM: dom
 	};
-	dom.setAttribute('contenteditable', 'false');
 	var contents = [];
 	if (dom.hasAttribute('block-content')) {
 		contents.push(dom);
-		dom.setAttribute('contenteditable', 'true');
 	}	else {
 		contents = Array.from(dom.querySelectorAll('[block-content]'));
 	}
 
 	if (contents.length == 0) {
-		return; // ignore this
+		return obj;
 	}
 
 	var anc = commonAncestor.apply(null, contents);
@@ -132,8 +132,9 @@ function createRootSpec(view, elt, obj) {
 	var parseRule = {
 		tag: `[block-type="${elt.name}"]`,
 		getAttrs: function(dom) {
+			var block = view.store.get(dom.getAttribute('block-id'));
 			return Object.assign(
-				blockToAttr(view.resolve(dom)),
+				blockToAttr(block),
 				attrsFrom(dom)
 			);
 		}
@@ -150,10 +151,12 @@ function createRootSpec(view, elt, obj) {
 		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [parseRule],
 		toDOM: function(node) {
-			return toDOMOutputSpec(obj, node);
+			var block = view.store.get(node.attrs.block_id);
+			var uView = flagDom(block.render(view));
+			return toDOMOutputSpec(uView, node);
 		},
 		nodeView: function(node, view, getPos, decorations) {
-			return new RootNodeView(node, view, elt, obj.dom);
+			return new RootNodeView(elt, obj.dom, node, view, getPos);
 		}
 	};
 	if (elt.group) spec.group = elt.group;
@@ -185,7 +188,7 @@ function createWrapSpec(view, elt, obj) {
 			return toDOMOutputSpec(obj, node);
 		},
 		nodeView: function(node, view, getPos, decorations) {
-			return new WrapNodeView(node, view, elt, obj.dom);
+			return new WrapNodeView(elt, obj.dom, node, view);
 		}
 	};
 	return spec;
@@ -215,16 +218,18 @@ function createContainerSpec(view, elt, obj) {
 			return toDOMOutputSpec(obj, node);
 		},
 		nodeView: function(node, view, getPos, decorations) {
-			return new ContainerNodeView(node, view, elt, obj.dom);
+			return new ContainerNodeView(elt, obj.dom, node, view);
 		}
 	};
 	return spec;
 }
 
-function RootNodeView(node, view, element, domModel) {
-	this.dom = domModel.cloneNode(true);
-	this.view = view;
+function RootNodeView(element, domModel, node, view, getPos) {
 	this.element = element;
+	this.view = view;
+	this.getPos = getPos;
+
+	this.dom = domModel.cloneNode(true);
 	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
 	this.update(node);
 }
@@ -250,10 +255,15 @@ RootNodeView.prototype.stopEvent = function(e) {
 	var ownHandle = this.dom.querySelector('[draggable]');
 	if (handle && ownHandle && handle == ownHandle) {
 		var tr = this.view.state.tr;
-		tr = tr.setSelection(State.NodeSelection.create(tr.doc, getPos()));
+		tr = tr.setSelection(State.NodeSelection.create(tr.doc, this.getPos()));
 		tr.setMeta('addToHistory', false);
 		this.view.dispatch(tr);
 	}
+};
+
+RootNodeView.prototype.ignoreMutation = function(record) {
+	// always ignore mutation
+	return true;
 };
 
 //RootNodeView.prototype.ignoreMutation = function(record) {
@@ -267,7 +277,7 @@ RootNodeView.prototype.stopEvent = function(e) {
 //	return false;
 //};
 
-function WrapNodeView(node, view, element, domModel) {
+function WrapNodeView(element, domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
 	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
 	this.update(node);
@@ -281,7 +291,12 @@ WrapNodeView.prototype.update = function(node, decorations) {
 	return true;
 };
 
-function ContainerNodeView(node, view, element, domModel) {
+WrapNodeView.prototype.ignoreMutation = function(record) {
+	// always ignore mutation
+	return true;
+};
+
+function ContainerNodeView(element, domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
 	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
 	this.update(node);
@@ -297,7 +312,10 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 };
 
 ContainerNodeView.prototype.ignoreMutation = function(record) {
-	return true;
+	// never ignore mutation
+	console.log("record", record);
+	// TODO find parent block id, then block, then update block content
+	return false;
 };
 
 function mergeNodeAttrsToDom(attrs, dom) {
@@ -323,6 +341,7 @@ function mutateNodeView(obj, nobj) {
 	while (cont != obj.dom) {
 		mutateAttributes(cont, ncont);
 		parent = cont.parentNode;
+		// TODO maybe something gentler, depending on how often mutate is called
 		while (cont.previousSibling) parent.removeChild(cont.previousSibling);
 		while (cont.nextSibling) parent.removeChild(cont.nextSibling);
 		while (ncont.previousSibling) parent.insertBefore(ncont.previousSibling, cont);

@@ -8,13 +8,11 @@ function Viewer(opts) {
 			view: function renderFragment(doc, block) {
 				return block.content.fragment || doc.createElement("div");
 			}
-		},
-		content: ContentModule
+		}
 	}, global.Pagecut && global.Pagecut.modules, opts.modules);
 
 	this.elements = opts.elements || [];
 	this.modifiers = opts.modifiers || [];
-	this.modifiers.unshift(typeModifier);
 	this.plugins = opts.plugins || [];
 
 	var viewer = this;
@@ -30,23 +28,21 @@ function Viewer(opts) {
 		}
 	});
 
-	var map = this.map = {};
+	var map = this.elementsMap = {};
 	for (var i=0; i < this.elements.length; i++) {
 		map[this.elements[i].name] = this.elements[i];
 	}
 }
 
+Viewer.prototype.element = function(type) {
+	if (!type) return;
+	return this.elementsMap[type];
+};
+
 Viewer.prototype.render = function(block) {
-	var type = block.type;
-	if (!type) throw new Error("Missing block type");
-	var el = this.map[type];
-	if (!el) throw new Error("Missing element " + type);
-	if (!el.view) throw new Error("Missing view function for block type " + type);
-	// copy block and revive its content if needed
-	block = this.copy(block);
-	block.content = this.parseContent(block.content);
-	var dom = el.view(this.doc, block, this);
+	var dom = block.render(this);
 	if (!dom) return "";
+	block = block.parse();
 	var ndom = dom;
 	if (ndom.nodeType != Node.ELEMENT_NODE) return ndom;
 	for (var i=0; i < this.modifiers.length; i++) {
@@ -54,77 +50,4 @@ Viewer.prototype.render = function(block) {
 	}
 	return ndom;
 };
-
-Viewer.prototype.copy = function(block) {
-	var copy = Object.assign({}, block);
-	copy.data = Object.assign({}, block.data);
-	copy.content = Object.assign({}, block.content);
-	return copy;
-};
-
-Viewer.prototype.serializeContent = function(contents) {
-	var copy = {};
-	var content, html, child;
-	for (var name in contents) {
-		content = contents[name];
-		if (content instanceof Node) {
-			html = "";
-			for (var i=0; i < content.childNodes.length; i++) {
-				child = content.childNodes[i];
-				if (child.nodeType == Node.TEXT_NODE) html += child.nodeValue;
-				else html += child.outerHTML;
-			}
-		} else {
-			html = content;
-		}
-		copy[name] = html;
-	}
-	return copy;
-};
-
-Viewer.prototype.parseContent = function(contents) {
-	var copy = {};
-	var content, div, frag;
-	for (var name in contents) {
-		content = contents[name];
-		if (content instanceof Node) {
-			frag = content;
-		} else {
-			div = this.doc.createElement("div");
-			div.innerHTML = content;
-			frag = this.doc.createDocumentFragment();
-			while (div.firstChild) frag.appendChild(div.firstChild);
-		}
-		copy[name] = frag;
-	}
-	return copy;
-};
-
-Viewer.prototype.merge = function(block, dom) {
-	var contents = block.content;
-	if (!contents) return;
-	Object.keys(contents).forEach(function(name) {
-		var blockContent = dom.getAttribute('block-content');
-		var node;
-		if (blockContent) {
-			if (name == blockContent) node = dom;
-		} else {
-			node = dom.querySelector(`[block-content="${name}"]`);
-		}
-		if (!node) return;
-		var content = contents[name];
-		if (!content) return;
-		node.appendChild(node.ownerDocument.importNode(content, true));
-	});
-};
-
-function ContentModule(viewer) {
-	viewer.modifiers.push(function contentModifier(viewer, block, dom) {
-		return viewer.merge(block, dom);
-	});
-}
-
-function typeModifier(viewer, block, dom) {
-	if (!dom.hasAttribute('block-type')) dom.setAttribute('block-type', block.type);
-}
 

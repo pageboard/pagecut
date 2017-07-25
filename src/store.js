@@ -1,11 +1,11 @@
-module.exports = IdModule;
+var Block = require('./block');
 
-function IdModule(editor) {
+module.exports = Store;
+
+function Store(editor) {
 	this.blocks = {};
 	this.editor = editor;
-	if (editor.resolvers) editor.resolvers.push(IdResolver);
-	editor.modifiers.push(IdModifier);
-	editor.elements.push(IdModule.element);
+	editor.elements.push(Store.element);
 
 	var me = this;
 
@@ -21,13 +21,13 @@ function IdModule(editor) {
 	});
 }
 
-IdModule.element = {
+Store.element = {
 	name: 'id',
 	view: function(doc, block) {
 		return doc.createElement("div");
 	}
 };
-
+/*
 function mutateNodes(fragment, fn) {
 	var len = fragment.childCount;
 	var child, childFragment;
@@ -43,7 +43,7 @@ function mutateNodes(fragment, fn) {
 	}
 	return fragment;
 }
-
+*/
 
 function getIdBlockNode(node) {
 	var id = node.attrs.block_id;
@@ -54,7 +54,7 @@ function getIdBlockNode(node) {
 	return {id: id, node: node};
 }
 
-IdModule.prototype.pasteNode = function(node) {
+Store.prototype.pasteNode = function(node) {
 	var bn = getIdBlockNode(node);
 	if (bn.id == null) {
 		// a block node must have an id, so it is not one
@@ -79,7 +79,7 @@ IdModule.prototype.pasteNode = function(node) {
 };
 
 
-IdModule.prototype.from = function(block, blocks) {
+Store.prototype.from = function(block, blocks) {
 	if (!blocks) blocks = this.blocks = {};
 	if (this.blocks != blocks) this.blocks = blocks;
 	var childBlock;
@@ -90,17 +90,17 @@ IdModule.prototype.from = function(block, blocks) {
 		}
 	}
 	if (!block) block = "";
-	if (typeof block == "string") block = {
+	if (typeof block == "string") block = new Block({
 		type: 'fragment',
 		content: {
 			fragment: block
 		}
-	};
+	});
 	if (block.id) blocks[block.id] = block;
 
-	var el = this.editor.map[block.type];
+	var el = this.editor.element(block.type);
 	if (el && el.from) {
-		block = this.editor.copy(block);
+		block = block.copy();
 		el.from(block, this);
 	}
 
@@ -125,7 +125,7 @@ IdModule.prototype.from = function(block, blocks) {
 			console.warn("ignoring unknown block id", id);
 			continue;
 		}
-		el = this.editor.map[childBlock.type];
+		el = this.editor.element(childBlock.type);
 		child = this.from(childBlock, blocks);
 		if (!child) continue;
 		node.parentNode.replaceChild(child, node);
@@ -137,12 +137,13 @@ IdModule.prototype.from = function(block, blocks) {
 	return fragment;
 };
 
-IdModule.prototype.to = function(blocks) {
+Store.prototype.to = function(blocks) {
 	var list = [];
 	var editor = this.editor;
 	var origModifiers = editor.modifiers;
 
 	editor.modifiers = origModifiers.concat([function(editor, block, dom) {
+		console.log("id.to modifier", block.id);
 		if (block.id) {
 			var ndom = dom.ownerDocument.createElement(dom.nodeName);
 			ndom.setAttribute('block-id', block.id);
@@ -179,12 +180,13 @@ IdModule.prototype.to = function(blocks) {
 		}
 	}
 	// the order is important here - not an optimization
-	var item, el;
+	var item, el, dom;
 	block.children = [];
 	for (var i = list.length - 1; i >= 0; i--) {
 		item = editor.copy(list[i]);
-		el = editor.map[item.type];
+		el = editor.element(item.type);
 		if (el && el.to) {
+			// TODO make sure we can't do something cleaner
 			el.to(item, this);
 		}
 		item.content = editor.serializeContent(item.content);
@@ -194,7 +196,7 @@ IdModule.prototype.to = function(blocks) {
 	return block;
 };
 
-IdModule.prototype.clear = function(id) {
+Store.prototype.clear = function(id) {
 	if (id === undefined) {
 		this.blocks = {};
 	} else if (id == null || id == false) {
@@ -206,11 +208,12 @@ IdModule.prototype.clear = function(id) {
 	}
 };
 
-IdModule.prototype.get = function(id) {
+Store.prototype.get = function(id) {
+	if (id == null) return;
 	return this.blocks[id];
 };
 
-IdModule.prototype.set = function(data) {
+Store.prototype.set = function(data) {
 	if (!Array.isArray(data)) data = [data];
 	for (var i = 0, cur; i < data.length; i++) {
 		cur = data[i];
@@ -221,12 +224,12 @@ IdModule.prototype.set = function(data) {
 	}
 };
 
-IdModule.prototype.genId = function() {
+Store.prototype.genId = function() {
 	// weak and simple unique id generator
 	return Date.now() + Math.round(Math.random() * 1e4);
 };
 
-IdModule.prototype.domQuery = function(id, opts) {
+Store.prototype.domQuery = function(id, opts) {
 	if (!opts) opts = {};
 	var doc = this.editor.dom;
 	var nodes, node;
@@ -253,29 +256,11 @@ IdModule.prototype.domQuery = function(id, opts) {
 	}
 };
 
-IdModule.prototype.domSelect = function(node) {
+Store.prototype.domSelect = function(node) {
 	var editor = this.editor;
 	editor.focus();
 	editor.selectDom(node);
 };
-
-function IdResolver(editor, obj, cb) {
-	var id = obj.node && obj.node.getAttribute('block-id');
-	if (!id) return;
-	var block = editor.modules.id.get(id);
-	if (block) return block;
-	if (IdResolver.fetch) {
-		IdResolver.fetch(id, function(err, block) {
-			if (err) return cb(err);
-			editor.modules.id.set(block);
-			cb(null, block);
-		});
-		return {
-			type: 'id',
-			id: id
-		};
-	}
-}
 
 function IdModifier(editor, block, dom) {
 	if (!block.id) {
