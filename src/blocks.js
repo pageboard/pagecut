@@ -39,28 +39,33 @@ Blocks.prototype.mount = function(block) {
 Blocks.prototype.unmount = function(block) {
 	var contents = block.content;
 	var copy = this.copy(block);
-	var content, html, child;
 	for (var name in contents) {
-		content = contents[name];
-		if (content instanceof Node) {
-			html = "";
-			for (var i=0; i < content.childNodes.length; i++) {
-				child = content.childNodes[i];
-				if (child.nodeType == Node.TEXT_NODE) html += child.nodeValue;
-				else html += child.outerHTML;
-			}
-		} else {
-			html = content;
-		}
-		copy.content[name] = html;
+		copy.content[name] = nodeToHtml(contents[name]);
 	}
 	return copy;
 };
+
+function nodeToHtml(node) {
+	var html;
+	if (node instanceof Node) {
+		html = "";
+		var child;
+		for (var i=0; i < node.childNodes.length; i++) {
+			child = node.childNodes[i];
+			if (child.nodeType == Node.TEXT_NODE) html += child.nodeValue;
+			else html += child.outerHTML;
+		}
+	} else {
+		html = node;
+	}
+	return html;
+}
 
 Blocks.prototype.copy = function(block) {
 	var copy = {};
 	if (block.id != null) copy.id = block.id;
 	if (block.type != null) copy.type = block.type;
+	if (block.orphan) copy.orphan = block.orphan;
 	copy.data = Object.assign({}, block.data);
 	copy.content = Object.assign({}, block.content);
 	return copy;
@@ -152,61 +157,49 @@ Blocks.prototype.from = function(blocks) {
 	return fragment;
 };
 
-Blocks.prototype.to = function(blocks) {
-	var list = [];
-	var view = this.view;
-//	var origModifiers = view.modifiers;
-
-//	view.modifiers = origModifiers.concat([function(view, block, dom) {
-//		console.log("id.to modifier", block.id);
-//		if (block.id) {
-//			var ndom = dom.ownerDocument.createElement(dom.nodeName);
-//			ndom.setAttribute('block-id', block.id);
-//			ndom.setAttribute('block-type', block.type);
-//			// make sure we don't accidentally store focused state
-//			ndom.removeAttribute('block-focused');
-//			list.push(block);
-//			return ndom;
-//		}
-//	}]);
-
-	var domFragment = view.utils.getDom();
-
-//	view.modifiers = origModifiers;
-
-	var doc = domFragment.ownerDocument;
-	var div = doc.createElement("div");
-	div.appendChild(domFragment);
-
-	for (var id in this.store) {
-		var domBlock = div.querySelector(`[block-id="${id}"]`);
-		if (domBlock) domBlock.parentNode.replaceChild(doc.dom`<div block-id="${id}"></div>`, domBlock);
-	}
-
-	var block = null;
-	// this is when the view document is a block itself
-	var id = view.dom.getAttribute('block-id');
-	if (id) {
-		block = this.store[id];
-		// TODO this is very much an unmount() call
-//		block.content = {};
-//		block.content[view.dom.getAttribute('block-content')] = div.innerHTML;
-		if (blocks) blocks[block.id] = view.unmount(this.store[id]);
-	} else {
-		block = {
-			type: 'fragment',
-			content: {
-				fragment: div.innerHTML
-			}
+Blocks.prototype.serializeTo = function(parent, blocks) {
+	parent = this.copy(parent);
+	Object.keys(parent.content).forEach(function(name) {
+		var content = parent.content[name].cloneNode(true);
+		var node, div, id;
+		if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
+			var frag = content.ownerDocument.createElement('div');
+			frag.appendChild(content);
+			content = frag;
 		}
-	}
-	// the order is important here - not an optimization
+		var list = [];
+		while (node = content.querySelector('[block-id]')) {
+			id = node.getAttribute('block-id');
+			div = content.ownerDocument.createElement('div');
+			node.parentNode.replaceChild(div, node);
+			this.serializeTo(this.store[id], blocks);
+			list.push({node: div, id: id});
+		}
+		list.forEach(function(item) {
+			item.node.setAttribute('block-id', item.id);
+		});
+		parent.content[name] = nodeToHtml(content);
+	}, this);
+	blocks[parent.id] = parent;
+	return parent;
+}
+
+Blocks.prototype.to = function(blocks) {
+	if (!blocks) blocks = {};
+	var domFragment = this.view.utils.getDom();
+
+	var id = this.view.dom.getAttribute('block-id');
+
+	var block = this.copy(this.store[id]);
+	block.content.fragment = domFragment;
+	block = this.serializeTo(block, blocks);
+
 	var item;
 	block.children = [];
-	for (var i = list.length - 1; i >= 0; i--) {
-		item = this.unmount(list[i]);
+	for (var childId in blocks) {
+		if (childId === id) continue;
+		item = blocks[childId];
 		if (!item.orphan) block.children.push(item);
-		if (blocks) blocks[item.id] = item;
 	}
 	return block;
 };
