@@ -21,7 +21,6 @@ var BreakPlugin = require("./break-plugin");
 
 var Utils = require("./utils");
 var Specs = require("./specs");
-var Store = require("./store");
 
 var Viewer = global.Pagecut && global.Pagecut.Viewer || require("./viewer");
 
@@ -85,8 +84,6 @@ function Editor(opts) {
 
 	this.schema = new Model.Schema(spec);
 
-	this.store = new Store(this);
-
 	this.serializer = Model.DOMSerializer.fromSchema(this.schema);
 	this.parser = Model.DOMParser.fromSchema(this.schema);
 
@@ -94,6 +91,7 @@ function Editor(opts) {
 		BreakPlugin,
 //		HandlePlugin,
 		FocusPlugin,
+		CreatePasteBlock,
 	function(editor) {
 		return Input.inputRules({
 			rules: Input.allInputRules.concat(Setup.buildInputRules(editor.schema))
@@ -157,31 +155,15 @@ Editor.prototype.getPlugin = function(key) {
 	return new State.PluginKey(key).get(this.state);
 };
 
-Editor.prototype.set = function(dom) {
-	if (dom.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {
-		var frag = dom.ownerDocument.createDocumentFragment();
-		while (dom.firstChild) {
-			frag.appendChild(dom.firstChild);
-		}
-		dom = frag;
-	}
-	var tr = this.utils.insertTr(this.state.tr, dom, new State.AllSelection(this.state.doc));
-	if (!tr) {
-		console.error("Cannot insert", dom);
-		return;
-	}
-	var sel = tr.selection;
-	if (!sel.empty) tr = tr.setSelection(State.Selection.atStart(this.state.doc));
-	tr.setMeta('addToHistory', false);
-	this.dispatch(tr);
+Editor.prototype.from = function(root, blocks) {
+	return this.blocks.from(root, blocks);
 };
 
-Editor.prototype.get = function() {
-	// in an offline document
-	return this.serializer.serializeFragment(this.state.doc.content, {
-		document: this.doc
-	});
+Editor.prototype.to = function(blocks) {
+	return this.blocks.to(blocks);
 };
+
+
 /*
 Editor.prototype.resolve = function(thing) {
 	var obj = {};
@@ -237,6 +219,51 @@ function fragmentReplace(fragment, regexp, replacer) {
 	}
 	return Model.Fragment.fromArray(list);
 }
+
+function CreatePasteBlock(editor) {
+	return new State.Plugin({
+		props: {
+			transformPasted: function(pslice) {
+				pslice.content.descendants(function(node) {
+					node = editor.pasteNode(node);
+				});
+				return pslice;
+			}
+		}
+	});
+}
+
+function getIdBlockNode(node) {
+	var id = node.attrs.block_id;
+	if (id == null && node.marks.length > 0) {
+		node = node.marks[0];
+		id = node.attrs.block_id;
+	}
+	return {id: id, node: node};
+}
+
+Editor.prototype.pasteNode = function(node) {
+	var bn = getIdBlockNode(node);
+	if (bn.id == null) {
+		// a block node must have an id, so it is not one
+		return;
+	}
+	var block = this.blocks.get(bn.id);
+	if (!block) {
+		// unknown block, let id module deserialize it later
+		bn.node.attrs.block_id = this.genId();
+		return;
+	}
+	var dom = this.dom.querySelector(`[block-id="${bn.id}"]`);
+	if (dom) {
+		// known block already exists, assume copy/paste
+		block = this.blocks.mount(block);
+		block.id = bn.node.attrs.block_id = this.blocks.genId();
+		this.blocks.set(block);
+	} else {
+		// known block is not in dom, assume cut/paste or drag/drop
+	}
+};
 
 /*
 function CreateResolversPlugin(editor, opts) {

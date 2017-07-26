@@ -1,5 +1,5 @@
-module.exports = function(editor, options) {
-	var plugin = new FocusPlugin(editor, options);
+module.exports = function(view, options) {
+	var plugin = new FocusPlugin(view, options);
 	return {
 		props: {
 			handleClick: plugin.click
@@ -27,23 +27,23 @@ module.exports = function(editor, options) {
 	};
 };
 
-function FocusPlugin(editor, options) {
-	this.editor = editor;
+function FocusPlugin(view, options) {
+	this.view = view;
 
 	this.click = this.click.bind(this);
 }
 
 FocusPlugin.prototype.click = function(view, pos, e) {
-	this.editor.handleDragging = false;
+	this.view.handleDragging = false;
 	var tr = this.focus(view.state.tr, pos);
 	if (tr) view.dispatch(tr);
 };
 
 FocusPlugin.prototype.action = function(tr) {
-	if (this.editor.handleDragging) return;
+	if (this.view.handleDragging) return;
 	var sel = tr.selection;
 	// avoid unneeded changes
-	if (this.editor.state.tr.selection.eq(sel)) return;
+	if (this.view.state.tr.selection.eq(sel)) return;
 	var pos = null;
 	if (sel.node) {
 		pos = sel.from;
@@ -69,7 +69,7 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	if (focus) attrs.block_focused = focus;
 	else delete attrs.block_focused;
 	if (node.type.spec.inline) {
-		var sel = this.editor.selectTr(tr, pos);
+		var sel = this.view.utils.selectTr(tr, pos);
 		tr = tr.removeMark(sel.from, sel.to, node.type);
 		tr = tr.addMark(sel.from, sel.to, node.type.create(attrs));
 	} else if (isDoc) {
@@ -82,10 +82,10 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 
 FocusPlugin.prototype.focus = function(tr, pos) {
 	// do not unfocus if view or its document has lost focus
-	if (!this.editor.hasFocus()) {
+	if (!this.view.hasFocus()) {
 		return;
 	}
-	var parents = this.editor.parents(tr, pos, true);
+	var parents = this.view.utils.parents(tr, pos, true);
 	var root = parents.length && parents[0].root;
 	if (root && (root.mark || root.node).attrs.block_focused == "last") {
 		// already done
@@ -144,7 +144,7 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 	}
 
 	if (selectedRoot) {
-		tr = tr.setSelection(this.editor.selectTr(tr, root.rpos));
+		tr = tr.setSelection(this.view.utils.selectTr(tr, root.rpos));
 	}
 	return tr.setMeta('focus-plugin', parents);
 };

@@ -7,6 +7,33 @@ function Utils(view) {
 	this.view = view;
 }
 
+Utils.prototype.setDom = function(dom) {
+	if (dom.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {
+		var frag = dom.ownerDocument.createDocumentFragment();
+		while (dom.firstChild) {
+			frag.appendChild(dom.firstChild);
+		}
+		dom = frag;
+	}
+	var state = this.view.state;
+	var tr = this.insertTr(state.tr, dom, new State.AllSelection(state.doc));
+	if (!tr) {
+		console.error("Cannot insert", dom);
+		return;
+	}
+	var sel = tr.selection;
+	if (!sel.empty) tr = tr.setSelection(State.Selection.atStart(state.doc));
+	tr.setMeta('addToHistory', false);
+	this.view.dispatch(tr);
+};
+
+Utils.prototype.getDom = function() {
+	// in an offline document
+	return this.view.serializer.serializeFragment(this.view.state.doc.content, {
+		document: this.view.doc
+	});
+};
+
 Utils.prototype.insert = function(dom, sel) {
 	var tr = this.insertTr(this.view.state.tr, dom, sel);
 	if (!tr) console.error("Cannot insert", dom);

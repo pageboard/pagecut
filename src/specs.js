@@ -132,7 +132,8 @@ function createRootSpec(view, elt, obj) {
 	var parseRule = {
 		tag: `[block-type="${elt.name}"]`,
 		getAttrs: function(dom) {
-			var block = view.store.get(dom.getAttribute('block-id'));
+			var block = view.blocks.get(dom.getAttribute('block-id'));
+			// it's ok to use dom attributes to rebuild a block
 			return Object.assign(
 				blockToAttr(block),
 				attrsFrom(dom)
@@ -151,8 +152,10 @@ function createRootSpec(view, elt, obj) {
 		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [parseRule],
 		toDOM: function(node) {
-			var block = view.store.get(node.attrs.block_id);
-			var uView = flagDom(block.render(view));
+			// TODO consider node.marks[0].attrs.block_id as well
+			var block = view.blocks.get(node.attrs.block_id);
+			var dom = view.blocks.render(block);
+			var uView = flagDom(dom);
 			return toDOMOutputSpec(uView, node);
 		},
 		nodeView: function(node, view, getPos, decorations) {
@@ -238,13 +241,11 @@ RootNodeView.prototype.update = function(node, decorations) {
 	var self = this;
 	if (isNodeAttrsEqual(self.state, node.attrs)) return true;
 	self.state = Object.assign({}, node.attrs);
-	var block = attrToBlock(node.attrs);
-	var uView = flagDom(this.view.render(block));
-	mutateNodeView(self, uView);
-	uView.children.forEach(function(childView, i) {
-		var child = node.child(i);
-		child.uView = childView;
-	});
+	var block = this.view.blocks.get(node.attrs.block_id);
+	block.focused = node.attrs.block_focused;
+
+	var dom = this.view.render(block);
+	mutateNodeView(self, flagDom(dom));
 	return true;
 };
 
@@ -298,16 +299,20 @@ WrapNodeView.prototype.ignoreMutation = function(record) {
 
 function ContainerNodeView(element, domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
+	this.view = view;
 	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
 	this.update(node);
 }
 
 ContainerNodeView.prototype.update = function(node, decorations) {
-	if (node.uView) {
-		mutateNodeView(this, node.uView);
-		delete node.uView;
-	}
 	// mergeNodeAttrsToDom(node.attrs, nodeView.dom);
+	var root = this.dom.closest('[block-type]');
+	if (root) {
+		var id = root.getAttribute('block-id');
+		var block = this.view.blocks.get(id);
+		var contentName = node.attrs.block_content;
+		block.content[contentName] = this.contentDOM;
+	}
 	return true;
 };
 
@@ -426,7 +431,7 @@ function domAttrsMap(dom) {
 
 function attrsTo(attrs) {
 	var domAttrs = {};
-	for (var k in attrs) domAttrs[k.replace(/_/g, '-')] = attrs[k];
+	for (var k in attrs) if (attrs[k] != null) domAttrs[k.replace(/_/g, '-')] = attrs[k];
 	return domAttrs;
 }
 
@@ -445,11 +450,8 @@ function specAttrs(atts) {
 	var val;
 	for (var k in atts) {
 		val = atts[k];
-		if (val && val.default !== undefined) val = val.default;
-		else if (typeof val != "string") val = null;
-		obj[k] = {
-			'default': val
-		};
+		obj[k] = {};
+		obj[k].default = val && val.default || val;
 	}
 	return obj;
 }
