@@ -39,6 +39,14 @@ function Viewer(opts) {
 	this.blocks = new Blocks(this);
 }
 
+Viewer.prototype.from = function(root, blocks) {
+	return this.blocks.from(root, blocks);
+};
+
+Viewer.prototype.to = function(blocks) {
+	return this.blocks.to(blocks);
+};
+
 Viewer.prototype.element = function(type) {
 	if (!type) return;
 	return this.elementsMap[type];

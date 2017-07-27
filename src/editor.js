@@ -155,14 +155,6 @@ Editor.prototype.getPlugin = function(key) {
 	return new State.PluginKey(key).get(this.state);
 };
 
-Editor.prototype.from = function(root, blocks) {
-	return this.blocks.from(root, blocks);
-};
-
-Editor.prototype.to = function(blocks) {
-	return this.blocks.to(blocks);
-};
-
 
 /*
 Editor.prototype.resolve = function(thing) {
