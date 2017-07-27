@@ -80,23 +80,20 @@ function flagDom(dom, iterate) {
 	}	else {
 		contents = Array.from(dom.querySelectorAll('[block-content]'));
 	}
-
-	if (contents.length == 0) {
-		return obj;
-	}
-
-	var anc = commonAncestor.apply(null, contents);
-	if (anc != dom) {
-		obj.contentDOM = anc;
-		anc.setAttribute('block-ancestor', '');
-	}
-
 	if (!obj.children) obj.children = [];
-	var child;
-	for (var i=0; i < anc.childNodes.length; i++) {
-		child = flagDom(anc.childNodes[i], iterate);
-		if (child) obj.children.push(child);
+	if (contents.length) {
+		var anc = commonAncestor.apply(null, contents);
+		if (anc != dom) {
+			obj.contentDOM = anc;
+			anc.setAttribute('block-ancestor', '');
+		}
+		var child;
+		for (var i=0; i < anc.childNodes.length; i++) {
+			child = flagDom(anc.childNodes[i], iterate);
+			if (child) obj.children.push(child);
+		}
 	}
+
 	if (iterate) {
 		if (!dom.parentNode) iterate('root', obj);
 		else if (contents.length == 1) iterate('container', obj);
