@@ -103,7 +103,7 @@ Blocks.prototype.from = function(blocks) {
 	var store = this.store;
 	if (blocks.id === undefined) {
 		if (blocks != store) {
-			store = this.store = {};
+			store = this.store = blocks;
 		}
 		// it's a map of blocks, we need to find the root block
 		var id = this.view.dom.getAttribute('block-id');
