@@ -39,8 +39,8 @@ function Viewer(opts) {
 	this.blocks = new Blocks(this);
 }
 
-Viewer.prototype.from = function(root, blocks) {
-	return this.blocks.from(root, blocks);
+Viewer.prototype.from = function(blocks) {
+	return this.blocks.from(blocks);
 };
 
 Viewer.prototype.to = function(blocks) {
