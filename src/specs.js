@@ -150,7 +150,15 @@ function createRootSpec(view, elt, obj) {
 		parseDOM: [parseRule],
 		toDOM: function(node) {
 			// TODO consider node.marks[0].attrs.block_id as well
-			var block = view.blocks.get(node.attrs.block_id);
+			var id = node.attrs.block_id;
+			if (!id) {
+				id = view.blocks.genId();
+				var ublock = attrToBlock(node.attrs);
+				ublock.id = id;
+				node.attrs.block_id = id;
+				view.blocks.set(ublock);
+			}
+			var block = view.blocks.get(id);
 			var dom = view.blocks.render(block);
 			var uView = flagDom(dom);
 			return toDOMOutputSpec(uView, node);
@@ -228,9 +236,26 @@ function RootNodeView(element, domModel, node, view, getPos) {
 	this.element = element;
 	this.view = view;
 	this.getPos = getPos;
-
+	this.id = node.attrs.block_id;
+	var block;
+	if (!this.id) {
+		this.id = view.blocks.genId();
+		block = attrToBlock(node.attrs);
+		block.id = this.id;
+		view.blocks.set(block);
+	} else {
+		block = view.blocks.get(this.id);
+		if (!block) {
+		} else if (block.deleted) {
+			delete block.deleted;
+		}
+	}
 	this.dom = domModel.cloneNode(true);
 	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
+	var contentName = this.contentDOM.getAttribute('block-content');
+	if (contentName) {
+		block.content[contentName] = this.contentDOM;
+	}
 	this.update(node);
 }
 
@@ -238,8 +263,17 @@ RootNodeView.prototype.update = function(node, decorations) {
 	var self = this;
 	if (isNodeAttrsEqual(self.state, node.attrs)) return true;
 	self.state = Object.assign({}, node.attrs);
-	var block = this.view.blocks.get(node.attrs.block_id);
-	block.focused = node.attrs.block_focused;
+	var block = this.view.blocks.get(this.id);
+	if (!block) {
+		return true;
+	}
+
+	if (node.attrs.block_focused) block.focused = node.attrs.block_focused;
+	else delete block.focused;
+
+	var uBlock = attrToBlock(node.attrs);
+
+	Object.assign(block.data, uBlock.data);
 
 	var dom = this.view.render(block);
 	mutateNodeView(self, flagDom(dom));
@@ -262,6 +296,11 @@ RootNodeView.prototype.stopEvent = function(e) {
 RootNodeView.prototype.ignoreMutation = function(record) {
 	// always ignore mutation
 	return true;
+};
+
+RootNodeView.prototype.destroy = function() {
+	var block = this.view.blocks.get(this.id);
+	if (block) block.deleted = true;
 };
 
 //RootNodeView.prototype.ignoreMutation = function(record) {
@@ -298,18 +337,15 @@ function ContainerNodeView(element, domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
 	this.view = view;
 	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
-	this.update(node);
 }
 
 ContainerNodeView.prototype.update = function(node, decorations) {
 	// mergeNodeAttrsToDom(node.attrs, nodeView.dom);
 	var root = this.dom.closest('[block-type]');
-	if (root) {
-		var id = root.getAttribute('block-id');
-		var block = this.view.blocks.get(id);
-		var contentName = node.attrs.block_content;
-		block.content[contentName] = this.contentDOM;
-	}
+	var id = root.getAttribute('block-id');
+	var block = this.view.blocks.get(id);
+	var contentName = node.attrs.block_content;
+	block.content[contentName] = this.contentDOM;
 	return true;
 };
 
