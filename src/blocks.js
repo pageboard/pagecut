@@ -107,6 +107,7 @@ Blocks.prototype.from = function(blocks) {
 		}
 		// it's a map of blocks, we need to find the root block
 		var id = this.view.dom.getAttribute('block-id');
+		var contentName = this.view.dom.getAttribute('block-content') || 'fragment';
 		if (!id) {
 			id = this.genId();
 			this.view.dom.setAttribute('block-id', id);
@@ -115,9 +116,11 @@ Blocks.prototype.from = function(blocks) {
 		block = blocks[id];
 		if (!block) {
 			block = {
+				id: id,
 				type: 'fragment',
-				content: { fragment: frag }
+				content: {}
 			};
+			block.content[contentName] = frag;
 		}
 	} else {
 		// it's a block
@@ -189,9 +192,10 @@ Blocks.prototype.to = function(blocks) {
 	var domFragment = this.view.utils.getDom();
 
 	var id = this.view.dom.getAttribute('block-id');
+	var contentName = this.view.dom.getAttribute('block-content') || 'fragment';
 
 	var block = this.copy(this.store[id]);
-	block.content.fragment = domFragment;
+	block.content[contentName] = domFragment;
 	block = this.serializeTo(block, blocks);
 
 	var item;
