@@ -146,6 +146,10 @@ function Editor(opts) {
 		},
 		nodeViews: views
 	});
+	var rootId = this.dom.getAttribute('block-id');
+	if (rootId) {
+		this.state.doc.attrs.block_id = rootId;
+	}
 }
 
 Object.assign(Editor.prototype, Viewer.prototype, View.EditorView);
