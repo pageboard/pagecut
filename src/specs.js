@@ -244,6 +244,7 @@ function RootNodeView(element, domModel, node, view, getPos) {
 	var block;
 	if (!this.id) {
 		this.id = view.blocks.genId();
+		node.attrs.block_id = this.id;
 		block = attrToBlock(node.attrs);
 		block.id = this.id;
 		view.blocks.set(block);
