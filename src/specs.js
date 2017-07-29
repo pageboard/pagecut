@@ -11,11 +11,11 @@ var index;
 function define(view, elt, schema, views) {
 	// ignore virtual elements
 	if (!elt.render) return;
-	var dom = elt.render(view.doc, {
+	var dom = view.render({
 		type: elt.name,
 		data: {},
 		content: {}
-	}, view);
+	});
 	if (!dom) throw new Error(`${elt.name} element must render a DOM Node`);
 	if (dom.parentNode) dom = dom.cloneNode(true);
 	var index = 0;
@@ -159,7 +159,7 @@ function createRootSpec(view, elt, obj) {
 				view.blocks.set(ublock);
 			}
 			var block = view.blocks.get(id);
-			var dom = view.blocks.render(block);
+			var dom = view.render(block);
 			var uView = flagDom(dom);
 			return toDOMOutputSpec(uView, node);
 		},

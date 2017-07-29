@@ -8,13 +8,7 @@ function Blocks(view) {
 Blocks.prototype.render = function(block) {
 	var el = this.view.element(block.type);
 	if (!el) throw new Error(`Unknown block.type ${block.type}`);
-	var dom = el.render(this.view.doc, block, this.view);
-	if (dom.nodeType == Node.ELEMENT_NODE) {
-		dom.setAttribute('block-type', block.type);
-		if (block.id) dom.setAttribute('block-id', block.id);
-		else dom.removeAttribute('block-id');
-	}
-	return dom;
+	return el.render(this.view.doc, block, this.view);
 };
 
 Blocks.prototype.mount = function(block) {

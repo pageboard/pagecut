@@ -69,8 +69,6 @@ function Editor(opts) {
 
 	Viewer.call(this, opts);
 
-	this.modifiers.unshift(focusModifier);
-
 	var spec = {
 		nodes: opts.nodes,
 		marks: opts.marks,
@@ -184,13 +182,6 @@ Editor.prototype.resolve = function(thing) {
 	return syncBlock;
 };
 */
-
-
-
-function focusModifier(editor, block, dom) {
-	if (block.focused) dom.setAttribute('block-focused', block.focused);
-	else dom.removeAttribute('block-focused');
-}
 
 function fragmentReplace(fragment, regexp, replacer) {
 	var list = [];

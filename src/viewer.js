@@ -15,7 +15,6 @@ function Viewer(opts) {
 	}, global.Pagecut && global.Pagecut.modules, opts.modules);
 
 	this.elements = opts.elements || [];
-	this.modifiers = opts.modifiers || [];
 	this.plugins = opts.plugins || [];
 
 	var viewer = this;
@@ -54,13 +53,16 @@ Viewer.prototype.element = function(type) {
 
 Viewer.prototype.render = function(block) {
 	var dom = this.blocks.render(block);
-	if (!dom) return "";
-	var ndom = dom;
-	if (ndom.nodeType != Node.ELEMENT_NODE) return ndom;
-	dom.setAttribute('block-id', block.id);
-	for (var i=0; i < this.modifiers.length; i++) {
-		ndom = this.modifiers[i](this, block, ndom) || ndom;
-	}
-	return ndom;
+	if (dom.nodeType != Node.ELEMENT_NODE) return dom;
+
+	dom.setAttribute('block-type', block.type);
+
+	if (block.id != null) dom.setAttribute('block-id', block.id);
+	else dom.removeAttribute('block-id');
+
+	if (block.focused) dom.setAttribute('block-focused', block.focused);
+	else dom.removeAttribute('block-focused');
+
+	return dom;
 };
 
