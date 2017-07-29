@@ -18,7 +18,7 @@ predist:
 	cp src/*.css dist/
 
 dist/pagecut-editor.js: src/*.js
-	#-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
+	-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
 	rm -rf node_modules/prosemirror-dropcursor && ln -s @kapouer/prosemirror-dropcursor node_modules/
 	$(BROWSERIFY) --standalone Pagecut --outfile $@ src/editor.js
 

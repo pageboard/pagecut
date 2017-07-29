@@ -1,0 +1,10 @@
+--- node_modules/prosemirror-model/dist/from_dom.js	2017-06-29 11:31:06.000000000 +0200
++++ node_modules.new/prosemirror-model/dist/from_dom.js	2017-07-29 23:11:57.518045396 +0200
+@@ -455,6 +455,7 @@
+   } else {
+     var contentDOM = rule.contentElement
+     if (typeof contentDOM == "string") { contentDOM = dom.querySelector(contentDOM) }
++    else if (typeof contentDOM == "function") { contentDOM = contentDOM(dom) }
+     if (!contentDOM) { contentDOM = dom }
+     this.findAround(dom, contentDOM, true)
+     this.addAll(contentDOM, sync)
