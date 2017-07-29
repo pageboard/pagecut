@@ -68,36 +68,40 @@ function define(view, elt, schema, views) {
 	});
 }
 
+function findContent(dom) {
+	if (dom.hasAttribute('block-content')) return dom;
+	var contents = dom.querySelectorAll('[block-content]');
+	if (!contents.length) return;
+	return commonAncestor.apply(null, contents);
+}
+
 function flagDom(dom, iterate) {
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return;
 	var obj = {
 		dom: dom,
-		contentDOM: dom
+		contentDOM: findContent(dom)
 	};
-	var contents = [];
-	if (dom.hasAttribute('block-content')) {
-		contents.push(dom);
-	}	else {
-		contents = Array.from(dom.querySelectorAll('[block-content]'));
-	}
 	if (!obj.children) obj.children = [];
-	if (contents.length) {
-		var anc = commonAncestor.apply(null, contents);
-		if (anc != dom) {
-			obj.contentDOM = anc;
-			anc.setAttribute('block-ancestor', '');
-		}
+	var wrapper = false;
+	if (obj.contentDOM) {
 		var child;
-		for (var i=0; i < anc.childNodes.length; i++) {
-			child = flagDom(anc.childNodes[i], iterate);
-			if (child) obj.children.push(child);
+		for (var i=0; i < obj.contentDOM.childNodes.length; i++) {
+			child = flagDom(obj.contentDOM.childNodes[i], iterate);
+			if (child) {
+				obj.children.push(child);
+				if (child.contentDOM) {
+					wrapper = true;
+				}
+			}
 		}
 	}
 
 	if (iterate) {
 		if (!dom.parentNode) iterate('root', obj);
-		else if (contents.length == 1) iterate('container', obj);
-		else iterate('wrap', obj);
+		else if (obj.contentDOM) {
+			if (!wrapper) iterate('container', obj);
+			else iterate('wrap', obj);
+		}
 	}
 	return obj;
 }
@@ -138,7 +142,7 @@ function createRootSpec(view, elt, obj) {
 		}
 	};
 	if (obj.contentDOM != obj.dom) {
-		parseRule.contentElement = '[block-ancestor]';
+		parseRule.contentElement = findContent;
 	}
 
 	var spec = {
@@ -185,7 +189,7 @@ function createWrapSpec(view, elt, obj) {
 		}
 	};
 	if (obj.contentDOM != obj.dom) {
-		parseRule.contentElement = '[block-ancestor]';
+		parseRule.contentElement = findContent;
 	}
 
 	var spec = {
@@ -215,7 +219,7 @@ function createContainerSpec(view, elt, obj) {
 		}
 	};
 	if (obj.contentDOM != obj.dom) {
-		parseRule.contentElement = '[block-ancestor]';
+		parseRule.contentElement = findContent;
 	}
 
 	var spec = {
@@ -251,7 +255,7 @@ function RootNodeView(element, domModel, node, view, getPos) {
 		}
 	}
 	this.dom = domModel.cloneNode(true);
-	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
+	this.contentDOM = findContent(this.dom);
 	var contentName = this.contentDOM.getAttribute('block-content');
 	if (contentName) {
 		block.content[contentName] = this.contentDOM;
@@ -316,7 +320,7 @@ RootNodeView.prototype.destroy = function() {
 
 function WrapNodeView(element, domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
-	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
+	this.contentDOM = findContent(this.dom);
 	this.update(node);
 }
 
@@ -336,7 +340,7 @@ WrapNodeView.prototype.ignoreMutation = function(record) {
 function ContainerNodeView(element, domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
 	this.view = view;
-	this.contentDOM = this.dom.querySelector('[block-ancestor]') || this.dom;
+	this.contentDOM = findContent(this.dom);
 }
 
 ContainerNodeView.prototype.update = function(node, decorations) {
