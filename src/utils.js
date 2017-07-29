@@ -25,6 +25,12 @@ Utils.prototype.setDom = function(dom) {
 	if (!sel.empty) tr = tr.setSelection(State.Selection.atStart(state.doc));
 	tr.setMeta('addToHistory', false);
 	this.view.dispatch(tr);
+
+	// TODO find a better place to set this
+	var id = this.view.dom.getAttribute('block-id');
+	var block = this.view.blocks.get(id);
+	var content = this.view.dom.getAttribute('block-content') || Object.keys(block.content)[0];
+	block.content[content] = this.view.dom;
 };
 
 Utils.prototype.getDom = function() {
