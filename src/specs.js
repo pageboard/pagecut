@@ -438,6 +438,7 @@ function attrToBlock(attrs) {
 	}
 	if (block.data) block.data = JSON.parse(block.data);
 	else block.data = {};
+	block.content = {};
 	return block;
 }
 
