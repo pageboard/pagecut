@@ -70,7 +70,7 @@ function define(view, elt, schema, views) {
 
 function findContent(dom) {
 	if (dom.hasAttribute('block-content')) return dom;
-	var contents = dom.querySelectorAll('[block-content]');
+	var contents = Array.from(dom.querySelectorAll('[block-content]'));
 	if (!contents.length) return;
 	return commonAncestor.apply(null, contents);
 }
@@ -141,9 +141,8 @@ function createRootSpec(view, elt, obj) {
 			);
 		}
 	};
-	if (obj.contentDOM != obj.dom) {
-		parseRule.contentElement = findContent;
-	}
+
+	parseRule.contentElement = findContent;
 
 	var spec = {
 		typeName: "root",
@@ -218,9 +217,8 @@ function createContainerSpec(view, elt, obj) {
 			return attrsFrom(dom);
 		}
 	};
-	if (obj.contentDOM != obj.dom) {
-		parseRule.contentElement = findContent;
-	}
+	parseRule.contentElement = findContent;
+
 
 	var spec = {
 		typeName: "container",
