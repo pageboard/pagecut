@@ -68,11 +68,21 @@ function define(view, elt, schema, views) {
 	});
 }
 
+function getImmediateContents(root, list) {
+	if (root.hasAttribute('block-content')) {
+		list.push(root);
+		return;
+	}
+	Array.prototype.forEach.call(root.childNodes, function(node) {
+		if (node.nodeType == Node.ELEMENT_NODE) getImmediateContents(node, list);
+	});
+}
+
 function findContent(dom) {
-	if (dom.hasAttribute('block-content')) return dom;
-	var contents = Array.from(dom.querySelectorAll('[block-content]'));
-	if (!contents.length) return;
-	return commonAncestor.apply(null, contents);
+	var list = [];
+	getImmediateContents(dom, list);
+	if (!list.length) return;
+	return commonAncestor.apply(null, list);
 }
 
 function flagDom(dom, iterate) {
