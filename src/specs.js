@@ -304,7 +304,6 @@ RootNodeView.prototype.stopEvent = function(e) {
 };
 
 RootNodeView.prototype.ignoreMutation = function(record) {
-	// always ignore mutation
 	return true;
 };
 
