@@ -270,6 +270,7 @@ function RootNodeView(element, domModel, node, view, getPos) {
 
 RootNodeView.prototype.update = function(node, decorations) {
 	var self = this;
+	var initial = !self.state;
 	if (isNodeAttrsEqual(self.state, node.attrs)) return true;
 	self.state = Object.assign({}, node.attrs);
 	var block = this.view.blocks.get(this.id);
@@ -285,7 +286,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 	Object.assign(block.data, uBlock.data);
 
 	var dom = this.view.render(block);
-	mutateNodeView(self, flagDom(dom));
+	mutateNodeView(self, flagDom(dom), initial);
 	return true;
 };
 
@@ -376,7 +377,7 @@ function mergeNodeAttrsToDom(attrs, dom) {
 	}
 }
 
-function mutateNodeView(obj, nobj) {
+function mutateNodeView(obj, nobj, initial) {
 	// first upgrade attributes
 	mutateAttributes(obj.dom, nobj.dom);
 	// then upgrade descendants
@@ -384,15 +385,32 @@ function mutateNodeView(obj, nobj) {
 	// there is something between dom and contentDOM
 	var cont = obj.contentDOM;
 	var ncont = nobj.contentDOM;
-	var parent;
+	var parent, node;
+
+	// replace only nodes rendered by element
 	while (cont != obj.dom) {
 		mutateAttributes(cont, ncont);
 		parent = cont.parentNode;
-		// TODO maybe something gentler, depending on how often mutate is called
-		while (cont.previousSibling) parent.removeChild(cont.previousSibling);
-		while (cont.nextSibling) parent.removeChild(cont.nextSibling);
-		while (ncont.previousSibling) parent.insertBefore(ncont.previousSibling, cont);
-		while (ncont.nextSibling) parent.appendChild(ncont.nextSibling);
+		node = cont;
+		while (node.previousSibling) {
+			if (node.previousSibling.elementRendered || initial) parent.removeChild(node.previousSibling);
+			else node = node.previousSibling;
+		}
+		node = cont;
+		while (node.nextSibling) {
+			if (node.nextSibling.elementRendered || initial) parent.removeChild(node.nextSibling);
+			else node = node.nextSibling;
+		}
+		node = ncont;
+		while (node.previousSibling) {
+			node.previousSibling.elementRendered = true;
+			parent.insertBefore(node.previousSibling, cont);
+		}
+		node = ncont;
+		while (node.nextSibling) {
+			node.nextSibling.elementRendered = true;
+			parent.appendChild(node.nextSibling);
+		}
 		cont = parent;
 		ncont = ncont.parentNode;
 	}
