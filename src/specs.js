@@ -139,10 +139,9 @@ function createRootSpec(view, elt, obj) {
 				blockToAttr(block),
 				attrsFrom(dom)
 			);
-		}
+		},
+		contentElement: findContent
 	};
-
-	parseRule.contentElement = findContent;
 
 	var spec = {
 		typeName: "root",
@@ -185,11 +184,9 @@ function createWrapSpec(view, elt, obj) {
 		tag: domSelector(obj.dom.nodeName, defaultAttrs),
 		getAttrs: function(dom) {
 			return attrsFrom(dom);
-		}
+		},
+		contentElement: findContent
 	};
-	if (obj.contentDOM != obj.dom) {
-		parseRule.contentElement = findContent;
-	}
 
 	var spec = {
 		typeName: "wrap",
@@ -215,10 +212,9 @@ function createContainerSpec(view, elt, obj) {
 		tag: `${obj.dom.nodeName}[block-content="${defaultAttrs.block_content}"]`,
 		getAttrs: function(dom) {
 			return attrsFrom(dom);
-		}
+		},
+		contentElement: findContent
 	};
-	parseRule.contentElement = findContent;
-
 
 	var spec = {
 		typeName: "container",
