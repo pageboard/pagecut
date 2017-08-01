@@ -43,7 +43,7 @@ function define(view, elt, schema, views) {
 				if (specKeys.length == 1) {
 					contentName = specKeys[0];
 				} else if (specKeys.length > 1) {
-					console.warn(`element ${elt.name} cannot choose a default block-content among`, elt.contents);
+					console.warn(`element ${elt.name} cannot choose a default block-content among`, elt.contents, obj);
 					return;
 				}
 			}
