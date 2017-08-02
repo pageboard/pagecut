@@ -313,17 +313,6 @@ RootNodeView.prototype.destroy = function() {
 	if (block) block.deleted = true;
 };
 
-//RootNodeView.prototype.ignoreMutation = function(record) {
-//	// TODO mutations can be used to update blocks contents ?
-//	var node = record.target;
-//	if (node.nodeType != 1 && node.parentNode) node = node.parentNode;
-//	var content = node.closest('[block-content]');
-//	if (content) {
-//		console.log(content.outerHTML);
-//	}
-//	return false;
-//};
-
 function WrapNodeView(element, domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
 	this.contentDOM = findContent(this.dom);
@@ -361,8 +350,6 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 
 ContainerNodeView.prototype.ignoreMutation = function(record) {
 	// never ignore mutation
-	console.log("record", record);
-	// TODO find parent block id, then block, then update block content
 	return false;
 };
 
