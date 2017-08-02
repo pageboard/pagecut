@@ -340,8 +340,11 @@ function ContainerNodeView(element, domModel, node, view) {
 
 ContainerNodeView.prototype.update = function(node, decorations) {
 	// mergeNodeAttrsToDom(node.attrs, nodeView.dom);
+	if (this.id) return true;
 	var root = this.dom.closest('[block-type]');
 	var id = root.getAttribute('block-id');
+	if (!id) return true;
+	this.id = id;
 	var block = this.view.blocks.get(id);
 	var contentName = node.attrs.block_content;
 	block.content[contentName] = this.contentDOM;
