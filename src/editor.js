@@ -87,7 +87,7 @@ function Editor(opts) {
 
 	this.plugins.push(
 		BreakPlugin,
-//		HandlePlugin,
+		HandlePlugin,
 		FocusPlugin,
 		CreatePasteBlock,
 	function(editor) {
