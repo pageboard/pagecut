@@ -23,7 +23,7 @@ dist/pagecut-editor.js: src/*.js
 	rm -rf node_modules/common-ancestor && ln -s @kapouer/common-ancestor node_modules/
 	$(BROWSERIFY) --standalone Pagecut --outfile $@ src/editor.js
 
-dist/pagecut-viewer.js: src/viewer.js
+dist/pagecut-viewer.js: src/*.js
 	$(BROWSERIFY) --standalone Pagecut.Viewer --outfile $@ src/viewer.js
 
 dist/pagecut-menu.js: src/menubar.js
