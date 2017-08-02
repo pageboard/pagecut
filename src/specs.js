@@ -271,6 +271,7 @@ function RootNodeView(element, domModel, node, view, getPos) {
 RootNodeView.prototype.update = function(node, decorations) {
 	var self = this;
 	var initial = !self.state;
+	if (!initial && this.dom.update) this.dom.update();
 	if (isNodeAttrsEqual(self.state, node.attrs)) return true;
 	self.state = Object.assign({}, node.attrs);
 	var block = this.view.blocks.get(this.id);
