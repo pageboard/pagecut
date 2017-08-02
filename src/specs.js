@@ -163,6 +163,10 @@ function createRootSpec(view, elt, obj) {
 		toDOM: function(node) {
 			// TODO consider node.marks[0].attrs.block_id as well
 			var id = node.attrs.block_id;
+			if (!id && node.marks && node.marks[0]) {
+				id = node.marks[0].attrs.block_id;
+				console.warn("Probably unsupported case of id from in node.marks", node);
+			}
 			if (!id) {
 				id = view.blocks.genId();
 				var ublock = attrToBlock(node.attrs);
@@ -256,6 +260,7 @@ function RootNodeView(element, domModel, node, view, getPos) {
 	} else {
 		block = view.blocks.get(this.id);
 		if (!block) {
+			console.warn("missing block", node.attrs);
 		} else if (block.deleted) {
 			delete block.deleted;
 		}
