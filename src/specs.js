@@ -1,5 +1,6 @@
 var commonAncestor = require('common-ancestor');
 var State = require('prosemirror-state');
+var Model = require('prosemirror-model');
 
 exports.define = define;
 exports.attrToBlock = attrToBlock;
@@ -118,11 +119,10 @@ function flagDom(dom, iterate) {
 
 function toDOMOutputSpec(obj, node) {
 	var out = 0;
-	var dom = obj.contentDOM;
-	var isLeaf = node.type.isLeaf;
+	var dom = obj.contentDOM || obj.dom;
 	while (dom) {
 		var attrs = dom == obj.dom ? attrsTo(node.attrs) : domAttrsMap(dom);
-		if (isLeaf) return [dom.nodeName, attrs];
+		if (!obj.contentDOM || node instanceof Model.Mark) return [dom.nodeName, attrs];
 		out = [dom.nodeName, attrs, out];
 		if (dom == obj.dom) break;
 		dom = dom.parentNode;
@@ -174,10 +174,11 @@ function createRootSpec(view, elt, obj) {
 			var dom = view.render(block);
 			var uView = flagDom(dom);
 			return toDOMOutputSpec(uView, node);
-		},
-		nodeView: function(node, view, getPos, decorations) {
-			return new RootNodeView(elt, obj.dom, node, view, getPos);
 		}
+	};
+	// there's a bug somewhere (in prosemirror ?) with leaf nodes having a nodeView
+	if (obj.contentDOM) spec.nodeView = function(node, view, getPos, decorations) {
+		return new RootNodeView(elt, obj.dom, node, view, getPos);
 	};
 	if (elt.group) spec.group = elt.group;
 
@@ -261,9 +262,11 @@ function RootNodeView(element, domModel, node, view, getPos) {
 	}
 	this.dom = domModel.cloneNode(true);
 	this.contentDOM = findContent(this.dom);
-	var contentName = this.contentDOM.getAttribute('block-content');
-	if (contentName) {
-		block.content[contentName] = this.contentDOM;
+	if (this.contentDOM) {
+		var contentName = this.contentDOM.getAttribute('block-content');
+		if (contentName) {
+			block.content[contentName] = this.contentDOM;
+		}
 	}
 	this.update(node);
 }
@@ -371,7 +374,7 @@ function mutateNodeView(obj, nobj, initial) {
 	// first upgrade attributes
 	mutateAttributes(obj.dom, nobj.dom);
 	// then upgrade descendants
-	if (obj.dom == obj.contentDOM) return; // our job is done
+	if (!obj.contentDOM || obj.dom == obj.contentDOM) return; // our job is done
 	// there is something between dom and contentDOM
 	var cont = obj.contentDOM;
 	var ncont = nobj.contentDOM;

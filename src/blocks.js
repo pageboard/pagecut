@@ -146,16 +146,13 @@ Blocks.prototype.from = function(blocks) {
 		child = this.from(child);
 		if (!child) return;
 		node.parentNode.replaceChild(child, node);
-		if (el && el.inline) {
-			while (child.firstChild) child.removeChild(child.firstChild);
-			while (node.firstChild) child.appendChild(node.firstChild);
-		}
 	}, this);
 	return fragment;
 };
 
 Blocks.prototype.serializeTo = function(parent, blocks) {
 	parent = this.copy(parent);
+
 	Object.keys(parent.content).forEach(function(name) {
 		var content = parent.content[name].cloneNode(true);
 		var node, div, id;
@@ -167,7 +164,7 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 		var list = [];
 		while (node = content.querySelector('[block-id]')) {
 			id = node.getAttribute('block-id');
-			div = content.ownerDocument.createElement('div');
+			div = content.ownerDocument.createElement(node.nodeName);
 			node.parentNode.replaceChild(div, node);
 			this.serializeTo(this.store[id], blocks);
 			list.push({node: div, id: id});
