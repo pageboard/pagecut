@@ -274,18 +274,26 @@ function RootNodeView(element, domModel, node, view, getPos) {
 RootNodeView.prototype.update = function(node, decorations) {
 	var self = this;
 	var initial = !self.state;
-	if (!initial && this.dom.update) this.dom.update();
-	if (isNodeAttrsEqual(self.state, node.attrs)) return true;
-	self.state = Object.assign({}, node.attrs);
+	var uBlock = attrToBlock(node.attrs);
 	var block = this.view.blocks.get(this.id);
 	if (!block) {
 		return true;
 	}
 
+	var oBlock = this.view.blocks.copy(block);
+	oBlock.content = {};
+	self.state = oBlock;
+
+	if (!initial && this.element.update) {
+		this.element.update(this.dom, block);
+	}
+
+	if (this.view.utils.equal(self.state, uBlock)) {
+		return true;
+	}
+
 	if (node.attrs.block_focused) block.focused = node.attrs.block_focused;
 	else delete block.focused;
-
-	var uBlock = attrToBlock(node.attrs);
 
 	Object.assign(block.data, uBlock.data);
 
