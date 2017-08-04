@@ -6,7 +6,7 @@ var Model = require("prosemirror-model");
 var Input = require("prosemirror-inputrules");
 var keymap = require("prosemirror-keymap").keymap;
 var Commands = require("prosemirror-commands");
-var DropCursor = require("prosemirror-dropcursor").dropCursor;
+var DropCursor = require("@kapouer/prosemirror-dropcursor").dropCursor;
 var History = require("prosemirror-history");
 
 var baseSchema = require("prosemirror-schema-basic").schema;

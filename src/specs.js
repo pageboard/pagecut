@@ -1,4 +1,4 @@
-var commonAncestor = require('common-ancestor');
+var commonAncestor = require('@kapouer/common-ancestor');
 var State = require('prosemirror-state');
 var Model = require('prosemirror-model');
 
