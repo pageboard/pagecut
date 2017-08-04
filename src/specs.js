@@ -12,11 +12,7 @@ var index;
 function define(view, elt, schema, views) {
 	// ignore virtual elements
 	if (!elt.render) return;
-	var dom = view.render({
-		type: elt.name,
-		data: {},
-		content: {}
-	});
+	var dom = view.render(view.blocks.create(elt.name));
 	if (!dom) throw new Error(`${elt.name} element must render a DOM Node`);
 	if (dom.parentNode) dom = dom.cloneNode(true);
 	var index = 0;
@@ -161,7 +157,6 @@ function createRootSpec(view, elt, obj) {
 		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [parseRule],
 		toDOM: function(node) {
-			// TODO consider node.marks[0].attrs.block_id as well
 			var id = node.attrs.block_id;
 			if (!id && node.marks && node.marks[0]) {
 				id = node.marks[0].attrs.block_id;

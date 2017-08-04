@@ -5,6 +5,20 @@ function Blocks(view) {
 	this.store = {};
 }
 
+Blocks.prototype.create = function(type) {
+	var el = this.view.element(type);
+	var data = {};
+	for (var k in el.properties) {
+		if (el.properties[k].default !== undefined) data[k] = el.properties[k].default;
+	}
+	return {
+		id: this.genId(),
+		type: type,
+		data: data,
+		content: {}
+	};
+};
+
 Blocks.prototype.render = function(block) {
 	var el = this.view.element(block.type);
 	if (!el) throw new Error(`Unknown block.type ${block.type}`);
