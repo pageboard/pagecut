@@ -87,8 +87,8 @@ function Editor(opts) {
 
 	this.plugins.push(
 		BreakPlugin,
-		HandlePlugin,
 		FocusPlugin,
+//		HandlePlugin,
 		CreatePasteBlock,
 	function(editor) {
 		return Input.inputRules({
