@@ -7,6 +7,8 @@ function Utils(view) {
 	this.view = view;
 }
 
+Utils.prototype.equal = require("esequal");
+
 Utils.prototype.setDom = function(dom) {
 	if (dom.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {
 		var frag = dom.ownerDocument.createDocumentFragment();

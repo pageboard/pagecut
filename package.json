@@ -36,6 +36,7 @@
     "browserify": "^14.3.0",
     "diff-dom": "^2.2.1",
     "dom-template-strings": "^2.0.1",
+    "esequal": "^0.1.15",
     "prosemirror-commands": "^0.22.0",
     "prosemirror-example-setup": "^0.22.0",
     "prosemirror-history": "^0.22.0",
