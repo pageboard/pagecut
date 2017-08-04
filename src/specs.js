@@ -410,30 +410,18 @@ function mutateNodeView(obj, nobj, initial) {
 }
 
 function mutateAttributes(dom, ndom) {
-	var oldMap = domAttrsMap(dom);
+	// TODO remove only spec-defined attributes that are not in ndom
+	var attr;
 	var natts = ndom.attributes;
-	var attr, oldVal;
 	for (var k=0; k < natts.length; k++) {
 		attr = natts[k];
-		oldVal = oldMap[attr.name];
-		if (oldVal != null) {
-			delete oldMap[attr.name];
-		}
-		if (oldVal != attr.value) dom.setAttribute(attr.name, attr.value);
+		dom.setAttribute(attr.name, ndom.getAttribute(attr.name));
 	}
-	for (var name in oldMap) dom.removeAttribute(name);
-}
-
-function isNodeAttrsEqual(a, b) {
-	if (!a || !b) return false;
-	// nothing smart here, move along
-	for (var j in a) {
-		if (b[j] !== a[j]) return false;
+	var atts = dom.attributes;
+	for (var j=0; j < atts.length; j++) {
+		attr = atts[j]
+		if (attr.name.startsWith('block-') && !ndom.hasAttribute(attr.name)) dom.removeAttribute(attr.name);
 	}
-	for (var k in b) {
-		if (a[k] !== b[k]) return false;
-	}
-	return true;
 }
 
 function blockToAttr(block) {
