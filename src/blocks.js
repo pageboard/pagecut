@@ -12,7 +12,6 @@ Blocks.prototype.create = function(type) {
 		if (el.properties[k].default !== undefined) data[k] = el.properties[k].default;
 	}
 	return {
-		id: this.genId(),
 		type: type,
 		data: data,
 		content: {}
