@@ -269,33 +269,40 @@ function RootNodeView(element, domModel, node, view, getPos) {
 }
 
 RootNodeView.prototype.update = function(node, decorations) {
-	var self = this;
-	var initial = !self.state;
-	var uBlock = attrToBlock(node.attrs);
+	var oldBlock = this.oldBlock;
+	var uBlock = this.view.utils.attrToBlock(node.attrs);
 	var block = this.view.blocks.get(this.id);
 	if (!block) {
+		// TODO
+		console.log("block should exist", node.attrs);
 		return true;
 	}
 
-	var oBlock = this.view.blocks.copy(block);
-	oBlock.content = {};
-	self.state = oBlock;
+	Object.assign(block.data, uBlock.data);
 
-	if (!initial && this.element.update) {
-		this.element.update(this.dom, block);
-	}
+	// consider it's the same data when it's initializing
+	var sameData = oldBlock && this.view.utils.equal(oldBlock.data, block.data);
+	var sameFocus = node.attrs.block_focused == block.focused;
 
-	if (this.view.utils.equal(self.state, uBlock)) {
+	if (sameData && sameFocus) {
+		// no point in calling render
+		if (oldBlock && this.dom.update) {
+			this.dom.update();
+		}
 		return true;
 	}
+
+	this.oldBlock = this.view.blocks.copy(block);
+	this.oldBlock.content = {};
 
 	if (node.attrs.block_focused) block.focused = node.attrs.block_focused;
 	else delete block.focused;
 
-	Object.assign(block.data, uBlock.data);
-
 	var dom = this.view.render(block);
-	mutateNodeView(self, flagDom(dom), initial);
+	mutateNodeView(this, flagDom(dom), !oldBlock);
+	if (oldBlock && this.dom.update) {
+		this.dom.update();
+	}
 	return true;
 };
 
