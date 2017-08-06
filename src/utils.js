@@ -128,29 +128,35 @@ Utils.prototype.refresh = function(dom) {
 	else this.view.dispatch(tr);
 };
 
-// TODO do not use Specs.blockToAttr
 Utils.prototype.refreshTr = function(tr, dom) {
 	var pos = this.posFromDOM(dom);
 	if (pos === false) return;
 	var id = dom.getAttribute('block-id');
 	if (id == null) return;
-	var block = this.blocks[id];
+	var block = this.view.blocks.get(id);
 	if (!block) return;
-	return tr.setNodeType(pos, null, Specs.blockToAttr(block));
+	return tr.setNodeType(pos, null, this.blockToAttr(block));
 };
 
-// TODO do not use nodeToBlock here
-Utils.prototype.nodeToBlock = function(node) {
-	var block = Specs.attrToBlock(node.attrs);
-	var view = this.view;
-	if (node instanceof Model.Mark) return block;
-	Object.defineProperty(block, 'content', {
-		get: function() {
-			// this operation is not cheap
-			return Specs.nodeToContent(view.serializer, node);
-		}
-	});
+Utils.prototype.attrToBlock = function(attrs) {
+	var block = {};
+	for (var name in attrs) {
+		if (name.startsWith('block_')) block[name.substring(6)] = attrs[name];
+	}
+	if (block.data) block.data = JSON.parse(block.data);
+	else block.data = {};
+	block.content = {};
 	return block;
+};
+
+Utils.prototype.blockToAttr = function(block) {
+	var attrs = {};
+	if (!block) return attrs;
+	if (block.id != null) attrs.block_id = block.id;
+	if (block.type != null) attrs.block_type = block.type;
+	if (block.data) attrs.block_data = JSON.stringify(block.data);
+	if (attrs.block_data == "{}") delete attrs.block_data;
+	return attrs;
 };
 
 Utils.prototype.selectDom = function(node) {

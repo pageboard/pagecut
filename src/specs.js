@@ -3,9 +3,6 @@ var State = require('prosemirror-state');
 var Model = require('prosemirror-model');
 
 exports.define = define;
-exports.attrToBlock = attrToBlock;
-exports.blockToAttr = blockToAttr;
-exports.nodeToContent = nodeToContent;
 
 var index;
 
@@ -142,7 +139,7 @@ function createRootSpec(view, elt, obj) {
 			var block = view.blocks.get(dom.getAttribute('block-id'));
 			// it's ok to use dom attributes to rebuild a block
 			return Object.assign(
-				blockToAttr(block),
+				view.utils.blockToAttr(block),
 				attrsFrom(dom)
 			);
 		},
@@ -164,7 +161,7 @@ function createRootSpec(view, elt, obj) {
 			}
 			if (!id) {
 				id = view.blocks.genId();
-				var ublock = attrToBlock(node.attrs);
+				var ublock = view.utils.attrToBlock(node.attrs);
 				ublock.id = id;
 				node.attrs.block_id = id;
 				view.blocks.set(ublock);
@@ -249,7 +246,7 @@ function RootNodeView(element, domModel, node, view, getPos) {
 	if (!this.id) {
 		this.id = view.blocks.genId();
 		node.attrs.block_id = this.id;
-		block = attrToBlock(node.attrs);
+		block = view.utils.attrToBlock(node.attrs);
 		block.id = this.id;
 		view.blocks.set(block);
 	} else {
@@ -430,44 +427,6 @@ function mutateAttributes(dom, ndom) {
 		attr = atts[j]
 		if (attr.name.startsWith('block-') && !ndom.hasAttribute(attr.name)) dom.removeAttribute(attr.name);
 	}
-}
-
-function blockToAttr(block) {
-	var attrs = {};
-	if (!block) return attrs;
-	if (block.id != null) attrs.block_id = block.id;
-	if (block.type != null) attrs.block_type = block.type;
-	if (block.data) attrs.block_data = JSON.stringify(block.data);
-	if (attrs.block_data == "{}") delete attrs.block_data;
-	return attrs;
-}
-
-function attrToBlock(attrs) {
-	var block = {};
-	for (var name in attrs) {
-		if (name.startsWith('block_')) block[name.substring(6)] = attrs[name];
-	}
-	if (block.data) block.data = JSON.parse(block.data);
-	else block.data = {};
-	block.content = {};
-	return block;
-}
-
-function nodeToContent(serializer, node, content) {
-	var type = node.type.spec.typeName;
-
-	if (type == "container") {
-		content[node.attrs.block_content] = serializer.serializeFragment(node.content);
-	} else if (type == "root" && node.attrs.block_content) {
-		if (!content) content = {};
-		content[node.attrs.block_content] = serializer.serializeFragment(node.content);
-	} else if (type != "root" || !content) {
-		if (!content) content = {};
-		node.forEach(function(child) {
-			nodeToContent(serializer, child, content);
-		});
-	}
-	return content;
 }
 
 function domAttrsMap(dom) {
