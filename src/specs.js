@@ -315,19 +315,6 @@ RootNodeView.prototype.update = function(node, decorations) {
 	return true;
 };
 
-RootNodeView.prototype.stopEvent = function(e) {
-	var tg = e.target;
-	if (!tg.closest) tg = tg.parentNode;
-	var handle = tg.closest('[draggable]');
-	var ownHandle = this.dom.querySelector('[draggable]');
-	if (handle && ownHandle && handle == ownHandle) {
-		var tr = this.view.state.tr;
-		tr = tr.setSelection(State.NodeSelection.create(tr.doc, this.getPos()));
-		tr.setMeta('addToHistory', false);
-		this.view.dispatch(tr);
-	}
-};
-
 RootNodeView.prototype.ignoreMutation = function(record) {
 	return true;
 };
