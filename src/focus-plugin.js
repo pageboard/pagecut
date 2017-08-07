@@ -5,23 +5,16 @@ module.exports = function(view, options) {
 			handleClick: plugin.click
 		},
 		appendTransaction: function(transactions, oldState, newState) {
-			// focus once per transaction, also do some focus on command (used by calls to replaceTr)
-			var please;
+			// focus once per transaction
 			var itr;
 			for (var i=0; i < transactions.length; i++) {
 				itr = transactions[i];
 				if (itr.getMeta('focus-plugin')) {
 					return;
 				}
-				please = itr.getMeta('focus-please');
 			}
 			var tr = newState.tr;
-			var newTr;
-			if (please != null) {
-				newTr = plugin.focus(tr, please);
-			} else {
-				newTr = plugin.action(tr);
-			}
+			var newTr = plugin.action(tr);
 			if (newTr) return newTr;
 		}
 	};
