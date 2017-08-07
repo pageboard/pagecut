@@ -93,6 +93,8 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 			to = from + textContent.length;
 		}
 		return tr.addMark(from, to, mark.type.create(mark.attrs));
+	} else if (from == to) {
+		return tr.insert(from, frag);
 	} else {
 		return tr.replaceWith(from, to, frag);
 	}
