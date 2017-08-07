@@ -16,7 +16,6 @@ var listSchema = require("prosemirror-schema-list");
 var UrlRegex = require('url-regex');
 
 var FocusPlugin = require("./focus-plugin");
-var HandlePlugin = require("./handle-plugin");
 var BreakPlugin = require("./break-plugin");
 
 var Utils = require("./utils");
@@ -88,7 +87,7 @@ function Editor(opts) {
 	this.plugins.push(
 		BreakPlugin,
 		FocusPlugin,
-//		HandlePlugin,
+//		require("./test-plugin"),
 		CreatePasteBlock,
 	function(editor) {
 		return Input.inputRules({
