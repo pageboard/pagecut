@@ -135,7 +135,8 @@ Utils.prototype.refreshTr = function(tr, dom) {
 	if (id == null) return;
 	var block = this.view.blocks.get(id);
 	if (!block) return;
-	return tr.setNodeType(pos, null, this.blockToAttr(block));
+	var attrs = this.blockToAttr(block);
+	return tr.setNodeType(pos, null, attrs);
 };
 
 Utils.prototype.attrToBlock = function(attrs) {
