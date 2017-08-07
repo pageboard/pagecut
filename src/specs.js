@@ -172,10 +172,18 @@ function createRootSpec(view, elt, obj) {
 			return toDOMOutputSpec(uView, node);
 		}
 	};
-	// there's a bug somewhere (in prosemirror ?) with leaf nodes having a nodeView
-	if (obj.contentDOM) spec.nodeView = function(node, view, getPos, decorations) {
-		return new RootNodeView(elt, obj.dom, node, view, getPos);
-	};
+	if (obj.contentDOM) {
+		// there's a bug somewhere (in prosemirror ?) with leaf nodes having a nodeView
+		spec.nodeView = function(node, view, getPos, decorations) {
+			return new RootNodeView(elt, obj.dom, node, view, getPos);
+		};
+	} else {
+		// this node does not have editable content
+		spec.atom = true;
+		// this makes prosemirror manage drag and drop for leaf nodes
+		// without out, chrome allows dragging images - not as dom nodes but as data - and it screws our model
+		spec.draggable = true;
+	}
 	if (elt.group) spec.group = elt.group;
 
 	return spec;
