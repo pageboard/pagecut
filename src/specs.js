@@ -149,7 +149,7 @@ function createRootSpec(view, elt, obj) {
 	var spec = {
 		typeName: "root",
 		inline: !!elt.inline,
-		defining: !elt.inline,
+		defining: obj.dom == obj.contentDOM,
 		isolating: !elt.inline,
 		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [parseRule],
@@ -226,6 +226,7 @@ function createContainerSpec(view, elt, obj) {
 	var spec = {
 		typeName: "container",
 		attrs: defaultSpecAttrs,
+		defining: obj.dom == obj.contentDOM,
 		parseDOM: [parseRule],
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
