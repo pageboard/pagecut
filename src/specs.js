@@ -279,6 +279,9 @@ function RootNodeView(element, domModel, node, view, getPos) {
 
 RootNodeView.prototype.update = function(node, decorations) {
 	var oldBlock = this.oldBlock;
+	if (node.attrs.block_id != this.id) {
+		return false;
+	}
 	var uBlock = this.view.utils.attrToBlock(node.attrs);
 	var block = this.view.blocks.get(this.id);
 	if (!block) {
@@ -351,10 +354,9 @@ function ContainerNodeView(element, domModel, node, view) {
 
 ContainerNodeView.prototype.update = function(node, decorations) {
 	// mergeNodeAttrsToDom(node.attrs, nodeView.dom);
-	if (this.id) return true;
 	var root = this.dom.closest('[block-type]');
 	var id = root.getAttribute('block-id');
-	if (!id) return true;
+	if (this.id && this.id != id) return false;
 	this.id = id;
 	var block = this.view.blocks.get(id);
 	var contentName = node.attrs.block_content;
