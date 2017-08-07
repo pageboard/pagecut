@@ -48,12 +48,9 @@ FocusPlugin.prototype.action = function(tr) {
 	} else if (sel.empty) {
 		pos = sel.to;
 	} else {
-		// TODO not sure about that
-		console.info("TODO deal with non-empty TextSelection across boundaries");
-		pos = sel.from;
+		// non empty text selection: do not change focus
 	}
-	if (pos === null) return;
-	return this.focus(tr, pos);
+	if (pos !== null) return this.focus(tr, pos);
 };
 
 FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
