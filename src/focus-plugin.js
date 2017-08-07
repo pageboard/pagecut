@@ -34,13 +34,11 @@ function FocusPlugin(view, options) {
 }
 
 FocusPlugin.prototype.click = function(view, pos, e) {
-	this.view.handleDragging = false;
 	var tr = this.focus(view.state.tr, pos);
 	if (tr) view.dispatch(tr);
 };
 
 FocusPlugin.prototype.action = function(tr) {
-	if (this.view.handleDragging) return;
 	var sel = tr.selection;
 	// avoid unneeded changes
 	if (this.view.state.tr.selection.eq(sel)) return;
