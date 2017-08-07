@@ -114,7 +114,7 @@ function toDOMOutputSpec(obj, node) {
 	var out = 0;
 	var dom = obj.contentDOM || obj.dom;
 	while (dom) {
-		var attrs = dom == obj.dom ? attrsTo(node.attrs) : domAttrsMap(dom);
+		var attrs = domAttrsMap(dom);
 		if (!obj.contentDOM || node instanceof Model.Mark) return [dom.nodeName, attrs];
 		out = [dom.nodeName, attrs, out];
 		if (dom == obj.dom) break;
