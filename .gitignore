@@ -41,3 +41,8 @@ font/*
 dist/*
 pm
 TODO
+
+sample/dom-template-strings.js
+sample/diffDOM.js
+sample/agent.js
+src/prosemirror*.css

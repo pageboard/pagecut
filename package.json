@@ -4,7 +4,8 @@
   "description": "Extensible web content editor",
   "main": "index.js",
   "scripts": {
-    "prepublish": "make all",
+    "prepublishOnly": "make all",
+    "postinstall": "postinstall-links",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -52,5 +53,15 @@
     "prosemirror-view": "^0.22.0",
     "url-regex": "^3.2.0",
     "window-agent": "^1.2.0"
+  },
+  "links": {
+    "window-agent/agent.js": "sample/",
+    "diff-dom/diffDOM.js": "sample/",
+    "dom-template-strings/dist/dom-template-strings.js": "sample/",
+    "prosemirror-view/style/prosemirror.css": "src/prosemirror.css",
+    "prosemirror-menu/style/menu.css": "src/prosemirror-menu.css"
+  },
+  "dependencies": {
+    "postinstall-links": "^0.2.0"
   }
 }

@@ -1,1 +1,0 @@
-../node_modules/dom-template-strings/dist/dom-template-strings.js
