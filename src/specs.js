@@ -384,11 +384,36 @@ function mutateNodeView(obj, nobj, initial) {
 	// first upgrade attributes
 	mutateAttributes(obj.dom, nobj.dom);
 	// then upgrade descendants
-	if (!obj.contentDOM || obj.dom == obj.contentDOM) return; // our job is done
+	var parent, node;
+	if (!obj.contentDOM) {
+		// remove all elementRendered
+		parent = obj.dom;
+		node = parent.firstChild;
+		var cur;
+		while (node) {
+			if (node.elementRendered || initial) {
+				cur = node;
+			} else {
+				cur = null;
+			}
+			node = node.nextSibling;
+			if (cur) parent.removeChild(cur);
+		}
+		node = nobj.dom.firstChild;
+		while (node) {
+			node.elementRendered = true;
+			cur = node;
+			node = node.nextSibling;
+			parent.appendChild(cur);
+		}
+		return;
+	} else if (obj.dom == obj.contentDOM) {
+		// our job is done
+		return;
+	}
 	// there is something between dom and contentDOM
 	var cont = obj.contentDOM;
 	var ncont = nobj.contentDOM;
-	var parent, node;
 
 	// replace only nodes rendered by element
 	while (cont != obj.dom) {
