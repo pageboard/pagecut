@@ -177,6 +177,8 @@ function createRootSpec(view, elt, obj) {
 		spec.nodeView = function(node, view, getPos, decorations) {
 			return new RootNodeView(elt, obj.dom, node, view, getPos);
 		};
+		// explicitely allow dragging for nodes without contentDOM
+		if (!obj.contentDOM) spec.draggable = true;
 	} else {
 		// this node does not have editable content
 		spec.atom = true;
