@@ -158,6 +158,7 @@ Utils.prototype.blockToAttr = function(block) {
 	if (block.id != null) attrs.block_id = block.id;
 	if (block.type != null) attrs.block_type = block.type;
 	if (block.data) attrs.block_data = JSON.stringify(block.data);
+	if (block.focused) attrs.block_focused = block.focused;
 	if (attrs.block_data == "{}") delete attrs.block_data;
 	return attrs;
 };
