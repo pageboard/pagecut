@@ -172,7 +172,7 @@ function createRootSpec(view, elt, obj) {
 			return toDOMOutputSpec(uView, node);
 		}
 	};
-	if (obj.contentDOM) {
+	if (obj.dom.childNodes || obj.contentDOM) {
 		// there's a bug somewhere (in prosemirror ?) with leaf nodes having a nodeView
 		spec.nodeView = function(node, view, getPos, decorations) {
 			return new RootNodeView(elt, obj.dom, node, view, getPos);
