@@ -324,7 +324,11 @@ RootNodeView.prototype.update = function(node, decorations) {
 };
 
 RootNodeView.prototype.ignoreMutation = function(record) {
-	return true;
+	if (record.target == this.contentDOM && record.type == "childList") {
+		return false;
+	} else {
+		return true;
+	}
 };
 
 RootNodeView.prototype.destroy = function() {
@@ -370,8 +374,11 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 };
 
 ContainerNodeView.prototype.ignoreMutation = function(record) {
-	// never ignore mutation
-	return false;
+	if (record.target == this.contentDOM && record.type == "childList") {
+		return false;
+	} else {
+		return true;
+	}
 };
 
 function mergeNodeAttrsToDom(attrs, dom) {
