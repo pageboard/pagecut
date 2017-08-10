@@ -10,7 +10,10 @@ function define(view, elt, schema, views) {
 	// ignore virtual elements
 	if (!elt.render) return;
 	var dom = view.render(view.blocks.create(elt.name));
-	if (!dom) throw new Error(`${elt.name} element must render a DOM Node`);
+	if (!dom || dom.nodeType != Node.ELEMENT_NODE) {
+		console.error(`ignoring ${elt.name} element - render does not return a DOM Node`);
+		return;
+	}
 	if (dom.parentNode) dom = dom.cloneNode(true);
 	var index = 0;
 
