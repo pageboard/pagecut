@@ -155,7 +155,6 @@ Blocks.prototype.from = function(blocks) {
 			console.warn("ignoring unknown block id", id);
 			return;
 		}
-		var el = this.view.element(child.type);
 		child = this.from(child);
 		if (!child) return;
 		node.parentNode.replaceChild(child, node);
@@ -188,6 +187,9 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 		parent.content[name] = nodeToHtml(content);
 	}, this);
 	blocks[parent.id] = parent;
+
+	var el = this.view.element(parent.type);
+	if (el.store) parent = el.store(parent, this) || parent;
 	return parent;
 }
 
