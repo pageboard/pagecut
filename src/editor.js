@@ -240,8 +240,7 @@ Editor.prototype.pasteNode = function(node) {
 		bn.node.attrs.block_id = this.genId();
 		return;
 	}
-	var dom = this.dom.querySelector(`[block-id="${bn.id}"]`);
-	if (dom) {
+	if (!block.deleted) {
 		// known block already exists, assume copy/paste
 		block = this.blocks.mount(block);
 		block.id = bn.node.attrs.block_id = this.blocks.genId();
