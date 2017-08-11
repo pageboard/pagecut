@@ -27,20 +27,25 @@ Blocks.prototype.render = function(block) {
 Blocks.prototype.mount = function(block) {
 	var contents = block.content;
 	var copy = this.copy(block);
-	var content, div, frag;
+	var content, div, frag, view = this.view;
 	for (var name in contents) {
 		content = contents[name];
 		if (content instanceof Node) {
 			frag = content;
 		} else {
-			div = this.view.doc.createElement("div");
+			div = view.doc.createElement("div");
 			div.innerHTML = content;
-			frag = this.view.doc.createDocumentFragment();
+			frag = view.doc.createDocumentFragment();
 			while (div.firstChild) frag.appendChild(div.firstChild);
 		}
 		copy.content[name] = frag;
 	}
-	return copy;
+	var el = view.element(copy.type);
+	return Promise.resolve().then(function() {
+		if (el.mount) return el.mount(copy, view);
+	}).then(function() {
+		return copy;
+	});
 };
 
 Blocks.prototype.unmount = function(block) {
@@ -100,6 +105,10 @@ Blocks.prototype.merge = function(dom, block) {
 Blocks.prototype.from = function(blocks) {
 	// blocks can be a block or a map of blocks
 	// if it's a block, it can have a 'children' property
+	var p = Promise.resolve();
+	var self = this;
+	var view = this.view;
+
 	var frag = "";
 	if (typeof blocks == "string") {
 		frag = blocks
@@ -113,11 +122,11 @@ Blocks.prototype.from = function(blocks) {
 			store = this.store = blocks;
 		}
 		// it's a map of blocks, we need to find the root block
-		var id = this.view.dom.getAttribute('block-id');
-		var contentName = this.view.dom.getAttribute('block-content') || 'fragment';
+		var id = view.dom.getAttribute('block-id');
+		var contentName = view.dom.getAttribute('block-content') || 'fragment';
 		if (!id) {
 			id = this.genId();
-			this.view.dom.setAttribute('block-id', id);
+			view.dom.setAttribute('block-id', id);
 		}
 		var frag = "";
 		block = blocks[id];
@@ -132,34 +141,42 @@ Blocks.prototype.from = function(blocks) {
 	} else {
 		// it's a block
 		block = blocks;
-		if (block.children) block.children.forEach(function(child) {
-			store[child.id] = this.mount(child);
-		}, this);
+		if (block.children) p = Promise.all(block.children.map(function(child) {
+			return Promise.resolve(child).then(function(child) {
+				return self.mount(child);
+			}).then(function(child) {
+				store[child.id] = child;
+			});
+		}, this));
 	}
 
-	block = store[block.id] = this.mount(block);
-
-	var fragment;
-	try {
-		fragment = this.view.render(block);
-	} catch(ex) {
-		console.error(ex);
-		return;
-	}
-	this.merge(fragment, block);
-	Array.from(fragment.querySelectorAll('[block-id]')).forEach(function(node) {
-		var id = node.getAttribute('block-id');
-		if (id === block.id) return;
-		var child = store[id];
-		if (!child) {
-			console.warn("ignoring unknown block id", id);
+	return p.then(function() {
+		return self.mount(block);
+	}).then(function(block) {
+		store[block.id] = block;
+		var fragment;
+		try {
+			fragment = view.render(block);
+		} catch(ex) {
+			console.error(ex);
 			return;
 		}
-		child = this.from(child);
-		if (!child) return;
-		node.parentNode.replaceChild(child, node);
-	}, this);
-	return fragment;
+		self.merge(fragment, block);
+		return Promise.all(Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
+			var id = node.getAttribute('block-id');
+			if (id === block.id) return;
+			var child = store[id];
+			if (!child) {
+				console.warn("ignoring unknown block id", id);
+				return;
+			}
+			return self.from(child).then(function(child) {
+				if (child) node.parentNode.replaceChild(child, node);
+			});
+		}, this)).then(function() {
+			return fragment;
+		});
+	});
 };
 
 Blocks.prototype.serializeTo = function(parent, blocks) {
@@ -189,7 +206,7 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 	blocks[parent.id] = parent;
 
 	var el = this.view.element(parent.type);
-	if (el.store) parent = el.store(parent, this) || parent;
+	if (el.unmount) parent = el.unmount(parent, this) || parent;
 	return parent;
 }
 

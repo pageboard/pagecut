@@ -242,7 +242,7 @@ Editor.prototype.pasteNode = function(node) {
 	}
 	if (!block.deleted) {
 		// known block already exists, assume copy/paste
-		block = this.blocks.mount(block);
+		block = this.blocks.copy(block);
 		block.id = bn.node.attrs.block_id = this.blocks.genId();
 		this.blocks.set(block);
 	} else {

@@ -102,14 +102,16 @@ document.addEventListener('DOMContentLoaded', function() {
 	//Pagecut.sample.modules.inspector.inspect = function(url, cb) {
 	//	GET("https://inspector.eda.sarl/inspector", {url: url}, cb);
 	//};
-	Pagecut.sample.utils.setDom(Pagecut.sample.from({
+	Pagecut.sample.from({
 		id: 'root',
 		type: 'fragment',
 		content: {
 			fragment: contentNode
 		},
 		children: [block1, block2]
-	}));
+	}).then(function(body) {
+		Pagecut.sample.utils.setDom(body);
+	});
 	contentNode.hidden = true;
 });
 	</script>
