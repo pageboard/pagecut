@@ -176,10 +176,13 @@ Blocks.prototype.from = function(blocks) {
 
 Blocks.prototype.serializeTo = function(parent, blocks) {
 	parent = this.copy(parent);
+	var el = this.view.element(parent.type);
 
-	Object.keys(parent.content).forEach(function(name) {
-		var content = parent.content[name].cloneNode(true);
-		var node, div, id;
+	if (el.contents) Object.keys(el.contents).forEach(function(name) {
+		var content = parent.content[name];
+		if (!content) return;
+		content = content.cloneNode(true);
+		var node, div, id, type;
 		if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
 			var frag = content.ownerDocument.createElement('div');
 			frag.appendChild(content);
@@ -198,9 +201,9 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 		});
 		parent.content[name] = nodeToHtml(content);
 	}, this);
+
 	blocks[parent.id] = parent;
 
-	var el = this.view.element(parent.type);
 	if (el.unmount) parent = el.unmount(parent, this) || parent;
 	return parent;
 }
