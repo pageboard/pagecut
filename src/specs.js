@@ -251,7 +251,7 @@ function createContainerSpec(view, elt, obj) {
 	return spec;
 }
 
-function RootNodeView(element, domModel, node, view, getPos) {
+function RootNodeView(domModel, node, view, getPos) {
 	this.view = view;
 	this.getPos = getPos;
 	this.id = node.attrs.block_id;
