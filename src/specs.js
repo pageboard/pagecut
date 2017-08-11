@@ -178,7 +178,7 @@ function createRootSpec(view, elt, obj) {
 	if (obj.dom.childNodes || obj.contentDOM) {
 		// there's a bug somewhere (in prosemirror ?) with leaf nodes having a nodeView
 		spec.nodeView = function(node, view, getPos, decorations) {
-			return new RootNodeView(elt, obj.dom, node, view, getPos);
+			return new RootNodeView(obj.dom, node, view, getPos);
 		};
 		// explicitely allow dragging for nodes without contentDOM
 		if (!obj.contentDOM) spec.draggable = true;
@@ -216,7 +216,7 @@ function createWrapSpec(view, elt, obj) {
 			return toDOMOutputSpec(obj, node);
 		},
 		nodeView: function(node, view, getPos, decorations) {
-			return new WrapNodeView(elt, obj.dom, node, view);
+			return new WrapNodeView(obj.dom, node, view);
 		}
 	};
 	return spec;
@@ -245,14 +245,13 @@ function createContainerSpec(view, elt, obj) {
 			return toDOMOutputSpec(obj, node);
 		},
 		nodeView: function(node, view, getPos, decorations) {
-			return new ContainerNodeView(elt, obj.dom, node, view);
+			return new ContainerNodeView(obj.dom, node, view);
 		}
 	};
 	return spec;
 }
 
 function RootNodeView(element, domModel, node, view, getPos) {
-	this.element = element;
 	this.view = view;
 	this.getPos = getPos;
 	this.id = node.attrs.block_id;
@@ -264,7 +263,7 @@ function RootNodeView(element, domModel, node, view, getPos) {
 		block.id = this.id;
 		view.blocks.set(block);
 	} else {
-		block = view.blocks.get(this.id);
+		block = view.blocks.get(this.id, this.type);
 		if (!block) {
 			console.warn("missing block", node.attrs);
 		} else if (block.deleted) {
@@ -336,7 +335,7 @@ RootNodeView.prototype.destroy = function() {
 	if (block) block.deleted = true;
 };
 
-function WrapNodeView(element, domModel, node, view) {
+function WrapNodeView(domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
 	this.contentDOM = findContent(this.dom);
 	this.update(node);
@@ -355,7 +354,7 @@ WrapNodeView.prototype.ignoreMutation = function(record) {
 	return true;
 };
 
-function ContainerNodeView(element, domModel, node, view) {
+function ContainerNodeView(domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
 	this.view = view;
 	this.contentDOM = findContent(this.dom);
