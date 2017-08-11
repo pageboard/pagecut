@@ -13,6 +13,9 @@ all: clean build
 clean:
 	rm -rf dist/*
 
+ts:
+	tsc --allowJs --checkJs --noEmit --lib es2015,dom src/editor.js
+
 predist:
 	mkdir -p dist/
 	cp src/*.css dist/
