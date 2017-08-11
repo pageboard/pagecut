@@ -56,11 +56,11 @@ Viewer.prototype.element = function(type) {
 	return this.elementsMap[type];
 };
 
-Viewer.prototype.render = function(block) {
-	var dom = this.blocks.render(block);
+Viewer.prototype.render = function(block, overrideType) {
+	var dom = this.blocks.render(block, overrideType);
 	if (dom.nodeType != Node.ELEMENT_NODE) return dom;
 
-	dom.setAttribute('block-type', block.type);
+	dom.setAttribute('block-type', overrideType || block.type);
 
 	if (block.id != null) dom.setAttribute('block-id', block.id);
 	else dom.removeAttribute('block-id');

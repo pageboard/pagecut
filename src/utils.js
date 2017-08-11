@@ -138,6 +138,8 @@ Utils.prototype.refreshTr = function(tr, dom) {
 	var block = this.view.blocks.get(id);
 	if (!block) return;
 	var attrs = this.blockToAttr(block);
+	var type = dom.getAttribute('block-type');
+	if (type) attrs.block_type = type; // dom can override block.type
 	return tr.setNodeType(pos, null, attrs);
 };
 

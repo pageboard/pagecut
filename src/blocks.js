@@ -18,9 +18,10 @@ Blocks.prototype.create = function(type) {
 	};
 };
 
-Blocks.prototype.render = function(block) {
-	var el = this.view.element(block.type);
-	if (!el) throw new Error(`Unknown block.type ${block.type}`);
+Blocks.prototype.render = function(block, overrideType) {
+	var type = overrideType || block.type;
+	var el = this.view.element(type);
+	if (!el) throw new Error(`Unknown block.type ${type}`);
 	return el.render(this.view.doc, block, this.view);
 };
 
@@ -101,7 +102,7 @@ Blocks.prototype.merge = function(dom, block) {
 	});
 };
 
-Blocks.prototype.from = function(blocks) {
+Blocks.prototype.from = function(blocks, overrideType) {
 	// blocks can be a block or a map of blocks
 	// if it's a block, it can have a 'children' property
 	var p = Promise.resolve();
@@ -151,7 +152,7 @@ Blocks.prototype.from = function(blocks) {
 		store[block.id] = block;
 		var fragment;
 		try {
-			fragment = view.render(block);
+			fragment = view.render(block, overrideType);
 		} catch(ex) {
 			console.error(ex);
 			return;
@@ -165,7 +166,7 @@ Blocks.prototype.from = function(blocks) {
 				console.warn("ignoring unknown block id", id);
 				return;
 			}
-			return self.from(child).then(function(child) {
+			return self.from(child, node.getAttribute('block-type')).then(function(child) {
 				if (child) node.parentNode.replaceChild(child, node);
 			});
 		}, this)).then(function() {
@@ -182,7 +183,7 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 		var content = parent.content[name];
 		if (!content) return;
 		content = content.cloneNode(true);
-		var node, div, id, type;
+		var node, div, id, type, block;
 		if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
 			var frag = content.ownerDocument.createElement('div');
 			frag.appendChild(content);
@@ -191,13 +192,23 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 		var list = [];
 		while (node = content.querySelector('[block-id]')) {
 			id = node.getAttribute('block-id');
+			type = node.getAttribute('block-type');
+			block = this.store[id];
+			if (!block) {
+				node.parentNode.removeChild(node);
+				console.warn("block not found", id, "while serializing");
+				continue;
+			}
 			div = content.ownerDocument.createElement(node.nodeName);
 			node.parentNode.replaceChild(div, node);
-			this.serializeTo(this.store[id], blocks);
-			list.push({node: div, id: id});
+			this.serializeTo(block, blocks);
+			list.push({node: div, block: block, type: type});
 		}
 		list.forEach(function(item) {
-			item.node.setAttribute('block-id', item.id);
+			item.node.setAttribute('block-id', item.block.id);
+			if (item.type && item.type != item.block.type) {
+				item.node.setAttribute('block-type', item.type); // overrides block.type
+			}
 		});
 		parent.content[name] = nodeToHtml(content);
 	}, this);

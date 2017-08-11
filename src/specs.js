@@ -143,7 +143,7 @@ function createRootSpec(view, elt, obj) {
 			// it's ok to use dom attributes to rebuild a block
 			return Object.assign(
 				view.utils.blockToAttr(block),
-				attrsFrom(dom)
+				attrsFrom(dom) // thus dom block-type can override block.type
 			);
 		},
 		contentElement: findContent
@@ -170,7 +170,7 @@ function createRootSpec(view, elt, obj) {
 				view.blocks.set(ublock);
 			}
 			var block = view.blocks.get(id);
-			var dom = view.render(block);
+			var dom = view.render(block, node.attrs.block_type);
 			var uView = flagDom(dom);
 			return toDOMOutputSpec(uView, node);
 		}
@@ -314,7 +314,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 	if (node.attrs.block_focused) block.focused = node.attrs.block_focused;
 	else delete block.focused;
 
-	var dom = this.view.render(block);
+	var dom = this.view.render(block, node.attrs.block_type);
 	mutateNodeView(this, flagDom(dom), !oldBlock);
 	if (oldBlock && this.dom.update) {
 		this.dom.update();
