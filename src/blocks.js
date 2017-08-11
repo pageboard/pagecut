@@ -140,13 +140,9 @@ Blocks.prototype.from = function(blocks) {
 	} else {
 		// it's a block
 		block = blocks;
-		if (block.children) p = Promise.all(block.children.map(function(child) {
-			return Promise.resolve(child).then(function(child) {
-				return self.mount(child);
-			}).then(function(child) {
-				store[child.id] = child;
-			});
-		}, this));
+		if (block.children) block.children.forEach(function(child) {
+			store[child.id] = child;
+		});
 	}
 
 	return p.then(function() {
