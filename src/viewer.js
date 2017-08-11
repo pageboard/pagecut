@@ -8,6 +8,11 @@ function Viewer(opts) {
 
 	var modules = Object.assign({
 		fragment: {
+			contents: {
+				fragment: {
+					spec: "block*"
+				}
+			},
 			render: function renderFragment(doc, block) {
 				return block.content.fragment || doc.createElement("div");
 			}
