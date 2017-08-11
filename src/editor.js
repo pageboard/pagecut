@@ -237,7 +237,7 @@ Editor.prototype.pasteNode = function(node) {
 	var block = this.blocks.get(bn.id);
 	if (!block) {
 		// unknown block, let id module deserialize it later
-		bn.node.attrs.block_id = this.blocks.genId();
+		delete bn.node.attrs.block_id;
 		return;
 	}
 	if (!block.deleted) {
