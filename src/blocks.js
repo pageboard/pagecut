@@ -74,12 +74,11 @@ function nodeToHtml(node) {
 }
 
 Blocks.prototype.copy = function(block) {
-	var copy = {};
-	if (block.id != null) copy.id = block.id;
-	if (block.type != null) copy.type = block.type;
-	if (block.orphan) copy.orphan = block.orphan;
+	var copy = Object.assign({}, block);
 	copy.data = Object.assign({}, block.data);
 	copy.content = Object.assign({}, block.content);
+	delete copy.focused;
+	delete copy.deleted;
 	return copy;
 };
 
