@@ -118,7 +118,7 @@ Blocks.prototype.from = function(blocks, overrideType) {
 	if (!blocks) blocks = {};
 	var block;
 	var store = this.store;
-	if (blocks.id === undefined) {
+	if (blocks.type === undefined) {
 		if (blocks != store) {
 			store = this.store = Object.assign({}, blocks); // copy blocks
 		}
@@ -142,6 +142,10 @@ Blocks.prototype.from = function(blocks, overrideType) {
 	} else {
 		// it's a block
 		block = blocks;
+		if (block.id === undefined) {
+			block.id = this.genId();
+			store[block.id] = block;
+		}
 		if (block.children) block.children.forEach(function(child) {
 			store[child.id] = child;
 		});
