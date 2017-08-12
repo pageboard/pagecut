@@ -43,7 +43,8 @@ function deleteCommand(state, dispatch, view) {
 	if (sel.$from.parent.isTextblock && sel.$from.parent.childCount == 0) {
 		if (dispatch) {
 			dispatch(
-				state.tr.delete(sel.$from.before(), sel.$from.after()).scrollIntoView().setMeta('addToHistory', true)
+				// .setMeta('addToHistory', true) doesn't work
+				state.tr.delete(sel.$from.before(), sel.$from.after()).scrollIntoView()
 			);
 		}
 		return true;
