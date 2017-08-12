@@ -94,6 +94,9 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		}
 		tr = tr.addMark(from, to, mark.type.create(mark.attrs));
 	} else if (from == to) {
+		if (parent.isTextblock && sel.$from.parentOffset == 0) {
+			from = sel.$from.before();
+		}
 		tr = tr.insert(from, frag);
 	} else {
 		tr = tr.replaceWith(from, to, frag);
