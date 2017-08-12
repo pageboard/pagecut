@@ -287,19 +287,18 @@ Blocks.prototype.genId = function() {
 Blocks.prototype.domQuery = function(id, opts) {
 	if (!opts) opts = {};
 	var rootDom = this.view.dom;
-	var nodes, node;
+	var sel = `[block-id="${id}"]`;
+	if (opts.focused) sel += '[block-focused]';
+	var nodes = Array.from(rootDom.querySelectorAll(sel));
 	if (rootDom.getAttribute('block-id') == id) {
-		// always focused
-		node = rootDom;
-	} else {
-		var sel = `[block-id="${id}"]`;
-		if (opts.focused) sel += '[block-focused]';
-		nodes = rootDom.querySelectorAll(sel);
-		if (opts.all) return nodes;
-		if (nodes.length > 1) throw new Error(`Multiple nodes with same id are focused ${id}`);
-		if (!nodes.length) return;
-		node = nodes[0];
+		// root is always focused, but another node having actual focus and representing
+		// the current page could take precedence
+		nodes.push(rootDom);
 	}
+	if (opts.all) return nodes;
+	if (nodes.length == 0) return;
+	var node = nodes[0];
+
 	if (opts.content) {
 		if (node.getAttribute('block-content') == opts.content) {
 			return node;
