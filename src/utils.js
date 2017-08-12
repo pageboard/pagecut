@@ -92,12 +92,13 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 			tr = tr.insertText(textContent, from, to);
 			to = from + textContent.length;
 		}
-		return tr.addMark(from, to, mark.type.create(mark.attrs));
+		tr = tr.addMark(from, to, mark.type.create(mark.attrs));
 	} else if (from == to) {
-		return tr.insert(from, frag);
+		tr = tr.insert(from, frag);
 	} else {
-		return tr.replaceWith(from, to, frag);
+		tr = tr.replaceWith(from, to, frag);
 	}
+	return tr;
 };
 
 Utils.prototype.delete = function(sel) {
