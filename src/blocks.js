@@ -120,7 +120,7 @@ Blocks.prototype.from = function(blocks, overrideType) {
 	var store = this.store;
 	if (blocks.id === undefined) {
 		if (blocks != store) {
-			store = this.store = blocks;
+			store = this.store = Object.assign({}, blocks); // copy blocks
 		}
 		// it's a map of blocks, we need to find the root block
 		var id = view.dom.getAttribute('block-id');
