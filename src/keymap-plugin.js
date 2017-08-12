@@ -2,7 +2,8 @@ var keymap = require("prosemirror-keymap").keymap;
 
 module.exports = function(editor, options) {
 	return keymap({
-		Enter: breakCommand
+		Enter: breakCommand,
+		Delete: deleteCommand
 	});
 };
 
@@ -31,5 +32,22 @@ function breakCommand(state, dispatch, view) {
 		// stop here
 		return true;
 	}
+}
+
+function deleteCommand(state, dispatch, view) {
+	var sel = state.tr.selection;
+	if (!sel.empty) return false;
+	var nodeAfter = state.doc.resolve(sel.$from.pos + 1).nodeAfter;
+	if (!nodeAfter || nodeAfter.type.spec.typeName != "root") return false;
+	// if selection is inside an empty paragraph, remove that paragraph
+	if (sel.$from.parent.isTextblock && sel.$from.parent.childCount == 0) {
+		if (dispatch) {
+			dispatch(
+				state.tr.delete(sel.$from.before(), sel.$from.after()).scrollIntoView().setMeta('addToHistory', true)
+			);
+		}
+		return true;
+	}
+	return false;
 }
 

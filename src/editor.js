@@ -16,7 +16,7 @@ var listSchema = require("prosemirror-schema-list");
 var UrlRegex = require('url-regex');
 
 var FocusPlugin = require("./focus-plugin");
-var BreakPlugin = require("./break-plugin");
+var KeymapPlugin = require("./keymap-plugin");
 
 var Utils = require("./utils");
 var Specs = require("./specs");
@@ -85,7 +85,7 @@ function Editor(opts) {
 	this.parser = Model.DOMParser.fromSchema(this.schema);
 
 	this.plugins.push(
-		BreakPlugin,
+		KeymapPlugin,
 		FocusPlugin,
 //		require("./test-plugin"),
 		CreatePasteBlock,
