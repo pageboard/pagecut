@@ -83,11 +83,12 @@ Blocks.prototype.copy = function(block) {
 	return copy;
 };
 
-Blocks.prototype.merge = function(dom, block) {
+Blocks.prototype.merge = function(dom, block, overrideType) {
 	if (dom.nodeType != Node.ELEMENT_NODE) return;
+	var el = this.view.element(overrideType || block.type);
 	var contents = block.content;
 	if (!contents) return;
-	Object.keys(contents).forEach(function(name) {
+	if (el.contents) Object.keys(el.contents).forEach(function(name) {
 		var blockContent = dom.getAttribute('block-content');
 		var node;
 		if (blockContent) {
@@ -157,7 +158,7 @@ Blocks.prototype.from = function(blocks, overrideType) {
 			console.error(ex);
 			return;
 		}
-		self.merge(fragment, block);
+		self.merge(fragment, block, overrideType);
 		return Promise.all(Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
 			var id = node.getAttribute('block-id');
 			if (id === block.id) return;
@@ -166,7 +167,8 @@ Blocks.prototype.from = function(blocks, overrideType) {
 				console.warn("ignoring unknown block id", id);
 				return;
 			}
-			return self.from(child, node.getAttribute('block-type')).then(function(child) {
+			var type = node.getAttribute('block-type');
+			return self.from(child, type).then(function(child) {
 				if (child) node.parentNode.replaceChild(child, node);
 			});
 		}, this)).then(function() {
@@ -176,7 +178,6 @@ Blocks.prototype.from = function(blocks, overrideType) {
 };
 
 Blocks.prototype.serializeTo = function(parent, blocks) {
-	parent = this.copy(parent);
 	var el = this.view.element(parent.type);
 
 	if (el.contents) Object.keys(el.contents).forEach(function(name) {
@@ -201,12 +202,17 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 			}
 			div = content.ownerDocument.createElement(node.nodeName);
 			node.parentNode.replaceChild(div, node);
+			block = this.copy(block);
+			if (type) {
+				if (type != block.type) block.type = type;
+				else type = null;
+			}
 			this.serializeTo(block, blocks);
 			list.push({node: div, block: block, type: type});
 		}
 		list.forEach(function(item) {
 			item.node.setAttribute('block-id', item.block.id);
-			if (item.type && item.type != item.block.type) {
+			if (item.type) {
 				item.node.setAttribute('block-type', item.type); // overrides block.type
 			}
 		});
