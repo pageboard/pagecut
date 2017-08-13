@@ -290,12 +290,12 @@ Blocks.prototype.domQuery = function(id, opts) {
 	var sel = `[block-id="${id}"]`;
 	if (opts.focused) sel += '[block-focused]';
 	var nodes = Array.from(rootDom.querySelectorAll(sel));
+	if (opts.all) return nodes;
 	if (rootDom.getAttribute('block-id') == id) {
 		// root is always focused, but another node having actual focus and representing
 		// the current page could take precedence
 		nodes.push(rootDom);
 	}
-	if (opts.all) return nodes;
 	if (nodes.length == 0) return;
 	var node = nodes[0];
 
