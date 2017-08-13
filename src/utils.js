@@ -177,6 +177,11 @@ Utils.prototype.selectDom = function(node) {
 	if (node.nodeType != Node.ELEMENT_NODE) {
 		sel = new State.TextSelection($pos);
 	} else {
+		if (!$pos.nodeAfter) {
+			if (node.parentNode && node.parentNode != this.view.dom) this.selectDom(node.parentNode);
+			else console.warn("cannot select node", node);
+			return;
+		}
 		sel = new State.NodeSelection($pos);
 	}
 	this.view.dispatch(tr.setSelection(sel));
