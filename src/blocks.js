@@ -288,7 +288,13 @@ Blocks.prototype.domQuery = function(id, opts) {
 	if (!opts) opts = {};
 	var rootDom = this.view.dom;
 	var sel = `[block-id="${id}"]`;
-	if (opts.focused) sel += '[block-focused]';
+	if (opts.focused) {
+		if (typeof opts.focused == "string") {
+			sel += `[block-focused="${opts.focused}"]`;
+		} else {
+			sel += '[block-focused]';
+		}
+	}
 	var nodes = Array.from(rootDom.querySelectorAll(sel));
 	if (opts.all) return nodes;
 	if (rootDom.getAttribute('block-id') == id) {
