@@ -1,3 +1,5 @@
+var State = require("prosemirror-state");
+
 module.exports = function(view, options) {
 	var plugin = new FocusPlugin(view, options);
 	return {
@@ -40,6 +42,8 @@ FocusPlugin.prototype.action = function(tr) {
 		pos = sel.from;
 	} else if (sel.empty) {
 		pos = sel.to;
+	} else if (sel instanceof State.AllSelection) {
+		pos = -1; // deselect everything
 	} else {
 		// non empty text selection: do not change focus
 	}
@@ -73,13 +77,14 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 	if (!this.view.hasFocus()) {
 		return;
 	}
-	var parents = this.view.utils.parents(tr, pos, true);
+	var parents = pos >= 0 ? this.view.utils.parents(tr, pos, true) :
+		[this.view.utils.parents(tr, 0, false, true)];
 	var root = parents.length && parents[0].root;
 	if (root && (root.mark || root.node).attrs.block_focused == "last") {
 		// already done
 		// return;
 	}
-	var pos = root && root.level && root.rpos.before(root.level);
+	var rootPos = root && root.level && root.rpos.before(root.level);
 	var selectedRoot = root && tr.selection.node == root.node;
 
 	var me = this;
@@ -89,7 +94,7 @@ FocusPlugin.prototype.focus = function(tr, pos) {
 	var newtr;
 	if (root) {
 		changes.push({
-			pos: pos,
+			pos: rootPos,
 			node: root.mark || root.node,
 			focus: "last"
 		});

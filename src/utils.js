@@ -196,7 +196,7 @@ Utils.prototype.selectTr = function(tr, obj, textSelection) {
 		} else {
 			if (obj instanceof Node) {
 				if (obj == this.view.dom) {
-					return State.Selection.atStart(tr.doc);
+					return new State.AllSelection(tr.doc);
 				} else {
 					pos = this.posFromDOM(obj);
 				}
