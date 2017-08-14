@@ -181,10 +181,8 @@ function CreatePasteBlock(editor) {
 	return new State.Plugin({
 		props: {
 			transformPasted: function(pslice) {
-				pslice.content.descendants(function(node) {
-					node = editor.pasteNode(node);
-				});
-				return pslice;
+				var frag = editor.utils.fragmentApply(pslice.content, editor.pasteNode.bind(editor));
+				return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
 			}
 		}
 	});

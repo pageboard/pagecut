@@ -413,3 +413,22 @@ Utils.prototype.markActive = function(state, type) {
 	}
 };
 
+Utils.prototype.fragmentApply = fragmentApply;
+
+function fragmentApply(frag, fun) {
+	var list = [];
+	frag.forEach(function(child) {
+		var copy;
+		if (child.isText) {
+			copy = child.copy(child.text.slice());
+		} else {
+			copy = child.copy(fragmentApply(child.content, fun));
+		}
+		var added = fun(copy, list);
+		if (!added) {
+			list.push(copy);
+		}
+	});
+	return Model.Fragment.fromArray(list);
+}
+
