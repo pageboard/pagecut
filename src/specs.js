@@ -263,7 +263,7 @@ function RootNodeView(domModel, node, view, getPos) {
 		block.id = this.id;
 		view.blocks.set(block);
 	} else {
-		block = view.blocks.get(this.id, this.type);
+		block = view.blocks.get(this.id);
 		if (!block) {
 			console.warn("missing block", node.attrs);
 		} else if (block.deleted) {
