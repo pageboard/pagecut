@@ -191,6 +191,10 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 	if (el.contents) Object.keys(el.contents).forEach(function(name) {
 		var content = parent.content[name];
 		if (!content) return;
+		if (typeof content == "string") {
+			console.warn("content not mounted, nothing to serialize", name, parent);
+			return;
+		}
 		content = content.cloneNode(true);
 		var node, div, id, type, block;
 		if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
