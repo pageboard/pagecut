@@ -247,6 +247,7 @@ Editor.prototype.pasteNode = function(node) {
 		this.blocks.set(block);
 	} else {
 		// known block is not in dom, assume cut/paste or drag/drop
+		delete block.deleted; // just in case
 	}
 };
 
