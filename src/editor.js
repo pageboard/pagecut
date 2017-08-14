@@ -137,7 +137,6 @@ function Editor(opts) {
 			doc: opts.content ? this.parser.parse(opts.content) : undefined
 		}),
 		domParser: this.parser,
-		domSerializer: this.serializer,
 		dispatchTransaction: function(tr) {
 			editor.updateState(editor.state.apply(tr));
 		},
