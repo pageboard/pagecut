@@ -89,8 +89,7 @@ function Editor(opts) {
 		return function(node) {
 			var out = fun(node);
 			Object.assign(out[1], {
-				'block-data': node.attrs.block_data,
-				'block-type': node.attrs.block_type
+				'block-data': node.attrs.block_data
 			});
 			return out;
 		};
