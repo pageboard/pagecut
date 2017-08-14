@@ -176,54 +176,6 @@ Editor.prototype.getPlugin = function(key) {
 };
 
 
-/*
-Editor.prototype.resolve = function(thing) {
-	var obj = {};
-	if (typeof thing == "string") obj.url = thing;
-	else obj.node = thing;
-	var editor = this;
-	var syncBlock;
-	this.resolvers.some(function(resolver) {
-		syncBlock = resolver(editor, obj, function(err, block) {
-			var pos = syncBlock && syncBlock.pos;
-			if (pos == null) return;
-			delete syncBlock.pos;
-			if (err) {
-				console.error(err);
-				editor.remove(pos);
-			} else {
-				editor.replace(block, pos);
-			}
-		});
-		if (syncBlock) return true;
-	});
-	return syncBlock;
-};
-*/
-
-function fragmentReplace(fragment, regexp, replacer) {
-	var list = [];
-	var child, node, start, end, pos, m, str;
-	for (var i = 0; i < fragment.childCount; i++) {
-		child = fragment.child(i);
-		if (child.isText) {
-			pos = 0;
-			while (m = regexp.exec(child.text)) {
-				start = m.index;
-				end = start + m[0].length;
-				if (start > 0) list.push(child.copy(child.text.slice(pos, start)));
-				str = child.text.slice(start, end);
-				node = replacer(str, pos) || "";
-				list.push(node);
-				pos = end;
-			}
-			if (pos < child.text.length) list.push(child.copy(child.text.slice(pos)));
-		} else {
-			list.push(child.copy(fragmentReplace(child.content, regexp, replacer)));
-		}
-	}
-	return Model.Fragment.fromArray(list);
-}
 
 function CreatePasteBlock(editor) {
 	return new State.Plugin({
@@ -269,24 +221,4 @@ Editor.prototype.pasteNode = function(node) {
 		delete block.deleted; // just in case
 	}
 };
-
-/*
-function CreateResolversPlugin(editor, opts) {
-	return new State.Plugin({
-		props: {
-			transformPasted: function(pslice) {
-				var sel = editor.state.tr.selection;
-				var frag = fragmentReplace(pslice.content, UrlRegex(), function(str, pos) {
-					var block = editor.resolve(str);
-					if (block) {
-						block.pos = pos + sel.from + 1;
-						return main.parse(main.render(block)).firstChild;
-					}
-				});
-				return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
-			}
-		}
-	});
-}
-*/
 
