@@ -29,7 +29,7 @@ function FocusPlugin(view, options) {
 }
 
 FocusPlugin.prototype.click = function(view, pos, e) {
-	var tr = this.focus(view.state.tr, pos);
+	var tr = this.focus(view.state.tr, {from: pos, empty: true});
 	if (tr) view.dispatch(tr);
 };
 
@@ -37,17 +37,7 @@ FocusPlugin.prototype.action = function(tr) {
 	var sel = tr.selection;
 	// avoid unneeded changes
 	if (this.view.state.tr.selection.eq(sel)) return;
-	var pos = null;
-	if (sel.node) {
-		pos = sel.from;
-	} else if (sel.empty) {
-		pos = sel.to;
-	} else if (sel instanceof State.AllSelection) {
-		pos = -1; // deselect everything
-	} else {
-		// non empty text selection: do not change focus
-	}
-	if (pos !== null) return this.focus(tr, pos);
+	return this.focus(tr, sel);
 };
 
 FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
@@ -72,13 +62,12 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	return tr;
 };
 
-FocusPlugin.prototype.focus = function(tr, pos) {
+FocusPlugin.prototype.focus = function(tr, sel) {
 	// do not unfocus if view or its document has lost focus
 	if (!this.view.hasFocus()) {
 		return;
 	}
-	var parents = pos >= 0 ? this.view.utils.parents(tr, pos, true) :
-		[this.view.utils.parents(tr, 0, false, true)];
+	var parents = this.view.utils.selectionParents(tr, sel);
 	var root = parents.length && parents[0].root;
 	if (root && (root.mark || root.node).attrs.block_focused == "last") {
 		// already done
