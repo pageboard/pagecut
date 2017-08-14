@@ -146,9 +146,13 @@ Blocks.prototype.from = function(blocks, overrideType) {
 			block.id = this.genId();
 			store[block.id] = block;
 		}
-		if (block.children) block.children.forEach(function(child) {
-			store[child.id] = child;
-		});
+		if (block.children) {
+			block.children.forEach(function(child) {
+				store[child.id] = child;
+			});
+			// children can be consumed once only
+			delete block.children;
+		}
 	}
 
 	return p.then(function() {
