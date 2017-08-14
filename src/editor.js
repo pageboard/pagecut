@@ -84,6 +84,26 @@ function Editor(opts) {
 	this.serializer = Model.DOMSerializer.fromSchema(this.schema);
 	this.parser = Model.DOMParser.fromSchema(this.schema);
 
+	var cbSerializer = Model.DOMSerializer.fromSchema(this.schema);
+	function replaceOutputSpec(fun) {
+		return function(node) {
+			var out = fun(node);
+			Object.assign(out[1], {
+				'block-data': node.attrs.block_data,
+				'block-type': node.attrs.block_type
+			});
+			return out;
+		};
+	}
+	Object.keys(cbSerializer.nodes).forEach(function(name) {
+		if (spec.nodes.get(name).typeName != "root") return;
+		cbSerializer.nodes[name] = replaceOutputSpec(cbSerializer.nodes[name]);
+	});
+	Object.keys(cbSerializer.marks).forEach(function(name) {
+		if (spec.marks.get(name).typeName != "root") return;
+		cbSerializer.marks[name] = replaceOutputSpec(cbSerializer.marks[name]);
+	});
+
 	this.plugins.push(
 		KeymapPlugin,
 		FocusPlugin,
@@ -137,6 +157,7 @@ function Editor(opts) {
 			doc: opts.content ? this.parser.parse(opts.content) : undefined
 		}),
 		domParser: this.parser,
+		clipboardSerializer: cbSerializer,
 		dispatchTransaction: function(tr) {
 			editor.updateState(editor.state.apply(tr));
 		},
