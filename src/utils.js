@@ -380,18 +380,18 @@ Utils.prototype.selectionParents = function(tr, sel) {
 	return parents;
 };
 
-Utils.prototype.canMark = function(state, nodeType) {
-	var can = state.doc.contentMatchAt(0).allowsMark(nodeType);
-	var sel = state.tr.selection;
+Utils.prototype.canMark = function(sel, nodeType) {
+	var state = this.view.state;
+	var can = sel.$from.depth == 0 ? state.doc.contentMatchAt(0).allowsMark(nodeType) : false;
 	state.doc.nodesBetween(sel.from, sel.to, function(node) {
 		if (can) return false;
-		can = node.isTextblock && node.contentMatchAt(0).allowsMark(nodeType);
+		can = node.inlineContent && node.contentMatchAt(0).allowsMark(nodeType);
 	});
 	return can;
 };
 
-Utils.prototype.canInsert = function(state, nodeType, attrs) {
-	var $from = state.selection.$from;
+Utils.prototype.canInsert = function(sel, nodeType, attrs) {
+	var $from = sel.$from;
 	for (var d = $from.depth; d >= 0; d--) {
 		var index = $from.index(d);
 		var node = $from.node(d);
@@ -404,8 +404,8 @@ Utils.prototype.canInsert = function(state, nodeType, attrs) {
 	return false;
 };
 
-Utils.prototype.markActive = function(state, type) {
-	var sel = state.selection;
+Utils.prototype.markActive = function(sel, type) {
+	var state = this.view.state;
 	if (sel.empty) {
 		return type.isInSet(state.storedMarks || sel.$from.marks());
 	}	else {
