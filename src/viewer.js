@@ -5,42 +5,40 @@ var Blocks = require('./blocks');
 function Viewer(opts) {
 	if (!opts) opts = {};
 	this.doc = opts.document || document.implementation.createHTMLDocument();
-
-	var modules = Object.assign({
-		fragment: {
-			contents: {
-				fragment: {
-					spec: "block*"
-				}
-			},
-			render: function renderFragment(doc, block) {
-				return block.content.fragment || doc.createElement("div");
+	var map = this.elementsMap = opts.elements || {};
+	if (!map.fragment) map.fragment = {
+		contents: {
+			fragment: {
+				spec: "block*"
 			}
+		},
+		render: function renderFragment(doc, block) {
+			return block.content.fragment || doc.createElement("div");
 		}
-	}, global.Pagecut && global.Pagecut.modules, opts.modules);
+	};
 
-	this.elements = opts.elements || [];
 	this.plugins = opts.plugins || [];
-
+	this.blocks = new Blocks(this);
 	var viewer = this;
 	viewer.modules = {};
 
+	var modules = Object.assign({}, global.Pagecut && global.Pagecut.modules, opts.modules);
 	Object.keys(modules).forEach(function(k) {
 		var mod = modules[k];
 		if (typeof mod == "function") {
 			viewer.modules[k] = new modules[k](viewer);
 		} else {
-			mod.name = k;
-			viewer.elements.push(mod);
+			map[k] = mod;
 		}
 	});
 
-	var map = this.elementsMap = {};
-	for (var i=0; i < this.elements.length; i++) {
-		map[this.elements[i].name] = this.elements[i];
-	}
-
-	this.blocks = new Blocks(this);
+	this.elements = Object.keys(map).map(function(key) {
+		var el = map[key];
+		if (!el.name) el.name = key;
+		return el;
+	}).sort(function(a, b) {
+		return (a.priority || 0) - (b.priority || 0);
+	});
 }
 
 Viewer.prototype.from = function(blocks) {

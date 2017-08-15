@@ -41,7 +41,7 @@ var inspectorElement = {
 
 function InspectorModule(editor) {
 	this.editor = editor;
-	editor.elements.push(inspectorElement);
+	editor.elementsMap.inspector = inspectorElement;
 //	editor.resolvers.push(this.resolver.bind(this)); // TODO re-enable resolvers when id module is embedded
 	this.store = {};
 }

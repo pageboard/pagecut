@@ -55,9 +55,9 @@ function define(view, elt, schema, views) {
 		}
 
 		if (spec.inline) {
-			schema.marks = schema.marks.addToEnd(obj.name, spec);
+			schema.marks = schema.marks.addToStart(obj.name, spec);
 		} else {
-			schema.nodes = schema.nodes.addToEnd(obj.name, spec);
+			schema.nodes = schema.nodes.addToStart(obj.name, spec);
 		}
 		if (spec.nodeView) {
 			views[obj.name] = spec.nodeView;

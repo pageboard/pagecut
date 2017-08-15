@@ -75,9 +75,9 @@ function Editor(opts) {
 	};
 	var views = {};
 
-	this.elements.forEach(function(el) {
-		Specs.define(editor, el, spec, views);
-	});
+	for (var i=this.elements.length - 1; i >= 0; i--) {
+		Specs.define(editor, this.elements[i], spec, views);
+	}
 
 	this.schema = new Model.Schema(spec);
 
