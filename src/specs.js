@@ -137,7 +137,7 @@ function createRootSpec(view, elt, obj) {
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	var parseRule = {
-		tag: `[block-type="${elt.name}"]`,
+		tag: elt.generic ? obj.dom.nodeName : `[block-type="${elt.name}"]`,
 		getAttrs: function(dom) {
 			var block = view.blocks.get(dom.getAttribute('block-id'));
 			// it's ok to use dom attributes to rebuild a block
