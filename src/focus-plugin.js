@@ -128,7 +128,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	if (selectedRoot) {
 		tr = tr.setSelection(this.view.utils.selectTr(tr, root.rpos));
 	}
-	return tr.setMeta('focus-plugin', parents);
+	return tr.setMeta('focus-plugin', parents).setMeta('focus-selection', sel);
 };
 
 function isParentOf(parent, node) {
