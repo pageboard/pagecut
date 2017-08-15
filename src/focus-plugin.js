@@ -29,7 +29,7 @@ function FocusPlugin(view, options) {
 }
 
 FocusPlugin.prototype.click = function(view, pos, e) {
-	var tr = this.focus(view.state.tr, {from: pos, empty: true});
+	var tr = this.focus(view.state.tr, State.TextSelection.create(view.state.doc, pos));
 	if (tr) view.dispatch(tr);
 };
 
