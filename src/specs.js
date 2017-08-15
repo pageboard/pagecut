@@ -139,11 +139,19 @@ function createRootSpec(view, elt, obj) {
 	var parseRule = {
 		tag: elt.generic ? obj.dom.nodeName : `[block-type="${elt.name}"]`,
 		getAttrs: function(dom) {
-			var block = view.blocks.get(dom.getAttribute('block-id'));
+			var id = dom.getAttribute('block-id');
+			var block = view.blocks.get(id);
+			var attrs = attrsFrom(dom);
+			if (!block) {
+				block = view.utils.attrToBlock(attrs);
+				delete block.id;
+				view.blocks.set(block);
+			}
+
 			// it's ok to use dom attributes to rebuild a block
 			return Object.assign(
 				view.utils.blockToAttr(block),
-				attrsFrom(dom) // thus dom block-type can override block.type
+				attrs // thus dom block-type can override block.type
 			);
 		},
 		contentElement: findContent
