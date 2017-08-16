@@ -97,6 +97,8 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		if (parent.isTextblock && sel.$from.parentOffset == 0) {
 			from = sel.$from.before();
 		}
+		// now insert after
+		if (sel.$from.nodeAfter) from = from + sel.$from.nodeAfter.nodeSize;
 		tr = tr.insert(from, frag);
 	} else {
 		tr = tr.replaceWith(from, to, frag);
