@@ -11,17 +11,15 @@ module.exports = function(editor, options) {
 function breakCommand(state, dispatch, view) {
 	var tr = state.tr;
 	var sel = tr.selection;
-	var bef = sel.$to.nodeBefore;
-	if (bef && bef.type.name == "hard_break") {
-		if (sel.empty && dispatch) {
+	var bef = sel.$from.nodeBefore;
+	var parent = sel.$from.parent;
+	var isRoot = parent.type.spec.typeName == "root";
+	if (bef && bef.type.name == "hard_break" && isRoot && parent.isTextblock) {
+		if (dispatch) {
 			dispatch(
-				tr.delete(sel.$to.pos - 1, sel.$to.pos).scrollIntoView()
+				tr.delete(sel.$from.pos - 1, sel.$from.pos).scrollIntoView()
 			);
 		}
-		// do not split root blocks
-		var parent = sel.$to.parent;
-		if (parent && parent.type.spec.typeName == "root") return true;
-		// fall through
 		return false;
 	} else {
 		if (dispatch) {

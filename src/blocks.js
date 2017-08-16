@@ -88,7 +88,8 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 	var el = this.view.element(overrideType || block.type);
 	var contents = block.content;
 	if (!contents) return;
-	if (el.contents) Object.keys(el.contents).forEach(function(name) {
+	if (!el.contents) return;
+	if (typeof el.contents != "string") Object.keys(el.contents).forEach(function(name) {
 		var blockContent = dom.getAttribute('block-content');
 		var node;
 		if (blockContent) {
@@ -222,10 +223,14 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 			this.serializeTo(block, blocks);
 			list.push({node: div, block: block, type: type});
 		}
+		while (node = content.querySelector('[block-focused]')) {
+			node.removeAttribute('block-focused');
+		}
 		list.forEach(function(item) {
 			item.node.setAttribute('block-id', item.block.id);
 			if (item.type) {
-				item.node.setAttribute('block-type', item.type); // overrides block.type
+				// overrides block.type
+				item.node.setAttribute('block-type', item.type);
 			}
 		});
 		parent.content[name] = nodeToHtml(content);
@@ -295,13 +300,20 @@ Blocks.prototype.genId = function() {
 Blocks.prototype.domQuery = function(id, opts) {
 	if (!opts) opts = {};
 	var rootDom = this.view.dom;
-	var sel = `[block-id="${id}"]`;
+	var sel;
+	if (id) {
+		sel = `[block-id="${id}"]`;
+	} else {
+		sel = '';
+	}
 	if (opts.focused) {
 		if (typeof opts.focused == "string") {
 			sel += `[block-focused="${opts.focused}"]`;
 		} else {
 			sel += '[block-focused]';
 		}
+	} else if (!id) {
+		throw new Error("domQuery expects at least id or opts.focused to be set", id, opts);
 	}
 	var nodes = Array.from(rootDom.querySelectorAll(sel));
 	if (opts.all) return nodes;

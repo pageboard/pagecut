@@ -58,10 +58,13 @@ Viewer.prototype.render = function(block, overrideType) {
 	var dom = this.blocks.render(block, overrideType);
 	if (dom.nodeType != Node.ELEMENT_NODE) return dom;
 
-	dom.setAttribute('block-type', overrideType || block.type);
-
-	if (block.id != null) dom.setAttribute('block-id', block.id);
-	else dom.removeAttribute('block-id');
+	var type = overrideType || block.type;
+	var el = this.element(type);
+	if (typeof el.contents != "string") {
+		dom.setAttribute('block-type', type);
+		if (block.id != null) dom.setAttribute('block-id', block.id);
+		else dom.removeAttribute('block-id');
+	}
 
 	if (block.focused) dom.setAttribute('block-focused', block.focused);
 	else dom.removeAttribute('block-focused');

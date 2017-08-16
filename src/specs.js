@@ -17,7 +17,7 @@ function define(view, elt, schema, views) {
 	if (dom.parentNode) dom = dom.cloneNode(true);
 	var index = 0;
 
-	flagDom(dom, function(type, obj) {
+	flagDom(elt, dom, function(type, obj) {
 		var spec;
 		if (type == "root") {
 			spec = createRootSpec(view, elt, obj);
@@ -34,8 +34,9 @@ function define(view, elt, schema, views) {
 				return child.name;
 			}).join(" ");
 		} else if (elt.contents) {
+			var isTrivial = typeof elt.contents == "string";
 			var contentName = obj.dom.getAttribute('block-content');
-			if (!contentName) {
+			if (!contentName && !isTrivial) {
 				var specKeys = Object.keys(elt.contents);
 				if (specKeys.length == 1) {
 					contentName = specKeys[0];
@@ -51,6 +52,8 @@ function define(view, elt, schema, views) {
 				} else {
 					spec.content = elt.contents[contentName].spec;
 				}
+			} else if (isTrivial) {
+				spec.content = elt.contents;
 			}
 		}
 
@@ -75,25 +78,26 @@ function getImmediateContents(root, list) {
 	});
 }
 
-function findContent(dom) {
+function findContent(elt, dom) {
+	if (typeof elt.contents == "string") return dom;
 	var list = [];
 	getImmediateContents(dom, list);
 	if (!list.length) return;
 	return commonAncestor.apply(null, list);
 }
 
-function flagDom(dom, iterate) {
+function flagDom(elt, dom, iterate) {
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return;
 	var obj = {
 		dom: dom,
-		contentDOM: findContent(dom)
+		contentDOM: findContent(elt, dom)
 	};
 	if (!obj.children) obj.children = [];
 	var wrapper = false;
 	if (obj.contentDOM) {
 		var child;
 		for (var i=0; i < obj.contentDOM.childNodes.length; i++) {
-			child = flagDom(obj.contentDOM.childNodes[i], iterate);
+			child = flagDom(elt, obj.contentDOM.childNodes[i], iterate);
 			if (child) {
 				obj.children.push(child);
 				if (child.contentDOM) {
@@ -135,26 +139,27 @@ function createRootSpec(view, elt, obj) {
 	}, attrsFrom(obj.dom));
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
+	if (typeof elt.contents == "string") obj.contentDOM = obj.dom;
 
 	var parseRule = {
-		tag: elt.generic ? obj.dom.nodeName : `[block-type="${elt.name}"]`,
+		tag: typeof elt.contents == "string" ? obj.dom.nodeName : `[block-type="${elt.name}"]`,
 		getAttrs: function(dom) {
-			var id = dom.getAttribute('block-id');
-			var block = view.blocks.get(id);
 			var attrs = attrsFrom(dom);
+			if (typeof elt.contents == "string") return attrs;
+			var id = dom.getAttribute('block-id');
+			var block = id && view.blocks.get(id);
 			if (!block) {
 				block = view.utils.attrToBlock(attrs);
 				delete block.id;
 				view.blocks.set(block);
 			}
-
 			// it's ok to use dom attributes to rebuild a block
 			return Object.assign(
 				view.utils.blockToAttr(block),
 				attrs // thus dom block-type can override block.type
 			);
 		},
-		contentElement: findContent
+		contentElement: function(dom) { return findContent(elt, dom); }
 	};
 
 	var spec = {
@@ -170,23 +175,19 @@ function createRootSpec(view, elt, obj) {
 				id = node.marks[0].attrs.block_id;
 				console.warn("Probably unsupported case of id from in node.marks", node);
 			}
-			if (!id) {
-				id = view.blocks.genId();
-				var ublock = view.utils.attrToBlock(node.attrs);
-				ublock.id = id;
-				node.attrs.block_id = id;
-				view.blocks.set(ublock);
-			}
-			var block = view.blocks.get(id);
+			var block;
+			if (id) block = view.blocks.get(id);
+			if (!block) block = view.utils.attrToBlock(node.attrs);
+
 			var dom = view.render(block, node.attrs.block_type);
-			var uView = flagDom(dom);
+			var uView = flagDom(elt, dom);
 			return toDOMOutputSpec(uView, node);
 		}
 	};
 	if (obj.dom.childNodes || obj.contentDOM) {
 		// there's a bug somewhere (in prosemirror ?) with leaf nodes having a nodeView
 		spec.nodeView = function(node, view, getPos, decorations) {
-			return new RootNodeView(obj.dom, node, view, getPos);
+			return new RootNodeView(elt, obj.dom, node, view, getPos);
 		};
 		// explicitely allow dragging for nodes without contentDOM
 		if (!obj.contentDOM) spec.draggable = true;
@@ -213,7 +214,7 @@ function createWrapSpec(view, elt, obj) {
 		getAttrs: function(dom) {
 			return attrsFrom(dom);
 		},
-		contentElement: findContent
+		contentElement: function(dom) { return findContent(elt, dom); }
 	};
 
 	var spec = {
@@ -224,7 +225,7 @@ function createWrapSpec(view, elt, obj) {
 			return toDOMOutputSpec(obj, node);
 		},
 		nodeView: function(node, view, getPos, decorations) {
-			return new WrapNodeView(obj.dom, node, view);
+			return new WrapNodeView(elt, obj.dom, node, view);
 		}
 	};
 	return spec;
@@ -241,7 +242,7 @@ function createContainerSpec(view, elt, obj) {
 		getAttrs: function(dom) {
 			return attrsFrom(dom);
 		},
-		contentElement: findContent
+		contentElement: function(dom) { return findContent(elt, dom); }
 	};
 
 	var spec = {
@@ -253,33 +254,36 @@ function createContainerSpec(view, elt, obj) {
 			return toDOMOutputSpec(obj, node);
 		},
 		nodeView: function(node, view, getPos, decorations) {
-			return new ContainerNodeView(obj.dom, node, view);
+			return new ContainerNodeView(elt, obj.dom, node, view);
 		}
 	};
 	return spec;
 }
 
-function RootNodeView(domModel, node, view, getPos) {
+function RootNodeView(elt, domModel, node, view, getPos) {
 	this.view = view;
+	this.element = elt;
 	this.getPos = getPos;
 	this.id = node.attrs.block_id;
 	var block;
-	if (!this.id) {
-		this.id = view.blocks.genId();
-		node.attrs.block_id = this.id;
-		block = view.utils.attrToBlock(node.attrs);
-		block.id = this.id;
-		view.blocks.set(block);
-	} else {
+	if (this.id) {
 		block = view.blocks.get(this.id);
-		if (!block) {
-			console.warn("missing block", node.attrs);
-		} else if (block.deleted) {
-			delete block.deleted;
-		}
 	}
+	if (!block) {
+		delete node.attrs.block_id;
+		block = view.utils.attrToBlock(node.attrs);
+	} else if (block.deleted) {
+		delete block.deleted;
+	}
+//	if (!this.id) {
+//		this.id = view.blocks.genId();
+//		node.attrs.block_id = this.id;
+//		block = view.utils.attrToBlock(node.attrs);
+//		block.id = this.id;
+//		view.blocks.set(block);
+//	}
 	this.dom = domModel.cloneNode(true);
-	this.contentDOM = findContent(this.dom);
+	this.contentDOM = findContent(elt, this.dom);
 	if (this.contentDOM) {
 		var contentName = this.contentDOM.getAttribute('block-content');
 		if (contentName) {
@@ -297,16 +301,19 @@ RootNodeView.prototype.update = function(node, decorations) {
 	var uBlock = this.view.utils.attrToBlock(node.attrs);
 	var block = this.view.blocks.get(this.id);
 	if (!block) {
-		// TODO
-		console.log("block should exist", node.attrs);
-		return true;
+		if (typeof this.element.contents == "string") {
+			block = uBlock;
+		} else {
+			console.warn("block should exist", node);
+			return true;
+		}
 	}
 
 	Object.assign(block.data, uBlock.data);
 
 	// consider it's the same data when it's initializing
 	var sameData = oldBlock && this.view.utils.equal(oldBlock.data, block.data);
-	var sameFocus = node.attrs.block_focused == block.focused;
+	var sameFocus = oldBlock && this.oldBlock.focused == node.attrs.block_focused;
 
 	if (sameData && sameFocus) {
 		// no point in calling render
@@ -318,12 +325,13 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 	this.oldBlock = this.view.blocks.copy(block);
 	this.oldBlock.content = {};
+	this.oldBlock.focused = node.attrs.block_focused;
 
 	if (node.attrs.block_focused) block.focused = node.attrs.block_focused;
 	else delete block.focused;
 
 	var dom = this.view.render(block, node.attrs.block_type);
-	mutateNodeView(this, flagDom(dom), !oldBlock);
+	mutateNodeView(this, flagDom(this.element, dom), !oldBlock);
 	if (oldBlock && this.dom.update) {
 		this.dom.update();
 	}
@@ -343,9 +351,9 @@ RootNodeView.prototype.destroy = function() {
 	if (block) block.deleted = true;
 };
 
-function WrapNodeView(domModel, node, view) {
+function WrapNodeView(elt, domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
-	this.contentDOM = findContent(this.dom);
+	this.contentDOM = findContent(elt, this.dom);
 	this.update(node);
 }
 
@@ -362,10 +370,10 @@ WrapNodeView.prototype.ignoreMutation = function(record) {
 	return true;
 };
 
-function ContainerNodeView(domModel, node, view) {
+function ContainerNodeView(elt, domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
 	this.view = view;
-	this.contentDOM = findContent(this.dom);
+	this.contentDOM = findContent(elt, this.dom);
 }
 
 ContainerNodeView.prototype.update = function(node, decorations) {
