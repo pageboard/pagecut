@@ -125,11 +125,11 @@ Blocks.prototype.from = function(blocks, overrideType) {
 		}
 		// it's a map of blocks, we need to find the root block
 		var id = view.dom.getAttribute('block-id');
-		var contentName = view.dom.getAttribute('block-content') || 'fragment';
 		if (!id) {
 			id = this.genId();
 			view.dom.setAttribute('block-id', id);
 		}
+		var contentName = view.dom.getAttribute('block-content') || 'fragment';
 		var frag = "";
 		block = blocks[id];
 		if (!block) {
