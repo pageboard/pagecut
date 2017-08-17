@@ -18,13 +18,14 @@ Utils.prototype.setDom = function(dom) {
 		dom = frag;
 	}
 	var state = this.view.state;
-	var tr = this.insertTr(state.tr, dom, new State.AllSelection(state.doc));
+	var tr = state.tr;
+	this.insertTr(tr, dom, new State.AllSelection(state.doc));
 	if (!tr) {
 		console.error("Cannot insert", dom);
 		return;
 	}
 	var sel = tr.selection;
-	if (!sel.empty) tr = tr.setSelection(State.Selection.atStart(state.doc));
+	if (!sel.empty) tr.setSelection(State.Selection.atStart(state.doc));
 	tr.setMeta('addToHistory', false);
 	this.view.dispatch(tr);
 
@@ -43,9 +44,10 @@ Utils.prototype.getDom = function() {
 };
 
 Utils.prototype.insert = function(dom, sel) {
-	var tr = this.insertTr(this.view.state.tr, dom, sel);
-	if (!tr) console.error("Cannot insert", dom);
-	else this.view.dispatch(tr);
+	var tr = this.view.state.tr;
+	if (this.insertTr(tr, dom, sel)) {
+		this.view.dispatch(tr);
+	}
 };
 
 Utils.prototype.insertTr = function(tr, dom, sel) {
@@ -86,37 +88,37 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		var mark = node.marks[0];
 		if (!mark) return;
 		if (this.view.state.doc.rangeHasMark(from, to, mark.type)) {
-			tr = tr.removeMark(from, to, mark.type);
+			tr.removeMark(from, to, mark.type);
 		}
 		if (textContent && from == to) {
-			tr = tr.insertText(textContent, from, to);
+			tr.insertText(textContent, from, to);
 			to = from + textContent.length;
 		}
-		tr = tr.addMark(from, to, mark.type.create(mark.attrs));
+		tr.addMark(from, to, mark.type.create(mark.attrs));
 	} else if (from == to) {
 		if (parent.isTextblock && sel.$from.parentOffset == 0) {
 			from = sel.$from.before();
 		}
 		// now insert after
 		if (sel.$from.nodeAfter) from = from + sel.$from.nodeAfter.nodeSize;
-		tr = tr.insert(from, frag);
+		tr.insert(from, frag);
 	} else {
-		tr = tr.replaceWith(from, to, frag);
+		tr.replaceWith(from, to, frag);
 	}
 	return tr;
 };
 
 Utils.prototype.delete = function(sel) {
-	var tr = this.deleteTr(this.view.state.tr, sel);
-	if (!tr) console.error("Cannot delete", sel);
-	else this.view.dispatch(tr);
+	var tr = this.view.state.tr;
+	this.deleteTr(tr, sel);
+	this.view.dispatch(tr);
 };
 
 Utils.prototype.deleteTr = function(tr, sel) {
 	if (!sel) sel = tr.selection;
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
-	return tr.delete(start, end);
+	tr.delete(start, end);
 };
 
 Utils.prototype.parse = function(dom, opts) {

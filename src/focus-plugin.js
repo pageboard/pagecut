@@ -16,8 +16,9 @@ module.exports = function(view, options) {
 				}
 			}
 			var tr = newState.tr;
-			var newTr = plugin.action(tr);
-			if (newTr) return newTr;
+			if (plugin.action(tr)) {
+				return tr;
+			}
 		}
 	};
 };
@@ -29,8 +30,10 @@ function FocusPlugin(view, options) {
 }
 
 FocusPlugin.prototype.click = function(view, pos, e) {
-	var tr = this.focus(view.state.tr, State.TextSelection.create(view.state.doc, pos));
-	if (tr) view.dispatch(tr);
+	var tr = view.state.tr;
+	if (this.focus(tr, State.TextSelection.create(view.state.doc, pos))) {
+		view.dispatch(tr);
+	}
 };
 
 FocusPlugin.prototype.action = function(tr) {
@@ -52,12 +55,12 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	else delete attrs.block_focused;
 	if (node.type.spec.inline) {
 		var sel = this.view.utils.selectTr(tr, pos);
-		tr = tr.removeMark(sel.from, sel.to, node.type);
-		tr = tr.addMark(sel.from, sel.to, node.type.create(attrs));
+		tr.removeMark(sel.from, sel.to, node.type);
+		tr.addMark(sel.from, sel.to, node.type.create(attrs));
 	} else if (isDoc) {
 		// prosemirror doesn't transform doc, we just changed doc.attrs directly
 	} else {
-		tr = tr.setNodeType(pos, null, attrs);
+		tr.setNodeType(pos, null, attrs);
 	}
 	return tr;
 };
@@ -122,11 +125,11 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	var change;
 	for (var i=0; i < changes.length; i++) {
 		change = changes[i];
-		tr = me.focusRoot(tr, change.pos, change.node, change.focus);
+		me.focusRoot(tr, change.pos, change.node, change.focus);
 	}
 
 	if (selectedRoot) {
-		tr = tr.setSelection(this.view.utils.selectTr(tr, root.rpos));
+		tr.setSelection(this.view.utils.selectTr(tr, root.rpos));
 	}
 	return tr.setMeta('focus-plugin', parents).setMeta('focus-selection', sel);
 };
