@@ -62,6 +62,6 @@
   "dependencies": {
     "postinstall-links": "^0.3.0",
     "prosemirror-menu": "^0.22.0",
-    "prosemirror-view": "^0.22.0"
+    "prosemirror-view": "^0.22.1"
   }
 }
