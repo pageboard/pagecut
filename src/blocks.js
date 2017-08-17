@@ -159,7 +159,7 @@ Blocks.prototype.from = function(blocks, overrideType) {
 	return p.then(function() {
 		return self.mount(block);
 	}).then(function(block) {
-		store[block.id] = block;
+		if (block.id) store[block.id] = block;
 		var fragment;
 		try {
 			fragment = view.render(block, overrideType);
