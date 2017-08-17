@@ -84,28 +84,34 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 
 	var from = sel.from;
 	var to = sel.to;
+	var doc = this.view.state.doc;
+
 	if (inline) {
 		var mark = node.marks[0];
 		if (!mark) return;
-		if (this.view.state.doc.rangeHasMark(from, to, mark.type)) {
+		if (doc.rangeHasMark(from, to, mark.type)) {
 			tr.removeMark(from, to, mark.type);
 		}
 		if (textContent && from == to) {
 			tr.insertText(textContent, from, to);
 			to = from + textContent.length;
 		}
+		tr.setSelection(State.TextSelection.create(doc, from, to));
 		tr.addMark(from, to, mark.type.create(mark.attrs));
 	} else if (from == to) {
 		if (parent.isTextblock && sel.$from.parentOffset == 0) {
 			from = sel.$from.before();
 		}
 		// now insert after
-		if (sel.$from.nodeAfter) from = from + sel.$from.nodeAfter.nodeSize;
+		if (sel.$from.nodeAfter) {
+			from = from + sel.$from.nodeAfter.nodeSize;
+			tr.setSelection(State.TextSelection.create(doc, from));
+		}
 		tr.insert(from, frag);
 	} else {
 		tr.replaceWith(from, to, frag);
 	}
-	return tr;
+	return true;
 };
 
 Utils.prototype.delete = function(sel) {
