@@ -15,7 +15,7 @@ module.exports = function(view, options) {
 					return;
 				}
 			}
-			var tr = newState.tr;
+			var tr = oldState.tr;
 			if (plugin.action(tr)) {
 				return tr;
 			}
