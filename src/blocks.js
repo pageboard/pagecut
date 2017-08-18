@@ -143,6 +143,10 @@ Blocks.prototype.from = function(blocks, overrideType) {
 	} else {
 		// it's a block
 		block = blocks;
+		if (!overrideType) {
+			// mount() might change block.type, this ensures block will be rendered correctly
+			overrideType = block.type;
+		}
 		if (block.id === undefined) {
 			block.id = this.genId();
 			store[block.id] = block;
