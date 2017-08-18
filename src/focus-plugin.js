@@ -83,7 +83,6 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 
 	var changes = [];
 
-	var newtr;
 	if (root) {
 		changes.push({
 			pos: rootPos,
