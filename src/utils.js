@@ -1,5 +1,6 @@
 var State = require("prosemirror-state");
 var Model = require("prosemirror-model");
+var Commands = require("prosemirror-commands");
 
 module.exports = Utils;
 
@@ -387,13 +388,17 @@ Utils.prototype.canInsert = function(sel, nodeType, attrs) {
 	return false;
 };
 
-Utils.prototype.markActive = function(sel, type) {
+Utils.prototype.markActive = function(sel, nodeType) {
 	var state = this.view.state;
 	if (sel.empty) {
-		return type.isInSet(state.storedMarks || sel.$from.marks());
+		return nodeType.isInSet(state.storedMarks || sel.$from.marks());
 	}	else {
-		return state.doc.rangeHasMark(sel.from, sel.to, type);
+		return state.doc.rangeHasMark(sel.from, sel.to, nodeType);
 	}
+};
+
+Utils.prototype.toggleMark = function(nodeType) {
+	return Commands.toggleMark(nodeType);
 };
 
 Utils.prototype.fragmentApply = fragmentApply;
