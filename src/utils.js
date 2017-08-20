@@ -55,25 +55,10 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	if (!(dom instanceof Node)) {
 		dom = this.view.render(dom);
 	}
-	var inline = false;
-	var el;
-	var textContent;
-	if (dom.nodeType == Node.ELEMENT_NODE) {
-		// TODO this case is probably bad
-		el = this.view.element(dom.getAttribute('block-type'));
-		if (el) {
-			if (el.inline) {
-				inline = true;
-				// parsing an empty inline node just ignores it
-				textContent = dom.textContent;
-				if (!textContent) dom.textContent = "-";
-			}
-		}
-	}
 
 	var opts = {};
 	var parent = sel.$from.parent;
-	if (!parent.isTextblock || inline) {
+	if (!parent.isTextblock) {
 		opts.topNode = parent;
 	}
 	var frag = this.parse(dom, opts);
@@ -86,19 +71,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	var to = sel.to;
 	var doc = this.view.state.doc;
 
-	if (inline) {
-		var mark = node.marks[0];
-		if (!mark) return;
-		if (doc.rangeHasMark(from, to, mark.type)) {
-			tr.removeMark(from, to, mark.type);
-		}
-		if (textContent && from == to) {
-			tr.insertText(textContent, from, to);
-			to = from + textContent.length;
-		}
-		tr.setSelection(State.TextSelection.create(doc, from, to));
-		tr.addMark(from, to, mark.type.create(mark.attrs));
-	} else if (from == to) {
+	if (from == to) {
 		if (parent.isTextblock && sel.$from.parentOffset == 0) {
 			from = sel.$from.before();
 		}
@@ -107,9 +80,9 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 			from = from + sel.$from.nodeAfter.nodeSize;
 			tr.setSelection(State.TextSelection.create(doc, from));
 		}
-		tr.insert(from, frag);
+		tr.replaceRangeWith(from, from, frag);
 	} else {
-		tr.replaceWith(from, to, frag);
+		tr.replaceRangeWith(from, to, frag);
 	}
 	return true;
 };
