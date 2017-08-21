@@ -9,13 +9,18 @@ module.exports = function(view, options) {
 		appendTransaction: function(transactions, oldState, newState) {
 			// focus once per transaction
 			var itr;
+			var editorUpdate = false;
 			for (var i=0; i < transactions.length; i++) {
 				itr = transactions[i];
 				if (itr.getMeta('focus-plugin')) {
 					return;
 				}
+				if (itr.getMeta('editor')) {
+					editorUpdate = true;
+				}
 			}
-			var tr = oldState.tr;
+			var tr = newState.tr;
+			if (editorUpdate) tr.setMeta('editor', true);
 			if (plugin.action(tr)) {
 				return tr;
 			}
@@ -39,7 +44,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 FocusPlugin.prototype.action = function(tr) {
 	var sel = tr.selection;
 	// avoid unneeded changes
-	if (this.view.state.tr.selection.eq(sel)) return;
+	if (this.view.state.tr.selection.eq(sel) && !tr.getMeta('editor')) return;
 	return this.focus(tr, sel);
 };
 
