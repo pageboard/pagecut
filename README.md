@@ -125,7 +125,15 @@ Properties for the editor:
   the group as defined by the prosemirror editor
 - contents  
   an object matching contents names to an object having a 'spec' property being
-  a [prosemirror content expression](http://prosemirror.net/guide/schema.html).
+  a [prosemirror content expression](http://prosemirror.net/guide/schema.html).  
+  Or, `contents` can be a string, meaning content is not labelled.
+- inplace  
+  A boolean indicating the block is not stored, implying it is entirely defined
+  by its DOM representation.
+- inline  
+  A boolean indicating the block has only one content (what's inside its tag),
+  and that this content is stored in place, not in the block. The attributes
+  are still kept in the block.
 
 Properties for content management:
 - properties  
