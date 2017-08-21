@@ -350,6 +350,9 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 
 Utils.prototype.selectionParents = function(tr, sel) {
 	if (!sel) sel = tr.selection;
+	if (sel instanceof State.AllSelection) {
+		return [{root: {node: this.view.state.doc}}];
+	}
 	var fromParents = this.parents(tr, sel.from, true, false);
 	if (sel.empty) return fromParents;
 	var toParents = this.parents(tr, sel.to, true, true);
