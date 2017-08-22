@@ -377,14 +377,13 @@ Utils.prototype.canMark = function(sel, nodeType) {
 	return can;
 };
 
-Utils.prototype.canInsert = function(sel, nodeType, attrs) {
-	var $from = sel.$from;
-	for (var d = $from.depth; d >= 0; d--) {
-		var index = $from.index(d);
-		var node = $from.node(d);
+Utils.prototype.canInsert = function($pos, nodeType, attrs) {
+	for (var d = $pos.depth; d >= 0; d--) {
+		var index = $pos.index(d);
+		var node = $pos.node(d);
 		if (node.canReplaceWith(index, index, nodeType, attrs)) {
 			return true;
-		} else {
+		} else if (!node.isTextblock) {
 			if (node.type.spec.typeName) break; // we only check one parent block
 		}
 	}
