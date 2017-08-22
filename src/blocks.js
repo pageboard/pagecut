@@ -79,7 +79,7 @@ Blocks.prototype.copy = function(block) {
 	copy.data = Object.assign({}, block.data);
 	copy.content = Object.assign({}, block.content);
 	delete copy.focused;
-	delete copy.deleted;
+	delete copy.online;
 	return copy;
 };
 
@@ -89,6 +89,7 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 	var contents = block.content;
 	if (!contents) return;
 	if (!el.contents) return;
+	if (el.inline) return;
 	if (typeof el.contents != "string") Object.keys(el.contents).forEach(function(name) {
 		var blockContent = dom.getAttribute('block-content');
 		var node;

@@ -34,25 +34,26 @@ function define(view, elt, schema, views) {
 				return child.name;
 			}).join(" ");
 		} else if (elt.contents) {
-			var isTrivial = typeof elt.contents == "string";
-			var contentName = obj.dom.getAttribute('block-content');
-			if (!contentName && !isTrivial) {
-				var specKeys = Object.keys(elt.contents);
-				if (specKeys.length == 1) {
-					contentName = specKeys[0];
-				} else if (specKeys.length > 1) {
-					console.warn(`element ${elt.name} cannot choose a default block-content among`, elt.contents, obj);
-					return;
+			if (typeof elt.contents != "string") {
+				var contentName = obj.dom.getAttribute('block-content');
+				if (!contentName) {
+					var specKeys = Object.keys(elt.contents);
+					if (specKeys.length == 1) {
+						contentName = specKeys[0];
+					} else if (specKeys.length > 1) {
+						console.warn(`element ${elt.name} cannot choose a default block-content among`, elt.contents, obj);
+						return;
+					}
 				}
-			}
-			if (contentName) {
-				if (!elt.contents[contentName]) {
-					console.warn(`element ${elt.name} has no matching contents`, contentName);
-					return;
-				} else {
-					spec.content = elt.contents[contentName].spec;
+				if (contentName) {
+					if (!elt.contents[contentName]) {
+						console.warn(`element ${elt.name} has no matching contents`, contentName);
+						return;
+					} else {
+						spec.content = elt.contents[contentName].spec;
+					}
 				}
-			} else if (isTrivial) {
+			} else {
 				spec.content = elt.contents;
 			}
 		}
@@ -79,7 +80,7 @@ function getImmediateContents(root, list) {
 }
 
 function findContent(elt, dom) {
-	if (typeof elt.contents == "string") return dom;
+	if (elt.inline || typeof elt.contents == "string") return dom;
 	var list = [];
 	getImmediateContents(dom, list);
 	if (!list.length) return;
@@ -139,19 +140,28 @@ function createRootSpec(view, elt, obj) {
 	}, attrsFrom(obj.dom));
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
-	if (typeof elt.contents == "string") obj.contentDOM = obj.dom;
+	if (elt.inline) obj.contentDOM = obj.dom;
 
 	var parseRule = {
-		tag: typeof elt.contents == "string" ? obj.dom.nodeName : `[block-type="${elt.name}"]`,
+		tag: elt.inline ? domSelector(obj.dom.nodeName, {class: obj.className}) : `[block-type="${elt.name}"]`,
 		getAttrs: function(dom) {
 			var attrs = attrsFrom(dom);
-			if (typeof elt.contents == "string") return attrs;
-			var id = dom.getAttribute('block-id');
-			var block = id && view.blocks.get(id);
-			if (!block) {
+			if (elt.inline) return attrs;
+			var block;
+			if (!elt.inplace) {
+				var id = dom.getAttribute('block-id');
+				block = id && view.blocks.get(id);
+				if (!block) {
+					block = view.utils.attrToBlock(attrs);
+					delete block.id;
+					view.blocks.set(block);
+				} else if (block.online) {
+					delete block.id;
+					view.blocks.set(block);
+				}
+			} else {
 				block = view.utils.attrToBlock(attrs);
-				delete block.id;
-				view.blocks.set(block);
+				if (block.id) delete block.id;
 			}
 			// it's ok to use dom attributes to rebuild a block
 			return Object.assign(
@@ -173,7 +183,7 @@ function createRootSpec(view, elt, obj) {
 			var id = node.attrs.block_id;
 			if (!id && node.marks && node.marks[0]) {
 				id = node.marks[0].attrs.block_id;
-				console.warn("Probably unsupported case of id from in node.marks", node);
+				console.warn("Probably unsupported case of id from in node.marks", elt.inline, node);
 			}
 			var block;
 			if (id) block = view.blocks.get(id);
@@ -267,21 +277,25 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 	this.id = node.attrs.block_id;
 	var block;
 	if (this.id) {
-		block = view.blocks.get(this.id);
+		if (elt.inplace) {
+			delete node.attrs.block_id;
+			delete this.id;
+		} else {
+			block = view.blocks.get(this.id);
+		}
 	}
 	if (!block) {
 		delete node.attrs.block_id;
+		delete this.id;
 		block = view.utils.attrToBlock(node.attrs);
-	} else if (block.deleted) {
-		delete block.deleted;
 	}
-//	if (!this.id) {
-//		this.id = view.blocks.genId();
-//		node.attrs.block_id = this.id;
-//		block = view.utils.attrToBlock(node.attrs);
-//		block.id = this.id;
-//		view.blocks.set(block);
-//	}
+	if (!elt.inplace && !this.id) {
+		this.id = block.id = node.attrs.block_id = view.blocks.genId();
+		view.blocks.set(block);
+	}
+
+	block.online = true;
+
 	this.dom = domModel.cloneNode(true);
 	this.contentDOM = findContent(elt, this.dom);
 	if (this.contentDOM) {
@@ -299,11 +313,12 @@ RootNodeView.prototype.update = function(node, decorations) {
 		return false;
 	}
 	var uBlock = this.view.utils.attrToBlock(node.attrs);
-	var block = this.view.blocks.get(this.id);
-	if (!block) {
-		if (typeof this.element.contents == "string") {
-			block = uBlock;
-		} else {
+	var block;
+	if (this.element.inplace) {
+		block = uBlock;
+	} else {
+		block = this.view.blocks.get(this.id);
+		if (!block) {
 			console.warn("block should exist", node);
 			return true;
 		}
@@ -348,7 +363,7 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 
 RootNodeView.prototype.destroy = function() {
 	var block = this.view.blocks.get(this.id);
-	if (block) block.deleted = true;
+	if (block) delete block.online;
 };
 
 function WrapNodeView(elt, domModel, node, view) {

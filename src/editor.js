@@ -107,7 +107,7 @@ function Editor(opts) {
 		KeymapPlugin,
 		FocusPlugin,
 //		require("./test-plugin"),
-		CreatePasteBlock,
+//		CreatePasteBlock,
 	function(editor) {
 		return Input.inputRules({
 			rules: Input.allInputRules.concat(Setup.buildInputRules(editor.schema))

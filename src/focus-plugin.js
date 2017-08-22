@@ -133,7 +133,10 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	}
 
 	if (selectedRoot) {
-		tr.setSelection(this.view.utils.selectTr(tr, root.rpos));
+		var el = this.view.element((root.mark || root.node).attrs.block_type);
+		if (!el.inline) {
+			tr.setSelection(this.view.utils.selectTr(tr, root.rpos));
+		}
 	}
 	return tr.setMeta('focus-plugin', parents).setMeta('focus-selection', sel);
 };

@@ -60,7 +60,7 @@ Viewer.prototype.render = function(block, overrideType) {
 
 	var type = overrideType || block.type;
 	var el = this.element(type);
-	if (typeof el.contents != "string") {
+	if (!el.inplace) {
 		dom.setAttribute('block-type', type);
 		if (block.id != null) dom.setAttribute('block-id', block.id);
 		else dom.removeAttribute('block-id');
