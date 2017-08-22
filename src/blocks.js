@@ -103,6 +103,9 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 		if (!content) return;
 		node.appendChild(node.ownerDocument.importNode(content, true));
 	});
+	else if (Object.keys(block.content).length) {
+		console.warn("Cannot mount block", block);
+	}
 };
 
 Blocks.prototype.from = function(blocks, overrideType) {
@@ -198,7 +201,6 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 		var content = parent.content[name];
 		if (!content) return;
 		if (typeof content == "string") {
-			console.warn("content not mounted, nothing to serialize", name, parent);
 			return;
 		}
 		content = content.cloneNode(true);
