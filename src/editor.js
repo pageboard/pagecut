@@ -107,7 +107,6 @@ function Editor(opts) {
 		KeymapPlugin,
 		FocusPlugin,
 //		require("./test-plugin"),
-//		CreatePasteBlock,
 	function(editor) {
 		return Input.inputRules({
 			rules: Input.allInputRules.concat(Setup.buildInputRules(editor.schema))
@@ -178,50 +177,5 @@ Object.assign(Editor.prototype, Viewer.prototype, View.EditorView);
 
 Editor.prototype.getPlugin = function(key) {
 	return new State.PluginKey(key).get(this.state);
-};
-
-
-
-function CreatePasteBlock(editor) {
-	return new State.Plugin({
-		props: {
-			transformPasted: function(pslice) {
-				var frag = editor.utils.fragmentApply(pslice.content, editor.pasteNode.bind(editor));
-				return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
-			}
-		}
-	});
-}
-
-function getIdBlockNode(node) {
-	var id = node.attrs.block_id;
-	if (id == null && node.marks.length > 0) {
-		node = node.marks[0];
-		id = node.attrs.block_id;
-	}
-	return {id: id, node: node};
-}
-
-Editor.prototype.pasteNode = function(node) {
-	var bn = getIdBlockNode(node);
-	if (bn.id == null) {
-		// a block node must have an id, so it is not one
-		return;
-	}
-	var block = this.blocks.get(bn.id);
-	if (!block) {
-		// unknown block, let id module deserialize it later
-		delete bn.node.attrs.block_id;
-		return;
-	}
-	if (!block.deleted) {
-		// known block already exists, assume copy/paste
-		block = this.blocks.copy(block);
-		block.id = bn.node.attrs.block_id = this.blocks.genId();
-		this.blocks.set(block);
-	} else {
-		// known block is not in dom, assume cut/paste or drag/drop
-		delete block.deleted; // just in case
-	}
 };
 

@@ -43,7 +43,18 @@ module.exports = function(editor, options) {
 	};
 };
 
-
+/*
+function CreatePasteBlock(editor) {
+	return new State.Plugin({
+		props: {
+			transformPasted: function(pslice) {
+				var frag = editor.utils.fragmentApply(pslice.content, editor.pasteNode.bind(editor));
+				return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
+			}
+		}
+	});
+}
+*/
 
 /*
 Editor.prototype.resolve = function(thing) {
