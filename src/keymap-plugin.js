@@ -3,8 +3,8 @@ var keymap = require("prosemirror-keymap").keymap;
 module.exports = function(editor, options) {
 	return keymap({
 		Enter: breakCommand,
-		Delete: deleteCommand,
-		Backspace: deleteCommand
+		Delete: deleteCommand.bind(null, false),
+		Backspace: deleteCommand.bind(null, true)
 	});
 };
 
@@ -18,7 +18,7 @@ function breakCommand(state, dispatch, view) {
 	if (bef && bef.type.name == "hard_break" && isRoot && parent.isTextblock) {
 		if (dispatch) {
 			dispatch(
-				tr.delete(sel.$from.pos - 1, sel.$from.pos).scrollIntoView()
+				tr.delete(sel.$from.pos - bef.nodeSize, sel.$from.pos).scrollIntoView()
 			);
 		}
 		return false;
@@ -33,11 +33,12 @@ function breakCommand(state, dispatch, view) {
 	}
 }
 
-function deleteCommand(state, dispatch, view) {
+function deleteCommand(back, state, dispatch, view) {
 	var sel = state.tr.selection;
 	if (!sel.empty) return false;
+	if (!sel.$from.parent.isTextblock) return false;
 	// if selection is inside an empty paragraph, remove that paragraph
-	if (sel.$from.parent.isTextblock && sel.$from.parent.childCount == 0) {
+	if (sel.$from.parent.childCount == 0) {
 		if (dispatch) {
 			dispatch(
 				// .setMeta('addToHistory', true) doesn't work
@@ -45,6 +46,28 @@ function deleteCommand(state, dispatch, view) {
 			);
 		}
 		return true;
+	} else if (!back) {
+		var $pos = sel.$to;
+		if ($pos.parentOffset == $pos.parent.nodeSize - 2) {
+			var nextNode = $pos.doc.resolve($pos.after()).nodeAfter;
+			if (nextNode && nextNode.isTextblock) {
+				if (dispatch) {
+					dispatch(state.tr.join(sel.to + 1));
+				}
+				return true;
+			}
+		}
+	} else {
+		var $pos = sel.$from;
+		if ($pos.parentOffset == 0) {
+			var prevNode = $pos.doc.resolve($pos.before()).nodeBefore;
+			if (prevNode && prevNode.isTextblock) {
+				if (dispatch) {
+					dispatch(state.tr.join(sel.from - 1));
+				}
+				return true;
+			}
+		}
 	}
 	return false;
 }
