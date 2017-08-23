@@ -251,7 +251,7 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 		parent.content[name] = nodeToHtml(content);
 	}, this);
 
-	if (contentKeys && contentKeys.length) {
+	if (el.inline && contentKeys && contentKeys.length) {
 		var hasContent = false;
 		for (var name in parent.content) {
 			if (parent.content[name]) {
