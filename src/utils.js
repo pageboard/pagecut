@@ -121,14 +121,26 @@ Utils.prototype.refresh = function(dom) {
 Utils.prototype.refreshTr = function(tr, dom) {
 	var pos = this.posFromDOM(dom);
 	if (pos === false) return;
-	var id = dom.getAttribute('block-id');
-	if (id == null) return;
+	var parent = this.parents(tr, pos);
+	if (!parent) return;
+	var root = parent.root;
+	var id = (root.mark || root.node).attrs.block_id;
+	if (!id) return;
 	var block = this.view.blocks.get(id);
-	if (!block) return;
+	if (!block) return; // nothing to refresh
 	var attrs = this.blockToAttr(block);
 	var type = dom.getAttribute('block-type');
 	if (type) attrs.block_type = type; // dom can override block.type
-	return tr.setNodeType(pos, null, attrs);
+	else type = block.type;
+	if (root.mark) {
+		var sel = this.selectTr(tr, parent);
+		if (!sel) return tr;
+		tr.removeMark(sel.from, sel.to, root.mark);
+		tr.addMark(sel.from, sel.to, root.mark.type.create(attrs));
+		return tr;
+	} else {
+		return tr.setNodeType(pos, null, attrs);
+	}
 };
 
 Utils.prototype.attrToBlock = function(attrs) {
@@ -177,7 +189,9 @@ Utils.prototype.select = function(obj, textSelection) {
 
 Utils.prototype.selectTr = function(tr, obj, textSelection) {
 	var info, pos;
-	if (obj instanceof State.Selection) {
+	if (obj.root && obj.root.rpos) {
+		info = obj;
+	} else if (obj instanceof State.Selection) {
 		info = this.selectionParents(tr, obj).shift();
 	} else {
 		if (obj instanceof Model.ResolvedPos) {
@@ -399,8 +413,8 @@ Utils.prototype.markActive = function(sel, nodeType) {
 	}
 };
 
-Utils.prototype.toggleMark = function(nodeType) {
-	return Commands.toggleMark(nodeType);
+Utils.prototype.toggleMark = function(nodeType, attrs) {
+	return Commands.toggleMark(nodeType, attrs);
 };
 
 Utils.prototype.fragmentApply = fragmentApply;
