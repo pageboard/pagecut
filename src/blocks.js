@@ -89,12 +89,14 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 	var contents = block.content;
 	if (!contents) return;
 	if (!el.contents) return;
-	if (el.inline) return;
+	if (el.inplace) return;
 	if (typeof el.contents != "string") Object.keys(el.contents).forEach(function(name) {
 		var blockContent = dom.getAttribute('block-content');
 		var node;
 		if (blockContent) {
 			if (name == blockContent) node = dom;
+		} else if (el.inline) {
+			node = dom;
 		} else {
 			node = dom.querySelector(`[block-content="${name}"]`);
 		}
@@ -197,7 +199,9 @@ Blocks.prototype.from = function(blocks, overrideType) {
 Blocks.prototype.serializeTo = function(parent, blocks) {
 	var el = this.view.element(parent.type);
 	if (typeof el.contents == "string") {
-		if (!el.inline) console.warn("unnamed contents for non-inline block", el, parent);
+		if (!el.inplace) {
+			console.warn("unnamed contents for non-inplace block is not supported", el, parent);
+		}
 	} else if (el.contents) Object.keys(el.contents).forEach(function(name) {
 		var content = parent.content[name];
 		if (!content || typeof content == "string") {

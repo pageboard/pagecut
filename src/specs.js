@@ -50,11 +50,14 @@ function define(view, elt, schema, views) {
 						console.warn(`element ${elt.name} has no matching contents`, contentName);
 						return;
 					} else {
-						spec.content = elt.contents[contentName].spec;
+						var specStr = elt.contents[contentName];
+						if (typeof specStr != "string" && specStr.spec) specStr = specStr.spec;
+						spec.content = specStr;
 					}
 				}
 			} else {
-				spec.content = elt.contents;
+				if (!elt.inplace) console.error("contents can be a string spec only for inplace element", elt);
+				else spec.content = elt.contents;
 			}
 		}
 
@@ -194,7 +197,7 @@ function createRootSpec(view, elt, obj) {
 			return toDOMOutputSpec(uView, node);
 		}
 	};
-	if (obj.dom.childNodes || obj.contentDOM) {
+	if (obj.dom.childNodes || obj.contentDOM || elt.inline) {
 		// there's a bug somewhere (in prosemirror ?) with leaf nodes having a nodeView
 		spec.nodeView = function(node, view, getPos, decorations) {
 			return new RootNodeView(elt, obj.dom, node, view, getPos);
@@ -300,6 +303,10 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 	this.contentDOM = findContent(elt, this.dom);
 	if (this.contentDOM) {
 		var contentName = this.contentDOM.getAttribute('block-content');
+		if (!contentName && typeof elt.contents != "string") {
+			var contentKeys = Object.keys(elt.contents);
+			if (contentKeys.length == 1) contentName = contentKeys[0];
+		}
 		if (contentName) {
 			block.content[contentName] = this.contentDOM;
 		}
