@@ -196,11 +196,11 @@ Blocks.prototype.from = function(blocks, overrideType) {
 
 Blocks.prototype.serializeTo = function(parent, blocks) {
 	var el = this.view.element(parent.type);
-
-	if (el.contents) Object.keys(el.contents).forEach(function(name) {
+	if (typeof el.contents == "string") {
+		if (!el.inline) console.warn("unnamed contents for non-inline block", el, parent);
+	} else if (el.contents) Object.keys(el.contents).forEach(function(name) {
 		var content = parent.content[name];
-		if (!content) return;
-		if (typeof content == "string") {
+		if (!content || typeof content == "string") {
 			return;
 		}
 		content = content.cloneNode(true);
