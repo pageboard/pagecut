@@ -198,13 +198,12 @@ Blocks.prototype.from = function(blocks, overrideType) {
 
 Blocks.prototype.serializeTo = function(parent, blocks) {
 	var el = this.view.element(parent.type);
-	var contentKeys = Object.keys(el.contents);
+	var contentKeys = (!el.contents || typeof el.contents == "string")
+		? null : Object.keys(el.contents);
 
-	if (typeof el.contents == "string") {
-		if (!el.inplace) {
-			console.warn("unnamed contents for non-inplace block is not supported", el, parent);
-		}
-	} else if (el.contents) contentKeys.forEach(function(name) {
+	if (!contentKeys) {
+		// nothing to serialize here
+	} else contentKeys.forEach(function(name) {
 		var content = parent.content[name];
 		if (!content || typeof content == "string") {
 			return;
@@ -252,16 +251,18 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 		parent.content[name] = nodeToHtml(content);
 	}, this);
 
-	var hasContent = false;
-	for (var name in parent.content) {
-		if (parent.content[name]) {
-			hasContent = true;
-			break;
+	if (contentKeys && contentKeys.length) {
+		var hasContent = false;
+		for (var name in parent.content) {
+			if (parent.content[name]) {
+				hasContent = true;
+				break;
+			}
 		}
-	}
-	if (!hasContent && contentKeys.length > 0) {
-		delete blocks.parent.id;
-		return;
+		if (!hasContent) {
+			delete blocks[parent.id];
+			return;
+		}
 	}
 
 	blocks[parent.id] = parent;
