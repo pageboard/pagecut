@@ -198,11 +198,13 @@ Blocks.prototype.from = function(blocks, overrideType) {
 
 Blocks.prototype.serializeTo = function(parent, blocks) {
 	var el = this.view.element(parent.type);
+	var contentKeys = Object.keys(el.contents);
+
 	if (typeof el.contents == "string") {
 		if (!el.inplace) {
 			console.warn("unnamed contents for non-inplace block is not supported", el, parent);
 		}
-	} else if (el.contents) Object.keys(el.contents).forEach(function(name) {
+	} else if (el.contents) contentKeys.forEach(function(name) {
 		var content = parent.content[name];
 		if (!content || typeof content == "string") {
 			return;
@@ -231,8 +233,11 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 				if (type != block.type) block.type = type;
 				else type = null;
 			}
-			this.serializeTo(block, blocks);
-			list.push({node: div, block: block, type: type});
+			if (this.serializeTo(block, blocks)) {
+				list.push({node: div, block: block, type: type});
+			} else {
+				node.parentNode.removeChild(div);
+			}
 		}
 		while (node = content.querySelector('[block-focused]')) {
 			node.removeAttribute('block-focused');
@@ -246,6 +251,18 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 		});
 		parent.content[name] = nodeToHtml(content);
 	}, this);
+
+	var hasContent = false;
+	for (var name in parent.content) {
+		if (parent.content[name]) {
+			hasContent = true;
+			break;
+		}
+	}
+	if (!hasContent && contentKeys.length > 0) {
+		delete blocks.parent.id;
+		return;
+	}
 
 	blocks[parent.id] = parent;
 
@@ -262,7 +279,8 @@ Blocks.prototype.to = function(blocks) {
 
 	var block = this.copy(this.store[id]);
 	block.content[contentName] = domFragment;
-	block = this.serializeTo(block, blocks);
+	// because serializeTo can return null if there was no content
+	block = this.serializeTo(block, blocks) || block;
 
 	var item;
 	block.children = [];
