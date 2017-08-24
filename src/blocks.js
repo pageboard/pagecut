@@ -42,6 +42,10 @@ Blocks.prototype.mount = function(block) {
 		copy.content[name] = frag;
 	}
 	var el = view.element(copy.type);
+	if (!el) {
+		console.error("Cannot find element for block", block);
+		return copy;
+	}
 	return Promise.resolve().then(function() {
 		if (el.mount) return el.mount(copy, view);
 	}).then(function() {
