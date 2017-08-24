@@ -46,7 +46,7 @@ Utils.prototype.getDom = function() {
 
 Utils.prototype.insert = function(dom, sel) {
 	var tr = this.view.state.tr;
-	if (this.insertTr(tr, dom, sel)) {
+	if (this.insertTr(tr, dom, sel) != null) {
 		this.view.dispatch(tr);
 	}
 };
@@ -73,19 +73,27 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	var doc = this.view.state.doc;
 
 	if (from == to) {
-		if (parent.isTextblock && sel.$from.parentOffset == 0) {
-			from = sel.$from.before();
-		}
-		// now insert after
-		if (sel.$from.nodeAfter) {
-			from = from + sel.$from.nodeAfter.nodeSize;
-			tr.setSelection(State.TextSelection.create(doc, from));
+		var $pos = sel.$from;
+		if (parent.isTextblock) {
+			if ($pos.parentOffset == 0) {
+				from = $pos.before();
+			} else if ($pos.parentOffset == $pos.parent.nodeSize - 2) {
+				from = $pos.after();
+			} else {
+				tr.split(from).insert(from + 1, frag);
+				return from + 1;
+			}
+		} else {
+			// insert after otherwise
+			if (sel.$from.nodeAfter) {
+				from = from + sel.$from.nodeAfter.nodeSize;
+			}
 		}
 		tr.replaceRangeWith(from, from, frag);
 	} else {
 		tr.replaceRangeWith(from, to, frag);
 	}
-	return true;
+	return from;
 };
 
 Utils.prototype.delete = function(sel) {
