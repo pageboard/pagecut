@@ -181,6 +181,7 @@ Blocks.prototype.from = function(blocks, overrideType) {
 			console.error(ex);
 			return;
 		}
+		if (!fragment) return;
 		self.merge(fragment, block, overrideType);
 		return Promise.all(Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
 			var id = node.getAttribute('block-id');
