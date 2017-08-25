@@ -56,7 +56,7 @@ Viewer.prototype.element = function(type) {
 
 Viewer.prototype.render = function(block, overrideType) {
 	var dom = this.blocks.render(block, overrideType);
-	if (dom.nodeType != Node.ELEMENT_NODE) return dom;
+	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return dom;
 
 	var type = overrideType || block.type;
 	var el = this.element(type);
