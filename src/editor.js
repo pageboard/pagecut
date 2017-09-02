@@ -17,6 +17,7 @@ var UrlRegex = require('url-regex');
 
 var FocusPlugin = require("./focus-plugin");
 var KeymapPlugin = require("./keymap-plugin");
+var TextInputPlugin = require("./textinput-plugin");
 
 var Utils = require("./utils");
 var Specs = require("./specs");
@@ -106,6 +107,7 @@ function Editor(opts) {
 	this.plugins.push(
 		KeymapPlugin,
 		FocusPlugin,
+		TextInputPlugin,
 //		require("./test-plugin"),
 	function(editor) {
 		return Input.inputRules({
