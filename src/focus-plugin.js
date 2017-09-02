@@ -35,6 +35,11 @@ function FocusPlugin(view, options) {
 }
 
 FocusPlugin.prototype.click = function(view, pos, e) {
+	var posObj = view.posAtCoords({
+		left: e.clientX,
+		top: e.clientY
+	});
+	pos = posObj.inside < 0 ? pos : posObj.inside;
 	var tr = view.state.tr;
 	if (this.focus(tr, State.TextSelection.create(view.state.doc, pos))) {
 		view.dispatch(tr);
