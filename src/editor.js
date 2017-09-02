@@ -162,6 +162,8 @@ function Editor(opts) {
 		nodeViews: views
 	});
 
+	place.ownerDocument.execCommand("enableObjectResizing", false, false);
+
 	var rootId = this.dom.getAttribute('block-id');
 	if (rootId) {
 		this.state.doc.attrs.block_id = rootId;

@@ -8,3 +8,15 @@
      if (!contentDOM) { contentDOM = dom }
      this.findAround(dom, contentDOM, true)
      this.addAll(contentDOM, sync)
+--- node_modules/prosemirror-view/dist/viewdesc.js	2017-09-02 12:55:14.896914025 +0200
++++ node_modules.new/prosemirror-view/dist/viewdesc.js	2017-09-02 12:55:02.509167968 +0200
+@@ -579,7 +579,7 @@
+       ;var assign;
+       ((assign = DOMSerializer.renderSpec(document, node.type.spec.toDOM(node)), dom = assign.dom, contentDOM = assign.contentDOM))
+     }
+-    if (!contentDOM && !node.isText) { dom.contentEditable = false }
++    if (!contentDOM && !node.isText && dom.nodeName != "IMG") { dom.contentEditable = false }
+ 
+     var nodeDOM = dom
+     dom = applyOuterDeco(dom, outerDeco, node)
+
