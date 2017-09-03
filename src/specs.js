@@ -172,7 +172,8 @@ function createRootSpec(view, elt, obj) {
 				attrs // thus dom block-type can override block.type
 			);
 		},
-		contentElement: function(dom) { return findContent(elt, dom); }
+		contentElement: function(dom) { return findContent(elt, dom); },
+		context: elt.context || null
 	};
 
 	var spec = {
