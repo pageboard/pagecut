@@ -314,18 +314,22 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 
 	this.dom = domModel.cloneNode(true);
 	this.contentDOM = findContent(elt, this.dom);
-	if (this.contentDOM) {
-		var contentName = this.contentDOM.getAttribute('block-content');
-		if (!contentName && typeof elt.contents != "string") {
-			var contentKeys = Object.keys(elt.contents);
-			if (contentKeys.length == 1) contentName = contentKeys[0];
-		}
-		if (contentName) {
-			block.content[contentName] = this.contentDOM;
-		}
-	}
 	this.update(node);
+	this.updateBlockContent(block);
 }
+
+RootNodeView.prototype.updateBlockContent = function(block) {
+	if (!this.contentDOM) return;
+	var elt = this.element;
+	var contentName = this.contentDOM.getAttribute('block-content');
+	if (!contentName && typeof elt.contents != "string") {
+		var contentKeys = Object.keys(elt.contents);
+		if (contentKeys.length == 1) contentName = contentKeys[0];
+	}
+	if (contentName) {
+		block.content[contentName] = this.contentDOM;
+	}
+};
 
 RootNodeView.prototype.update = function(node, decorations) {
 	var oldBlock = this.oldBlock;
