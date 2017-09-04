@@ -120,22 +120,24 @@ Utils.prototype.parse = function(dom, opts) {
 	return node.content;
 };
 
-Utils.prototype.refresh = function(dom) {
-	var tr = this.refreshTr(this.view.state.tr, dom);
+Utils.prototype.refresh = function(dom, block) {
+	var tr = this.refreshTr(this.view.state.tr, dom, block);
 	if (!tr) console.error("Cannot refresh", dom);
 	else this.view.dispatch(tr);
 };
 
-Utils.prototype.refreshTr = function(tr, dom) {
+Utils.prototype.refreshTr = function(tr, dom, block) {
 	var pos = this.posFromDOM(dom);
 	if (pos === false) return;
 	var parent = this.parents(tr, pos);
 	if (!parent) return;
 	var root = parent.root;
-	var id = (root.mark || root.node).attrs.block_id;
-	if (!id) return;
-	var block = this.view.blocks.get(id);
-	if (!block) return; // nothing to refresh
+	if (!block) {
+		var id = (root.mark || root.node).attrs.block_id;
+		if (!id) return;
+		block = this.view.blocks.get(id);
+		if (!block) return; // nothing to refresh
+	}
 	var attrs = this.view.blocks.toAttrs(block);
 	var type = dom.getAttribute('block-type');
 	if (type) attrs.block_type = type; // dom can override block.type
