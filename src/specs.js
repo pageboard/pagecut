@@ -332,6 +332,9 @@ RootNodeView.prototype.updateBlockContent = function(block) {
 };
 
 RootNodeView.prototype.update = function(node, decorations) {
+	if (this.element.name != node.attrs.block_type) {
+		return false;
+	}
 	var oldBlock = this.oldBlock;
 	if (node.attrs.block_id != this.id) {
 		return false;
