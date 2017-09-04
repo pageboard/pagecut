@@ -450,6 +450,16 @@ function mergeNodeAttrsToDom(attrs, dom) {
 }
 
 function mutateNodeView(obj, nobj, initial) {
+	var dom = obj.dom;
+	if (nobj.dom.nodeName != dom.nodeName) {
+		var emptyDom = dom.ownerDocument.createElement(nobj.dom.nodeName);
+		if (dom.parentNode) {
+			dom.parentNode.replaceChild(emptyDom, dom);
+		}
+		obj.dom = emptyDom;
+		while (dom.firstChild) emptyDom.appendChild(dom.firstChild);
+		obj.contentDOM = obj.dom;
+	}
 	// first upgrade attributes
 	mutateAttributes(obj.dom, nobj.dom);
 	// then upgrade descendants
