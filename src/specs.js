@@ -155,7 +155,7 @@ function createRootSpec(view, elt, obj) {
 				var id = dom.getAttribute('block-id');
 				block = id && view.blocks.get(id);
 				if (!block) {
-					block = view.utils.attrToBlock(attrs);
+					block = view.blocks.fromAttrs(attrs);
 					delete block.id;
 					view.blocks.set(block);
 				} else if (block.online) {
@@ -163,12 +163,12 @@ function createRootSpec(view, elt, obj) {
 					view.blocks.set(block);
 				}
 			} else {
-				block = view.utils.attrToBlock(attrs);
+				block = view.blocks.fromAttrs(attrs);
 				if (block.id) delete block.id;
 			}
 			// it's ok to use dom attributes to rebuild a block
 			return Object.assign(
-				view.utils.blockToAttr(block),
+				view.blocks.toAttrs(block),
 				attrs // thus dom block-type can override block.type
 			);
 		},
@@ -191,7 +191,7 @@ function createRootSpec(view, elt, obj) {
 			}
 			var block;
 			if (id) block = view.blocks.get(id);
-			if (!block) block = view.utils.attrToBlock(node.attrs);
+			if (!block) block = view.blocks.fromAttrs(node.attrs);
 
 			var dom = view.render(block, node.attrs.block_type);
 			var uView = flagDom(elt, dom);
@@ -291,7 +291,7 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 	if (!block) {
 		delete node.attrs.block_id;
 		delete this.id;
-		block = view.utils.attrToBlock(node.attrs);
+		block = view.blocks.fromAttrs(node.attrs);
 	}
 	if (!elt.inplace && !this.id) {
 		this.id = block.id = node.attrs.block_id = view.blocks.genId();
@@ -320,7 +320,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 	if (node.attrs.block_id != this.id) {
 		return false;
 	}
-	var uBlock = this.view.utils.attrToBlock(node.attrs);
+	var uBlock = this.view.blocks.fromAttrs(node.attrs);
 	var block;
 	if (this.element.inplace) {
 		block = uBlock;

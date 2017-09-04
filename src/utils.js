@@ -136,7 +136,7 @@ Utils.prototype.refreshTr = function(tr, dom) {
 	if (!id) return;
 	var block = this.view.blocks.get(id);
 	if (!block) return; // nothing to refresh
-	var attrs = this.blockToAttr(block);
+	var attrs = this.view.blocks.toAttrs(block);
 	var type = dom.getAttribute('block-type');
 	if (type) attrs.block_type = type; // dom can override block.type
 	else type = block.type;
@@ -149,28 +149,6 @@ Utils.prototype.refreshTr = function(tr, dom) {
 	} else {
 		return tr.setNodeType(pos, null, attrs);
 	}
-};
-
-Utils.prototype.attrToBlock = function(attrs) {
-	var block = {};
-	for (var name in attrs) {
-		if (name.startsWith('block_')) block[name.substring(6)] = attrs[name];
-	}
-	if (block.data) block.data = JSON.parse(block.data);
-	else block.data = {};
-	block.content = {};
-	return block;
-};
-
-Utils.prototype.blockToAttr = function(block) {
-	var attrs = {};
-	if (!block) return attrs;
-	if (block.id != null) attrs.block_id = block.id;
-	if (block.type != null) attrs.block_type = block.type;
-	if (block.data) attrs.block_data = JSON.stringify(block.data);
-	if (block.focused) attrs.block_focused = block.focused;
-	if (attrs.block_data == "{}") delete attrs.block_data;
-	return attrs;
 };
 
 Utils.prototype.selectDom = function(node) {

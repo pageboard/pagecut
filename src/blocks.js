@@ -18,6 +18,36 @@ Blocks.prototype.create = function(type) {
 	};
 };
 
+Blocks.prototype.fromAttrs = function(attrs) {
+	var block = {};
+	for (var name in attrs) {
+		if (name.startsWith('block_')) block[name.substring(6)] = attrs[name];
+	}
+	if (block.data) block.data = JSON.parse(block.data);
+	else block.data = {};
+	block.content = {};
+
+	var el = this.view.element(block.type);
+	var data = block.data;
+	for (var k in el.properties) {
+		if (el.properties[k].default !== undefined && data[k] === undefined) {
+			data[k] = el.properties[k].default;
+		}
+	}
+	return block;
+};
+
+Blocks.prototype.toAttrs = function(block) {
+	var attrs = {};
+	if (!block) return attrs;
+	if (block.id != null) attrs.block_id = block.id;
+	if (block.type != null) attrs.block_type = block.type;
+	if (block.data) attrs.block_data = JSON.stringify(block.data);
+	if (block.focused) attrs.block_focused = block.focused;
+	if (attrs.block_data == "{}") delete attrs.block_data;
+	return attrs;
+};
+
 Blocks.prototype.render = function(block, overrideType) {
 	var type = overrideType || block.type;
 	var el = this.view.element(type);
