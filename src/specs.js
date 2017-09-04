@@ -146,10 +146,15 @@ function createRootSpec(view, elt, obj) {
 	if (elt.inline) obj.contentDOM = obj.dom;
 
 	var parseRule = {
-		tag: elt.inline ? domSelector(obj.dom.nodeName, {class: obj.className}) : `[block-type="${elt.name}"]`,
 		getAttrs: function(dom) {
 			var attrs = attrsFrom(dom);
-			if (elt.inline) return attrs;
+			attrs.block_type = elt.name;
+			if (elt.parse) {
+				attrs.block_data = JSON.stringify(elt.parse(dom));
+			}
+			if (elt.inline) {
+				return attrs;
+			}
 			var block;
 			if (!elt.inplace) {
 				var id = dom.getAttribute('block-id');
@@ -175,6 +180,13 @@ function createRootSpec(view, elt, obj) {
 		contentElement: function(dom) { return findContent(elt, dom); },
 		context: elt.context || null
 	};
+	if (elt.tag) {
+		parseRule.tag = elt.tag;
+	} else if (elt.inline) {
+		parseRule.tag = domSelector(obj.dom.nodeName, {class: obj.className});
+	} else {
+		parseRule.tag = `[block-type="${elt.name}"]`;
+	}
 
 	var spec = {
 		typeName: "root",
