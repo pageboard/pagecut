@@ -85,7 +85,7 @@ function Editor(opts) {
 	this.serializer = Model.DOMSerializer.fromSchema(this.schema);
 	this.parser = Model.DOMParser.fromSchema(this.schema);
 
-	var cbSerializer = Model.DOMSerializer.fromSchema(this.schema);
+	var cbSerializer = Model.DOMSerializer.fromSchema(new Model.Schema(spec));
 	function replaceOutputSpec(fun) {
 		return function(node) {
 			var out = fun(node);
