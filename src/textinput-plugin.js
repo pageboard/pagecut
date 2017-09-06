@@ -12,11 +12,19 @@ function TextInputPlugin(options) {
 }
 
 TextInputPlugin.prototype.handler = function(view, from, to, text) {
+	var tr = view.state.tr;
 	// return true to disable default insertion
-	var parents = view.utils.selectionParents(view.state.tr, {from: from, to: to});
+	var parents = view.utils.selectionParents(tr, {from: from, to: to});
 	if (!parents.length) return true;
 	var parent = parents[0];
 	parent = parent.container || parent.root;
-	if (parent && (parent.node && parent.node.isTextblock || parent.mark)) return false;
+	if (tr.selection.node) {
+		// there is no way text can directly replace a node
+		return true;
+	}
+	if (parent && (parent.node && parent.node.isTextblock || parent.mark)) {
+		// it should be all right then
+		return false;
+	}
 	return true;
 };
