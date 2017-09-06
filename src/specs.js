@@ -574,7 +574,13 @@ function specAttrs(atts) {
 function domSelector(tag, attrs) {
 	var sel = tag.toLowerCase();
 	var className = attrs.class;
-	if (className) sel += "." + className.split(' ').join('.');
+	if (className) {
+		sel += className.split(' ').filter(function(str) {
+			return !!str;
+		}).map(function(str) {
+			return '.' + str;
+		}).join('');
+	}
 	return sel;
 }
 
