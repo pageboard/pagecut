@@ -295,6 +295,10 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 			delete this.id;
 		} else {
 			block = view.blocks.get(this.id);
+			if (block && block.online) {
+				// this block is already online - it's a split
+				block = null;
+			}
 		}
 	}
 	if (!block) {
@@ -387,7 +391,9 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 
 RootNodeView.prototype.destroy = function() {
 	var block = this.view.blocks.get(this.id);
-	if (block) delete block.online;
+	if (block) {
+		delete block.online;
+	}
 };
 
 function WrapNodeView(elt, domModel, node, view) {
