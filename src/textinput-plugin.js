@@ -17,6 +17,6 @@ TextInputPlugin.prototype.handler = function(view, from, to, text) {
 	if (!parents.length) return true;
 	var parent = parents[0];
 	parent = parent.container || parent.root;
-	if (parent && parent.node && parent.node.isTextblock) return false;
+	if (parent && (parent.node && parent.node.isTextblock || parent.mark)) return false;
 	return true;
 };
