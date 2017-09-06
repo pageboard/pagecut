@@ -1,3 +1,5 @@
+var State = require("prosemirror-state");
+
 module.exports = function(view, options) {
 	var plugin = new TextInputPlugin(options);
 	return {
@@ -19,8 +21,13 @@ TextInputPlugin.prototype.handler = function(view, from, to, text) {
 	var parent = parents[0];
 	parent = parent.container || parent.root;
 	if (tr.selection.node) {
-		// there is no way text can directly replace a node
-		return true;
+		// change selection to be inside that node
+		view.dispatch(
+			tr.setSelection(
+				State.Selection.near(tr.selection.$from)
+			)
+		);
+		return false;
 	}
 	if (parent && (parent.node && parent.node.isTextblock || parent.mark)) {
 		// it should be all right then
