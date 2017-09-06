@@ -235,7 +235,7 @@ function createWrapSpec(view, elt, obj) {
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	var parseRule = {
-		tag: domSelector(obj.dom.nodeName, defaultAttrs),
+		tag: domSelector(obj.dom.nodeName, defaultAttrs) + ':not([block-type])',
 		getAttrs: function(dom) {
 			return attrsFrom(dom);
 		},
@@ -261,7 +261,7 @@ function createContainerSpec(view, elt, obj) {
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	var parseRule = {
-		tag: `${obj.dom.nodeName}[block-content="${defaultAttrs.block_content}"]`,
+		tag: `${obj.dom.nodeName.toLowerCase()}[block-content="${defaultAttrs.block_content}"]:not([block-type])`,
 		getAttrs: function(dom) {
 			return attrsFrom(dom);
 		},
