@@ -135,12 +135,12 @@ function toDOMOutputSpec(obj, node) {
 }
 
 function createRootSpec(view, elt, obj) {
-	var defaultAttrs = Object.assign({
+	var defaultAttrs = {
 		block_id: null,
 		block_focused: null,
-		block_type: elt.name,
-		block_data: null
-	}, attrsFrom(obj.dom));
+		block_data: null,
+		block_type: elt.name
+	};
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 	if (elt.inline) obj.contentDOM = obj.dom;
@@ -230,9 +230,7 @@ function createRootSpec(view, elt, obj) {
 }
 
 function createWrapSpec(view, elt, obj) {
-	var defaultAttrs = Object.assign({
-		// TODO
-	}, attrsFrom(obj.dom));
+	var defaultAttrs = attrsFrom(obj.dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	var parseRule = {
@@ -258,9 +256,7 @@ function createWrapSpec(view, elt, obj) {
 }
 
 function createContainerSpec(view, elt, obj) {
-	var defaultAttrs = Object.assign({
-		// TODO
-	}, attrsFrom(obj.dom));
+	var defaultAttrs = attrsFrom(obj.dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	var parseRule = {
