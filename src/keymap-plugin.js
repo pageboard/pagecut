@@ -23,9 +23,13 @@ function breakCommand(state, dispatch, view) {
 		}
 		return false;
 	} else {
+		var hard_break = state.schema.nodes.hard_break;
+		if (view.utils.canInsert(sel.$from, hard_break) == false) {
+			return true;
+		}
 		if (dispatch) {
 			dispatch(
-				tr.replaceSelectionWith(state.schema.nodes.hard_break.create()).scrollIntoView()
+				tr.replaceSelectionWith(hard_break.create()).scrollIntoView()
 			);
 		}
 		// stop here
