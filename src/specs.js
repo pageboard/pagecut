@@ -417,6 +417,7 @@ WrapNodeView.prototype.ignoreMutation = function(record) {
 
 function ContainerNodeView(elt, domModel, node, view) {
 	this.dom = domModel.cloneNode(true);
+	this.element = elt;
 	this.view = view;
 	this.contentDOM = findContent(elt, this.dom);
 }
@@ -424,8 +425,13 @@ function ContainerNodeView(elt, domModel, node, view) {
 ContainerNodeView.prototype.update = function(node, decorations) {
 	// mergeNodeAttrsToDom(node.attrs, nodeView.dom);
 	var root = this.dom.closest('[block-type]');
+	if (root.getAttribute('block-type') != this.element.name) {
+		return false;
+	}
 	var id = root.getAttribute('block-id');
-	if (this.id && this.id != id) return false;
+	if (this.id && this.id != id) {
+		return false;
+	}
 	this.id = id;
 	var block = this.view.blocks.get(id);
 	var contentName = node.attrs.block_content;
