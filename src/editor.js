@@ -92,6 +92,7 @@ function Editor(opts) {
 			Object.assign(out[1], {
 				'block-data': node.attrs.block_data
 			});
+			delete out[1]['block-focused'];
 			return out;
 		};
 	}
@@ -108,6 +109,7 @@ function Editor(opts) {
 		KeymapPlugin,
 		FocusPlugin,
 		TextInputPlugin,
+		HandlePaste,
 //		require("./test-plugin"),
 	function(editor) {
 		return Input.inputRules({
@@ -183,3 +185,20 @@ Editor.prototype.getPlugin = function(key) {
 	return new State.PluginKey(key).get(this.state);
 };
 
+function HandlePaste(editor) {
+	return new State.Plugin({
+		props: {
+			transformPasted: function(pslice) {
+				var frag = editor.utils.fragmentApply(pslice.content, function(node) {
+					delete node.attrs.block_focused;
+					var id = node.attrs.block_id;
+					if (!id) return;
+					var block = editor.blocks.get(id);
+					if (!block) return;
+					delete block.focused;
+				});
+				return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
+			}
+		}
+	});
+}
