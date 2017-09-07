@@ -294,6 +294,7 @@ function createContainerSpec(view, elt, obj) {
 function RootNodeView(elt, domModel, node, view, getPos) {
 	this.view = view;
 	this.element = elt;
+	this.domModel = domModel;
 	this.id = node.attrs.block_id;
 	var block;
 	if (this.id) {
@@ -318,13 +319,17 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 		view.blocks.set(block);
 	}
 
-	block.online = true;
-
-	this.dom = domModel.cloneNode(true);
-	this.contentDOM = findContent(elt, this.dom);
+	this.mount(block);
 	this.update(node);
-	this.updateBlockContent(block);
 }
+
+RootNodeView.prototype.mount = function(block) {
+	block.online = true;
+	if (block.focused) delete block.focused;
+	this.dom = this.domModel.cloneNode(true);
+	this.contentDOM = findContent(this.element, this.dom);
+	this.updateBlockContent(block);
+};
 
 RootNodeView.prototype.updateBlockContent = function(block) {
 	if (!this.contentDOM) return;
