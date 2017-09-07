@@ -211,6 +211,7 @@ function createRootSpec(view, elt, obj) {
 			var block;
 			if (id) block = view.blocks.get(id);
 			if (!block) block = view.blocks.fromAttrs(node.attrs);
+			else block.focused = node.attrs.block_focused;
 
 			var dom = view.render(block, node.attrs.block_type);
 			var uView = flagDom(elt, dom);
