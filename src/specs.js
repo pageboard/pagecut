@@ -349,6 +349,11 @@ RootNodeView.prototype.update = function(node, decorations) {
 			console.warn("block should exist", node);
 			return true;
 		}
+		if (!block.online) {
+			// the block has been auto-filled, but never
+			// associated with a nodeView
+			return false;
+		}
 	}
 
 	Object.assign(block.data, uBlock.data);
