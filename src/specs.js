@@ -17,6 +17,8 @@ function define(view, elt, schema, views) {
 	if (dom.parentNode) dom = dom.cloneNode(true);
 	var index = 0;
 
+	var parent;
+
 	flagDom(elt, dom, function(type, obj) {
 		var spec;
 		if (type == "root") {
@@ -28,6 +30,10 @@ function define(view, elt, schema, views) {
 			spec = createContainerSpec(view, elt, obj);
 		}
 		if (!obj.name) obj.name = `${elt.name}_${type}_${index++}`;
+		if (parent && type != "root") {
+			spec.parseDOM[0].context = parent + '/';
+		}
+		parent = obj.name;
 		if (obj.children.length) {
 			// this type of node has content that is wrap or container type nodes
 			spec.content = obj.children.map(function(child) {
