@@ -228,7 +228,8 @@ function createRootSpec(view, elt, obj) {
 		// this node does not have editable content
 		spec.atom = true;
 		// this makes prosemirror manage drag and drop for leaf nodes
-		// without out, chrome allows dragging images - not as dom nodes but as data - and it screws our model
+		// without it, chrome allows dragging images - not as dom nodes but as data
+		// and it screws our model
 		spec.draggable = true;
 	}
 	if (elt.group) spec.group = elt.group;
