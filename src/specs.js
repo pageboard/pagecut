@@ -41,7 +41,7 @@ function define(view, elt, schema, views) {
 			}).join(" ");
 		} else if (elt.contents) {
 			if (typeof elt.contents != "string") {
-				var contentName = obj.dom.getAttribute('block-content');
+				var contentName = (obj.contentDOM || obj.dom).getAttribute('block-content');
 				if (!contentName) {
 					var specKeys = Object.keys(elt.contents);
 					if (specKeys.length == 1) {
