@@ -56,11 +56,13 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	if (!(dom instanceof Node)) {
 		dom = this.view.render(dom);
 	}
-
+	var type = dom.nodeType == Node.ELEMENT_NODE && dom.getAttribute('block-type');
 	var opts = {};
 	var parent = sel.$from.parent;
-	if (!parent.isTextblock) {
-		opts.topNode = parent;
+	var nodeType = type && this.view.state.schema.nodes[type];
+	var replaceableInParent = nodeType && Utils.prototype.canInsert(sel.$from, nodeType);
+	if (replaceableInParent) {
+		opts.topNode = replaceableInParent;
 	}
 	var frag = this.parse(dom, opts);
 	var node;
@@ -384,7 +386,7 @@ Utils.prototype.canInsert = function($pos, nodeType, attrs) {
 		var index = $pos.index(d);
 		var node = $pos.node(d);
 		if (node.canReplaceWith(index, index, nodeType, attrs)) {
-			return true;
+			return node;
 		} else if (!node.isTextblock) {
 			if (node.type.spec.typeName) break; // we only check one parent block
 		}
