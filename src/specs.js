@@ -173,6 +173,7 @@ function createRootSpec(view, elt, obj) {
 				view.blocks.set(block);
 			} else if (block.online) {
 				delete block.id;
+				console.warn("possible bug here");
 				view.blocks.set(block);
 			}
 			attrs = view.blocks.toAttrs(block);
@@ -323,30 +324,22 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 		view.blocks.set(block);
 	}
 
-	this.mount(block);
+	if (block.focused) delete block.focused;
+	block.online = true;
+
+	this.dom = this.domModel.cloneNode(true);
+	this.contentDOM = findContent(this.element, this.dom);
+
+	if (this.contentDOM) {
+		this.contentName = this.contentDOM.getAttribute('block-content');
+		if (!this.contentName && typeof elt.contents != "string") {
+			var contentKeys = Object.keys(elt.contents);
+			if (contentKeys.length == 1) this.contentName = contentKeys[0];
+		}
+		if (this.contentName) block.content[this.contentName] = this.contentDOM;
+	}
 	this.update(node);
 }
-
-RootNodeView.prototype.mount = function(block) {
-	block.online = true;
-	if (block.focused) delete block.focused;
-	if (!this.dom) this.dom = this.domModel.cloneNode(true);
-	if (!this.contentDOM) this.contentDOM = findContent(this.element, this.dom);
-	this.updateBlockContent(block);
-};
-
-RootNodeView.prototype.updateBlockContent = function(block) {
-	if (!this.contentDOM) return;
-	var elt = this.element;
-	var contentName = this.contentDOM.getAttribute('block-content');
-	if (!contentName && typeof elt.contents != "string") {
-		var contentKeys = Object.keys(elt.contents);
-		if (contentKeys.length == 1) contentName = contentKeys[0];
-	}
-	if (contentName) {
-		block.content[contentName] = this.contentDOM;
-	}
-};
 
 RootNodeView.prototype.update = function(node, decorations) {
 	if (this.element.name != node.attrs.block_type) {
@@ -366,10 +359,10 @@ RootNodeView.prototype.update = function(node, decorations) {
 			console.warn("block should exist", node);
 			return true;
 		}
-		if (!block.online) {
-			// the block has been auto-filled, but never
-			// associated with a nodeView
-			return false;
+		if (this.contentName) {
+			if (block.content[this.contentName] != this.contentDOM) {
+				block.content[this.contentName] = this.contentDOM;
+			}
 		}
 	}
 
@@ -456,6 +449,11 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 	}
 	this.id = id;
 	var block = this.view.blocks.get(id);
+	var contentName = this.contentDOM.getAttribute('block-content');
+	if (contentName != this.contentName) {
+		console.error("mismatch contentName", contentName, this.contentName);
+		return false;
+	}
 	block.content[this.contentName] = this.contentDOM;
 	return true;
 };
