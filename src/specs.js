@@ -441,6 +441,7 @@ function ContainerNodeView(elt, domModel, node, view) {
 	this.element = elt;
 	this.view = view;
 	this.contentDOM = findContent(elt, this.dom);
+	this.contentName = this.contentDOM.getAttribute('block-content');
 }
 
 ContainerNodeView.prototype.update = function(node, decorations) {
@@ -455,8 +456,7 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 	}
 	this.id = id;
 	var block = this.view.blocks.get(id);
-	var contentName = node.attrs.block_content;
-	block.content[contentName] = this.contentDOM;
+	block.content[this.contentName] = this.contentDOM;
 	return true;
 };
 
