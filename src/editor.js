@@ -45,6 +45,25 @@ Editor.defaults.mapKeys = {
 	// 'Shift-Mod-z': History.redo
 };
 
+// when prosemirror splits a node, there is no way to give the copy
+// a different block_id besides this hacky way
+var _split = Transform.Transform.prototype.split;
+Transform.Transform.prototype.split = function() {
+	var args = Array.prototype.slice.call(arguments);
+	var _copy = Model.Node.prototype.copy;
+	Model.Node.prototype.copy = function() {
+		var args = Array.prototype.slice.call(arguments);
+		var node = _copy.apply(this, args);
+		if (node.attrs.block_id) {
+			delete node.attrs.block_id;
+		}
+		return node;
+	};
+	var tr = _split.apply(this, args);
+	Model.Node.prototype.copy = _copy;
+	return tr;
+};
+
 module.exports = {
 	Editor: Editor,
 	View: View,
