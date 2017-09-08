@@ -76,7 +76,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 
 	if (from == to) {
 		var $pos = sel.$from;
-		if (parent.isTextblock) {
+		if (!replaceableInParent && parent.isTextblock) {
 			if ($pos.parentOffset == 0) {
 				from = $pos.before();
 			} else if ($pos.parentOffset == $pos.parent.nodeSize - 2) {
