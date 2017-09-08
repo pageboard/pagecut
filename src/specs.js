@@ -330,8 +330,8 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 RootNodeView.prototype.mount = function(block) {
 	block.online = true;
 	if (block.focused) delete block.focused;
-	this.dom = this.domModel.cloneNode(true);
-	this.contentDOM = findContent(this.element, this.dom);
+	if (!this.dom) this.dom = this.domModel.cloneNode(true);
+	if (!this.contentDOM) this.contentDOM = findContent(this.element, this.dom);
 	this.updateBlockContent(block);
 };
 
