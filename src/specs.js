@@ -153,35 +153,31 @@ function createRootSpec(view, elt, obj) {
 
 	var parseRule = {
 		getAttrs: function(dom) {
-			var attrs = attrsFrom(dom);
-			attrs.block_type = elt.name;
-			if (elt.parse) {
-				attrs.block_data = JSON.stringify(elt.parse(dom));
+			var type = dom.getAttribute('block-type') || elt.name;
+			var id = dom.getAttribute('block-id');
+			var data = dom.getAttribute('block-data');
+			var attrs = {
+				block_type: type
+			};
+			if (data) {
+				attrs.block_data = data;
 			}
-			if (elt.inline) {
+			if (elt.inplace) {
+				if (elt.parse) attrs.block_data = JSON.stringify(elt.parse(dom));
 				return attrs;
 			}
 			var block;
-			if (!elt.inplace) {
-				var id = dom.getAttribute('block-id');
-				block = id && view.blocks.get(id);
-				if (!block) {
-					block = view.blocks.fromAttrs(attrs);
-					delete block.id;
-					view.blocks.set(block);
-				} else if (block.online) {
-					delete block.id;
-					view.blocks.set(block);
-				}
-			} else {
+			if (id) block = view.blocks.get(id);
+			if (!block) {
 				block = view.blocks.fromAttrs(attrs);
-				if (block.id) delete block.id;
+				view.blocks.set(block);
+			} else if (block.online) {
+				delete block.id;
+				view.blocks.set(block);
 			}
-			// it's ok to use dom attributes to rebuild a block
-			return Object.assign(
-				view.blocks.toAttrs(block),
-				attrs // thus dom block-type can override block.type
-			);
+			attrs = view.blocks.toAttrs(block);
+			attrs.block_type = type;
+			return attrs;
 		},
 		contentElement: function(dom) { return findContent(elt, dom); }
 	};
