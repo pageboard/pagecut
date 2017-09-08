@@ -1,4 +1,5 @@
 var keymap = require("prosemirror-keymap").keymap;
+var State = require("prosemirror-state");
 
 module.exports = function(editor, options) {
 	return keymap({
@@ -15,26 +16,34 @@ function breakCommand(state, dispatch, view) {
 	var bef = sel.$from.nodeBefore;
 	var parent = sel.$from.parent;
 	var isRoot = parent.type.spec.typeName == "root";
+	var handled = false;
 	if (bef && bef.type.name == "hard_break" && isRoot && parent.isTextblock) {
 		if (dispatch) {
-			dispatch(
-				tr.delete(sel.$from.pos - bef.nodeSize, sel.$from.pos).scrollIntoView()
-			);
+			tr.delete(sel.$from.pos - bef.nodeSize, sel.$from.pos).scrollIntoView()
 		}
-		return false;
+		// ok let's handle the split ourselves
+		var elt = view.element(parent.type.name);
+		if (elt && !elt.inplace && !elt.inline) {
+			// elements with id cannot be split consistently
+			// instead an element with the same type must be added after
+			if (dispatch) {
+				sel = State.TextSelection.create(state.doc, sel.$from.pos - bef.nodeSize);
+				var from = view.utils.insertTr(tr, view.blocks.create(elt.name), sel);
+				if (from != sel.from) {
+					tr.setSelection(State.Selection.near(tr.doc.resolve(from)));
+				}
+			}
+			handled = true;
+		}
 	} else {
 		var hard_break = state.schema.nodes.hard_break;
-		if (view.utils.canInsert(sel.$from, hard_break) == false) {
-			return true;
+		handled = true;
+		if (view.utils.canInsert(sel.$from, hard_break) && dispatch) {
+			tr.replaceSelectionWith(hard_break.create()).scrollIntoView()
 		}
-		if (dispatch) {
-			dispatch(
-				tr.replaceSelectionWith(hard_break.create()).scrollIntoView()
-			);
-		}
-		// stop here
-		return true;
 	}
+	if (dispatch) dispatch(tr);
+	return handled;
 }
 
 function deleteCommand(back, state, dispatch, view) {
