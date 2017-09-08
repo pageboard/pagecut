@@ -299,9 +299,12 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 			delete this.id;
 		} else {
 			block = view.blocks.get(this.id);
-			if (block && block.online) {
-				// this block is already online - it's a split
-				block = null;
+			if (block) {
+				if (block.online) {
+					// block is already online
+					// it's all right if it's a join or a simple move
+					// if it's a split, see editor.js monkey-patch Transform.prototype.split
+				}
 			}
 		}
 	}
