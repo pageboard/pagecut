@@ -263,9 +263,14 @@ function createWrapSpec(view, elt, obj) {
 function createContainerSpec(view, elt, obj) {
 	var defaultAttrs = attrsFrom(obj.dom);
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
-
+	var tag;
+	if (obj.dom == obj.contentDOM) {
+		tag = `${obj.dom.nodeName.toLowerCase()}[block-content="${defaultAttrs.block_content}"]`;
+	} else {
+		tag = domSelector(obj.dom.nodeName, defaultAttrs);
+	}
 	var parseRule = {
-		tag: `${obj.dom.nodeName.toLowerCase()}[block-content="${defaultAttrs.block_content}"]:not([block-type])`,
+		tag: tag + ':not([block-type])',
 		getAttrs: function(dom) {
 			return attrsFrom(dom);
 		},
