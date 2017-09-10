@@ -336,7 +336,6 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 			var contentKeys = Object.keys(elt.contents);
 			if (contentKeys.length == 1) this.contentName = contentKeys[0];
 		}
-		if (this.contentName) block.content[this.contentName] = this.contentDOM;
 	}
 	this.update(node);
 }
@@ -358,11 +357,6 @@ RootNodeView.prototype.update = function(node, decorations) {
 		if (!block) {
 			console.warn("block should exist", node);
 			return true;
-		}
-		if (this.contentName) {
-			if (block.content[this.contentName] != this.contentDOM) {
-				block.content[this.contentName] = this.contentDOM;
-			}
 		}
 	}
 
@@ -389,6 +383,11 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 	var dom = this.view.render(block, node.attrs.block_type);
 	mutateNodeView(this, flagDom(this.element, dom), !oldBlock);
+	if (this.contentName) {
+		if (block.content[this.contentName] != this.contentDOM) {
+			block.content[this.contentName] = this.contentDOM;
+		}
+	}
 	if (oldBlock && this.dom.update) {
 		this.dom.update();
 	}
