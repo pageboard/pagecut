@@ -149,10 +149,10 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 		if (!sel) return tr;
 		tr.removeMark(sel.from, sel.to, root.mark);
 		tr.addMark(sel.from, sel.to, root.mark.type.create(attrs));
-		return tr;
 	} else {
-		return tr.setNodeType(pos, null, attrs);
+		tr.setNodeType(pos, null, attrs);
 	}
+	return tr;
 };
 
 Utils.prototype.selectDom = function(node) {
