@@ -481,6 +481,9 @@ function mutateNodeView(obj, nobj, initial) {
 	if (nobj.dom.nodeName != dom.nodeName) {
 		var emptyDom = dom.ownerDocument.createElement(nobj.dom.nodeName);
 		if (dom.parentNode) {
+			// workaround: nodeView cannot change their dom node
+			var desc = emptyDom.pmViewDesc = dom.pmViewDesc;
+			desc.nodeDOM = desc.contentDOM = desc.dom = emptyDom;
 			dom.parentNode.replaceChild(emptyDom, dom);
 		}
 		obj.dom = emptyDom;
