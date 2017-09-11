@@ -89,6 +89,14 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 			// insert after otherwise
 			if (sel.$from.nodeAfter) {
 				from = from + sel.$from.nodeAfter.nodeSize;
+			} else if (parent.isTextblock) {
+				if ($pos.parentOffset == 0) {
+					from = $pos.before();
+				} else if ($pos.parentOffset == $pos.parent.nodeSize - 2) {
+					from = $pos.after();
+				}
+				tr.insert(from, frag);
+				return from;
 			}
 		}
 		tr.replaceRangeWith(from, from, frag);
