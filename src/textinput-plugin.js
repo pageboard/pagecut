@@ -20,7 +20,7 @@ TextInputPlugin.prototype.handler = function(view, from, to, text) {
 	if (!parents.length) return true;
 	var parent = parents[0];
 	parent = parent.container || parent.root;
-	if (tr.selection.node) {
+	if (tr.selection.node && tr.selection.node.isTextblock) {
 		// change selection to be inside that node
 		view.dispatch(
 			tr.setSelection(
