@@ -39,7 +39,6 @@
     "dom-template-strings": "^2.0.1",
     "esequal": "^0.1.15",
     "prosemirror-commands": "^0.23.0",
-    "prosemirror-example-setup": "^0.23.0",
     "prosemirror-history": "^0.23.0",
     "prosemirror-inputrules": "^0.23.0",
     "prosemirror-keymap": "^0.23.0",

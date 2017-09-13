@@ -15,7 +15,7 @@ var inspectorElement = {
 	group: 'block',
 	contents: {
 		title: {
-			spec: "inline<_>*"
+			spec: "inline*"
 		},
 		content: {
 			spec: "block+"

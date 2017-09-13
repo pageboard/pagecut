@@ -381,10 +381,10 @@ Utils.prototype.selectionParents = function(tr, sel) {
 
 Utils.prototype.canMark = function(sel, nodeType) {
 	var state = this.view.state;
-	var can = sel.$from.depth == 0 ? state.doc.contentMatchAt(0).allowsMark(nodeType) : false;
+	var can = sel.$from.depth == 0 ? state.doc.type.allowsMarkType(nodeType) : false;
 	state.doc.nodesBetween(sel.from, sel.to, function(node) {
 		if (can) return false;
-		can = node.inlineContent && node.contentMatchAt(0).allowsMark(nodeType);
+		can = node.inlineContent && node.type.allowsMarkType(nodeType);
 	});
 	return can;
 };

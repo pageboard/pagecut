@@ -1,4 +1,3 @@
-var Setup = require("prosemirror-example-setup");
 var State = require("prosemirror-state");
 var Transform = require("prosemirror-transform");
 var View = require("prosemirror-view");
@@ -40,17 +39,19 @@ Editor.defaults.nodes = listSchema.addListNodes(
 
 Editor.defaults.marks = baseSchema.spec.marks;
 
+const mac = typeof navigator != "undefined" ? /Mac/.test(navigator.platform) : false
 
 Editor.defaults.mapKeys = {
-	// 'Shift-Mod-z': History.redo
+	"Mod-z": History.undo,
+	"Shift-Mod-z": History.redo
 };
+if (!mac) Editor.defaults.mapKeys["Mod-y"] = History.redo;
 
 module.exports = {
 	Editor: Editor,
 	View: View,
 	Model: Model,
 	State: State,
-	Setup: Setup,
 	Transform: Transform,
 	Commands: Commands,
 	keymap: keymap,
@@ -111,12 +112,13 @@ function Editor(opts) {
 		TextInputPlugin,
 		HandlePaste,
 //		require("./test-plugin"),
-	function(editor) {
-		return Input.inputRules({
-			rules: Input.allInputRules.concat(Setup.buildInputRules(editor.schema))
-		});
-	}, function(editor, opts) {
-		return keymap(Setup.buildKeymap(editor.schema, opts.mapKeys));
+//	function(editor) {
+//		return Input.inputRules({
+//			rules: Setup.buildInputRules(editor.schema)
+//		});
+//	},
+	function(editor, opts) {
+		return keymap(opts.mapKeys);
 	}, function(editor) {
 		return keymap(Commands.baseKeymap);
 	}, function() {
