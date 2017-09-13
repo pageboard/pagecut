@@ -1,13 +1,3 @@
---- node_modules/prosemirror-model/dist/from_dom.js	2017-06-29 11:31:06.000000000 +0200
-+++ node_modules.new/prosemirror-model/dist/from_dom.js	2017-07-29 23:11:57.518045396 +0200
-@@ -455,6 +455,7 @@
-   } else {
-     var contentDOM = rule.contentElement
-     if (typeof contentDOM == "string") { contentDOM = dom.querySelector(contentDOM) }
-+    else if (typeof contentDOM == "function") { contentDOM = contentDOM(dom) }
-     if (!contentDOM) { contentDOM = dom }
-     this.findAround(dom, contentDOM, true)
-     this.addAll(contentDOM, sync)
 --- node_modules/prosemirror-view/dist/viewdesc.js	2017-09-02 12:55:14.896914025 +0200
 +++ node_modules.new/prosemirror-view/dist/viewdesc.js	2017-09-02 12:55:02.509167968 +0200
 @@ -579,7 +579,7 @@
