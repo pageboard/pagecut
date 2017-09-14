@@ -186,7 +186,7 @@ function createRootSpec(view, elt, obj) {
 
 	if (elt.tag) {
 		parseRule.tag = elt.tag;
-	} else if (elt.inline) {
+	} else if (elt.inplace) {
 		parseRule.tag = domSelector(obj.dom.nodeName, {class: obj.className});
 	} else {
 		parseRule.tag = `[block-type="${elt.name}"]`;
