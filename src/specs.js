@@ -171,10 +171,6 @@ function createRootSpec(view, elt, obj) {
 			if (!block) {
 				block = view.blocks.fromAttrs(attrs);
 				view.blocks.set(block);
-			} else if (view.blocks.domQuery(id)) {
-				delete block.id;
-				console.warn("possible bug here");
-				view.blocks.set(block);
 			}
 			attrs = view.blocks.toAttrs(block);
 			attrs.block_type = type;

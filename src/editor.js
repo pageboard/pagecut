@@ -87,6 +87,8 @@ function Editor(opts) {
 	this.parser = Model.DOMParser.fromSchema(this.schema);
 
 	var cbSerializer = Model.DOMSerializer.fromSchema(new Model.Schema(spec));
+	var cbParserRules = Model.DOMParser.schemaRules(this.schema);
+
 	function replaceOutputSpec(fun) {
 		return function(node) {
 			var out = fun(node);
@@ -105,6 +107,23 @@ function Editor(opts) {
 		if (spec.marks.get(name).typeName != "root") return;
 		cbSerializer.marks[name] = replaceOutputSpec(cbSerializer.marks[name]);
 	});
+
+	cbParserRules = cbParserRules.map(function(rule) {
+		if (rule.mark && spec.marks.get(rule.mark).typeName != "root") return rule;
+		if (rule.node && spec.nodes.get(rule.node).typeName != "root") return rule;
+		var copy = Object.assign({}, rule);
+		copy.getAttrs = function(dom) {
+			var id = dom.getAttribute("block-id");
+			if (id) {
+				var block = editor.blocks.get(id);
+				if (block && editor.blocks.domQuery(id)) dom.removeAttribute('block-id');
+			}
+			var attrs = rule.getAttrs(dom);
+			return attrs;
+		};
+		return copy;
+	});
+	var cbParser = new Model.DOMParser(this.schema, cbParserRules);
 
 	this.plugins.push(
 		KeymapPlugin,
@@ -161,6 +180,7 @@ function Editor(opts) {
 			doc: opts.content ? this.parser.parse(opts.content) : undefined
 		}),
 		domParser: this.parser,
+		clipboardParser: cbParser,
 		clipboardSerializer: cbSerializer,
 		dispatchTransaction: function(tr) {
 			editor.updateState(editor.state.apply(tr));
