@@ -4,7 +4,7 @@ module.exports = function(view, options) {
 	var plugin = new FocusPlugin(view, options);
 	return {
 		props: {
-			handleClick: plugin.click
+//			handleClick: plugin.click
 		},
 		appendTransaction: function(transactions, oldState, newState) {
 			// focus once per transaction
