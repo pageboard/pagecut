@@ -326,12 +326,11 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 			type = node && node.type.spec.typeName;
 			if (!type) {
 				// let's see if we have an inline block
-				var marks = rpos.marks(!before);
-				if (marks.length) {
-					for (var k=0; k < marks.length; k++) {
-						type = marks[k].type && marks[k].type.spec.typeName;
+				if (node && node.marks.length) {
+					for (var k=0; k < node.marks.length; k++) {
+						type = node.marks[k].type && node.marks[k].type.spec.typeName;
 						if (type) {
-							mark = marks[k];
+							mark = node.marks[k];
 							break;
 						}
 					}
