@@ -113,7 +113,6 @@ Blocks.prototype.copy = function(block) {
 	copy.data = Object.assign({}, block.data);
 	copy.content = Object.assign({}, block.content);
 	delete copy.focused;
-	delete copy.online;
 	return copy;
 };
 

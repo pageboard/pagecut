@@ -171,7 +171,7 @@ function createRootSpec(view, elt, obj) {
 			if (!block) {
 				block = view.blocks.fromAttrs(attrs);
 				view.blocks.set(block);
-			} else if (block.online) {
+			} else if (view.blocks.domQuery(id)) {
 				delete block.id;
 				console.warn("possible bug here");
 				view.blocks.set(block);
@@ -306,13 +306,6 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 			delete this.id;
 		} else {
 			block = view.blocks.get(this.id);
-			if (block) {
-				if (block.online) {
-					// block is already online
-					// it's all right if it's a join or a simple move
-					// if it's a split, see editor.js monkey-patch Transform.prototype.split
-				}
-			}
 		}
 	}
 	if (!block) {
@@ -326,7 +319,6 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 	}
 
 	if (block.focused) delete block.focused;
-	block.online = true;
 
 	this.dom = this.domModel.cloneNode(true);
 	this.contentDOM = findContent(this.element, this.dom);
@@ -400,13 +392,6 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 		return false;
 	} else {
 		return true;
-	}
-};
-
-RootNodeView.prototype.destroy = function() {
-	var block = this.view.blocks.get(this.id);
-	if (block) {
-		delete block.online;
 	}
 };
 
