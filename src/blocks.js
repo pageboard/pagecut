@@ -244,7 +244,7 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 			return;
 		}
 		content = content.cloneNode(true);
-		var node, div, id, type, block;
+		var node, div, id, type, block, parentNode;
 		if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
 			var frag = content.ownerDocument.createElement('div');
 			frag.appendChild(content);
@@ -261,7 +261,8 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 				continue;
 			}
 			div = content.ownerDocument.createElement(node.nodeName);
-			node.parentNode.replaceChild(div, node);
+			parentNode = node.parentNode;
+			parentNode.replaceChild(div, node);
 			block = this.copy(block);
 			if (type) {
 				if (type != block.type) block.type = type;
@@ -270,7 +271,7 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 			if (this.serializeTo(block, blocks)) {
 				list.push({node: div, block: block, type: type});
 			} else {
-				node.parentNode.removeChild(div);
+				parentNode.removeChild(div);
 			}
 		}
 		while (node = content.querySelector('[block-focused]')) {
