@@ -214,7 +214,7 @@ function createRootSpec(view, elt, obj) {
 	if (elt.marks) spec.marks = elt.marks;
 	if (obj.dom.childNodes.length || elt.contents) {
 		// there's a bug somewhere (in prosemirror ?) with leaf nodes having a nodeView
-		if (!elt.inline) spec.nodeView = function(node, view, getPos, decorations) {
+		if (!elt.inline || !elt.inplace) spec.nodeView = function(node, view, getPos, decorations) {
 			return new RootNodeView(elt, obj.dom, node, view, getPos);
 		};
 		// explicitely allow dragging for nodes without contentDOM
