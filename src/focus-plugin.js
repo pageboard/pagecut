@@ -30,20 +30,20 @@ module.exports = function(view, options) {
 function FocusPlugin(view, options) {
 	this.view = view;
 
-	this.click = this.click.bind(this);
+//	this.click = this.click.bind(this);
 }
 
-FocusPlugin.prototype.click = function(view, pos, e) {
-	var posObj = view.posAtCoords({
-		left: e.clientX,
-		top: e.clientY
-	});
-	pos = posObj.inside < 0 ? pos : posObj.inside;
-	var tr = view.state.tr;
-	if (this.focus(tr, State.TextSelection.create(view.state.doc, pos))) {
-		view.dispatch(tr);
-	}
-};
+//FocusPlugin.prototype.click = function(view, pos, e) {
+//	var posObj = view.posAtCoords({
+//		left: e.clientX,
+//		top: e.clientY
+//	});
+//	pos = posObj.inside < 0 ? pos : posObj.inside;
+//	var tr = view.state.tr;
+//	if (this.focus(tr, State.TextSelection.create(view.state.doc, pos))) {
+//		view.dispatch(tr);
+//	}
+//};
 
 FocusPlugin.prototype.action = function(tr, editorUpdate) {
 	var sel = tr.selection;
