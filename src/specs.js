@@ -290,6 +290,19 @@ function createContainerSpec(view, elt, obj) {
 	return spec;
 }
 
+function setupView(me) {
+	me.dom = me.domModel.cloneNode(true);
+	me.contentDOM = findContent(me.element, me.dom);
+
+	if (me.contentDOM) {
+		me.contentName = me.contentDOM.getAttribute('block-content');
+		if (!me.contentName && typeof me.element.contents != "string") {
+			var contentKeys = Object.keys(me.element.contents);
+			if (contentKeys.length == 1) me.contentName = contentKeys[0];
+		}
+	}
+}
+
 function RootNodeView(elt, domModel, node, view, getPos) {
 	this.view = view;
 	this.element = elt;
@@ -316,16 +329,12 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 
 	if (block.focused) delete block.focused;
 
-	this.dom = this.domModel.cloneNode(true);
-	this.contentDOM = findContent(this.element, this.dom);
-
-	if (this.contentDOM) {
-		this.contentName = this.contentDOM.getAttribute('block-content');
-		if (!this.contentName && typeof elt.contents != "string") {
-			var contentKeys = Object.keys(elt.contents);
-			if (contentKeys.length == 1) this.contentName = contentKeys[0];
+	setupView(this);
+	node.forEach(function(child) {
+		if (child.type.spec.typeName == "container" || child.type.spec.typeName == "wrap") {
+			child.blockId = this.id;
 		}
-	}
+	}.bind(this));
 	this.update(node);
 }
 
@@ -411,31 +420,25 @@ WrapNodeView.prototype.ignoreMutation = function(record) {
 };
 
 function ContainerNodeView(elt, domModel, node, view) {
-	this.dom = domModel.cloneNode(true);
-	this.element = elt;
 	this.view = view;
-	this.contentDOM = findContent(elt, this.dom);
-	this.contentName = this.contentDOM.getAttribute('block-content');
+	this.element = elt;
+	this.domModel = domModel;
+	if (node.blockId) this.id = node.blockId;
+	setupView(this);
+	this.update(node);
 }
 
 ContainerNodeView.prototype.update = function(node, decorations) {
-	// mergeNodeAttrsToDom(node.attrs, nodeView.dom);
-	var root = this.dom.closest('[block-type]');
-	if (root.getAttribute('block-type') != this.element.name) {
+	var block = this.view.blocks.get(this.id);
+	if (!block) {
+		console.warn("container has no root node id", this, node);
 		return false;
 	}
-	var id = root.getAttribute('block-id');
-	if (this.id && this.id != id) {
-		return false;
+	if (this.contentName) {
+		if (block.content[this.contentName] != this.contentDOM) {
+			block.content[this.contentName] = this.contentDOM;
+		}
 	}
-	this.id = id;
-	var block = this.view.blocks.get(id);
-	var contentName = this.contentDOM.getAttribute('block-content');
-	if (contentName != this.contentName) {
-		console.error("mismatch contentName", contentName, this.contentName);
-		return false;
-	}
-	block.content[this.contentName] = this.contentDOM;
 	return true;
 };
 
