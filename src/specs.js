@@ -330,7 +330,7 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 	if (block.focused) delete block.focused;
 
 	setupView(this);
-	node.forEach(function(child) {
+	if (node.forEach) node.forEach(function(child) {
 		if (child.type.spec.typeName == "container" || child.type.spec.typeName == "wrap") {
 			child.blockId = this.id;
 		}
