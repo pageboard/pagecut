@@ -322,7 +322,7 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 		mark = null;
 		if (!obj) obj = {};
 		if (level == depth) {
-			node = before ? rpos.nodeBefore : rpos.nodeAfter;
+			node = before ? rpos.nodeBefore || rpos.nodeAfter : rpos.nodeAfter || rpos.nodeBefore;
 			type = node && node.type.spec.typeName;
 			if (!type) {
 				// let's see if we have an inline block
