@@ -116,7 +116,9 @@ function Editor(opts) {
 			var id = dom.getAttribute("block-id");
 			if (id) {
 				var block = editor.blocks.get(id);
-				if (block && editor.blocks.domQuery(id)) dom.removeAttribute('block-id');
+				if (block && editor.blocks.domQuery(id)) {
+					dom.removeAttribute('block-id');
+				}
 			}
 			var attrs = rule.getAttrs(dom);
 			return attrs;
