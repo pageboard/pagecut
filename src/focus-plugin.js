@@ -20,8 +20,7 @@ module.exports = function(view, options) {
 				}
 			}
 			var tr = newState.tr;
-			if (editorUpdate) tr.setMeta('editor', true);
-			if (plugin.action(tr)) {
+			if (plugin.action(tr, editorUpdate)) {
 				return tr;
 			}
 		}
@@ -46,10 +45,10 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 	}
 };
 
-FocusPlugin.prototype.action = function(tr) {
+FocusPlugin.prototype.action = function(tr, editorUpdate) {
 	var sel = tr.selection;
 	// avoid unneeded changes
-	if (this.view.state.tr.selection.eq(sel) && !tr.getMeta('editor')) return;
+	if (this.view.state.tr.selection.eq(sel) && !editorUpdate) return false;
 	return this.focus(tr, sel);
 };
 
@@ -84,7 +83,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	var root = parents.length && parents[0].root;
 	if (root && (root.mark || root.node).attrs.block_focused == "last") {
 		// already done
-		// return;
+		return;
 	}
 	var rootPos = root && root.level && root.rpos.before(root.level);
 	var selectedRoot = root && tr.selection.node == root.node;
