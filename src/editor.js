@@ -127,6 +127,25 @@ function Editor(opts) {
 	});
 	var cbParser = new Model.DOMParser(this.schema, cbParserRules);
 
+	cbParser.parseSlice = function(dom, opts) {
+		var blockDom = dom.querySelector('[block-type]');
+		var type = blockDom && blockDom.getAttribute("block-type");
+		// TODO do something if more than one block is being pasted at once
+		var state = editor.state;
+		if (type) {
+			var nodeType = type && state.schema.nodes[type];
+			var from = state.selection.from;
+			var pos = Transform.insertPoint(state.doc, state.selection.from, nodeType);
+			if (pos == null) return Model.Slice.empty;
+			if (pos != from) {
+				var sel = State.TextSelection.create(state.doc, pos);
+				editor.dispatch(state.tr.setSelection(sel));
+				opts.context = sel.$from;
+			}
+		}
+		return Model.DOMParser.prototype.parseSlice.call(this, dom, opts);
+	};
+
 	this.plugins.push(
 		KeymapPlugin,
 		FocusPlugin,
