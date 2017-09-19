@@ -60,7 +60,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	var opts = {};
 	var parent = sel.$from.parent;
 	var nodeType = type && this.view.state.schema.nodes[type];
-	var replaceableInParent = nodeType && Utils.prototype.canInsert(sel.$from, nodeType);
+	var replaceableInParent = nodeType && this.canInsert(sel.$from, nodeType);
 	if (replaceableInParent) {
 		opts.topNode = replaceableInParent;
 	}
