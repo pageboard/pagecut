@@ -230,8 +230,8 @@ Blocks.prototype.from = function(blocks, overrideType) {
 	});
 };
 
-Blocks.prototype.serializeTo = function(parent, blocks) {
-	var el = this.view.element(parent.type);
+Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
+	var el = this.view.element(overrideType || parent.type);
 	var contentKeys = (!el.contents || typeof el.contents == "string")
 		? null : Object.keys(el.contents);
 
@@ -263,11 +263,9 @@ Blocks.prototype.serializeTo = function(parent, blocks) {
 			parentNode = node.parentNode;
 			parentNode.replaceChild(div, node);
 			block = this.copy(block);
-			if (type) {
-				if (type != block.type) block.type = type;
-				else type = null;
-			}
-			if (this.serializeTo(block, blocks)) {
+
+			if (this.serializeTo(block, blocks, type)) {
+				if (type && type == block.type) type = null;
 				list.push({node: div, block: block, type: type});
 			} else {
 				parentNode.removeChild(div);
@@ -311,12 +309,13 @@ Blocks.prototype.to = function(blocks) {
 	var domFragment = this.view.utils.getDom();
 
 	var id = this.view.dom.getAttribute('block-id');
+	var type = this.view.dom.getAttribute('block-type');
 	var contentName = this.view.dom.getAttribute('block-content') || 'fragment';
 
 	var block = this.copy(this.store[id]);
 	block.content[contentName] = domFragment;
 	// because serializeTo can return null if there was no content
-	block = this.serializeTo(block, blocks) || block;
+	block = this.serializeTo(block, blocks, type) || block;
 
 	var item;
 	block.children = [];
