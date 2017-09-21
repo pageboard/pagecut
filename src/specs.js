@@ -37,6 +37,7 @@ function define(view, elt, schema, views) {
 		if (obj.children.length) {
 			// this type of node has content that is wrap or container type nodes
 			spec.content = obj.children.map(function(child) {
+				if (!child.name) console.warn(obj, "has no name for child", child);
 				return child.name;
 			}).join(" ");
 		} else if (elt.contents) {
