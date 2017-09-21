@@ -374,7 +374,6 @@ RootNodeView.prototype.update = function(node, decorations) {
 	}
 
 	this.oldBlock = this.view.blocks.copy(block);
-	this.oldBlock.content = {};
 	this.oldBlock.focused = node.attrs.block_focused;
 
 	if (node.attrs.block_focused) block.focused = node.attrs.block_focused;
@@ -383,6 +382,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 	var dom = this.view.render(block, node.attrs.block_type);
 	mutateNodeView(this, flagDom(this.element, dom), !oldBlock);
 	if (this.contentName) {
+		if (!block.content) block.content = {};
 		if (block.content[this.contentName] != this.contentDOM) {
 			block.content[this.contentName] = this.contentDOM;
 		}
@@ -436,6 +436,7 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 		return false;
 	}
 	if (this.contentName) {
+		if (!block.content) block.content = {};
 		if (block.content[this.contentName] != this.contentDOM) {
 			block.content[this.contentName] = this.contentDOM;
 		}

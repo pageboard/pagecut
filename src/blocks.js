@@ -25,7 +25,6 @@ Blocks.prototype.fromAttrs = function(attrs) {
 	}
 	if (block.data) block.data = JSON.parse(block.data);
 	else block.data = {};
-	block.content = {};
 
 	var el = this.view.element(block.type);
 	var data = block.data;
@@ -59,7 +58,7 @@ Blocks.prototype.mount = function(block) {
 	var contents = block.content;
 	var copy = this.copy(block);
 	var content, div, frag, view = this.view;
-	for (var name in contents) {
+	if (contents) for (var name in contents) {
 		content = contents[name];
 		if (content instanceof Node) {
 			frag = content;
@@ -86,7 +85,7 @@ Blocks.prototype.mount = function(block) {
 Blocks.prototype.unmount = function(block) {
 	var contents = block.content;
 	var copy = this.copy(block);
-	for (var name in contents) {
+	if (contents) for (var name in contents) {
 		copy.content[name] = nodeToHtml(contents[name]);
 	}
 	return copy;
@@ -111,7 +110,7 @@ function nodeToHtml(node) {
 Blocks.prototype.copy = function(block) {
 	var copy = Object.assign({}, block);
 	copy.data = Object.assign({}, block.data);
-	copy.content = Object.assign({}, block.content);
+	if (block.content) copy.content = Object.assign({}, block.content);
 	delete copy.focused;
 	return copy;
 };
@@ -238,7 +237,7 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 	if (!contentKeys) {
 		// nothing to serialize here
 	} else contentKeys.forEach(function(name) {
-		var content = parent.content[name];
+		var content = parent.content && parent.content[name];
 		if (!content || typeof content == "string") {
 			return;
 		}
@@ -286,7 +285,7 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 
 	if (el.inline && contentKeys && contentKeys.length) {
 		var hasContent = false;
-		for (var name in parent.content) {
+		if (parent.content) for (var name in parent.content) {
 			if (parent.content[name]) {
 				hasContent = true;
 				break;
@@ -313,6 +312,7 @@ Blocks.prototype.to = function(blocks) {
 	var contentName = this.view.dom.getAttribute('block-content') || 'fragment';
 
 	var block = this.copy(this.store[id]);
+	if (!block.content) block.content = {};
 	block.content[contentName] = domFragment;
 	// because serializeTo can return null if there was no content
 	block = this.serializeTo(block, blocks, type) || block;

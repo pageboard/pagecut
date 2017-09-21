@@ -33,6 +33,10 @@ Utils.prototype.setDom = function(dom) {
 	// TODO find a better place to set this
 	var id = this.view.dom.getAttribute('block-id');
 	var block = this.view.blocks.get(id);
+	if (!block.content) {
+		console.warn("unsupported case: setting a block dom node that has no content");
+		return;
+	}
 	var content = this.view.dom.getAttribute('block-content') || Object.keys(block.content)[0];
 	block.content[content] = this.view.dom;
 };
