@@ -231,6 +231,14 @@ Editor.prototype.getPlugin = function(key) {
 function HandlePaste(editor) {
 	return new State.Plugin({
 		props: {
+			clipboardTextParser: function(str, $context) {
+				if (/^<iframe\s.*>.*<\/iframe>$/igm.test(str) == false) return;
+				var doc = document.cloneNode(false);
+				var dom = doc.createElement('div');
+				dom.innerHTML = str;
+				var parser = editor.someProp("clipboardParser") || editor.someProp("domParser") || Model.DOMParser.fromSchema(editor.state.schema);
+				return parser.parseSlice(dom, {preserveWhitespace: true, context: $context});
+			},
 			transformPasted: function(pslice) {
 				var frag = editor.utils.fragmentApply(pslice.content, function(node) {
 					delete node.attrs.block_focused;
