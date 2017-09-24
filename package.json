@@ -4,7 +4,7 @@
   "description": "Extensible web content editor",
   "main": "index.js",
   "scripts": {
-    "prepublishOnly": "make all",
+    "prepare": "make all",
     "postinstall": "postinstall-links",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
