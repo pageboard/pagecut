@@ -22,4 +22,15 @@
          { return apply(view, new NodeSelection(dir < 0 ? view.state.doc.resolve($head.pos - node.nodeSize) : $head)) }
        return false
      }
+--- node_modules/prosemirror-view/dist/index.js	2017-09-13 17:07:49.000000000 +0200
++++ node_modules.new/prosemirror-view/dist/index.js	2017-09-24 17:24:58.140990585 +0200
+@@ -2583,7 +2583,7 @@
+   if ((plainText || inCode || !html) && text) {
+     view.someProp("transformPastedText", function (f) { text = f(text); });
+     if (inCode) { return new prosemirrorModel.Slice(prosemirrorModel.Fragment.from(view.state.schema.text(text)), 0, 0) }
+-    var parsed = view.someProp("clipboardTextParser", function (f) { return f(text); });
++    var parsed = view.someProp("clipboardTextParser", function (f) { return f(text, $context); });
+     if (parsed) {
+       slice = parsed;
+     } else {
 
