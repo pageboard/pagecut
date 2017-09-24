@@ -162,9 +162,10 @@ function createRootSpec(view, elt, obj) {
 			};
 			if (data) {
 				attrs.block_data = data;
+			} else if (elt.parse) {
+				attrs.block_data = JSON.stringify(elt.parse(dom));
 			}
 			if (elt.inplace) {
-				if (elt.parse) attrs.block_data = JSON.stringify(elt.parse(dom));
 				return attrs;
 			}
 			var block;
