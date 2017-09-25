@@ -16,7 +16,7 @@
  ParseContext.prototype.matchesContext = function matchesContext (context) {
      var this$1 = this;
 +    if (Array.isArray(context)) {
-+      return context.some(matchesContext, this);
++      return context.some(this.matchesContext, this);
 +    }
  
    var parts = context.split("/");
