@@ -1,36 +1,11 @@
---- node_modules/prosemirror-view/dist/viewdesc.js	2017-09-02 12:55:14.896914025 +0200
-+++ node_modules.new/prosemirror-view/dist/viewdesc.js	2017-09-02 12:55:02.509167968 +0200
-@@ -579,7 +579,7 @@
-       ;var assign;
-       ((assign = DOMSerializer.renderSpec(document, node.type.spec.toDOM(node)), dom = assign.dom, contentDOM = assign.contentDOM))
+--- node_modules/prosemirror-view/dist/index.js	2017-09-25 10:29:03.000000000 +0200
++++ node_modules.new/prosemirror-view/dist/index.js	2017-09-25 14:42:54.841108621 +0200
+@@ -1001,7 +1001,7 @@
+       var assign;
+       ((assign = prosemirrorModel.DOMSerializer.renderSpec(document, node.type.spec.toDOM(node)), dom = assign.dom, contentDOM = assign.contentDOM));
      }
--    if (!contentDOM && !node.isText) { dom.contentEditable = false }
-+    if (!contentDOM && !node.isText && dom.nodeName != "IMG") { dom.contentEditable = false }
+-    if (!contentDOM && !node.isText) { dom.contentEditable = false; }
++    if (!contentDOM && !node.isText && dom.nodeName != "IMG") { dom.contentEditable = false; }
  
-     var nodeDOM = dom
-     dom = applyOuterDeco(dom, outerDeco, node)
---- node_modules/prosemirror-view/dist/capturekeys.js	2017-08-16 14:49:25.000000000 +0200
-+++ node_modules.new/prosemirror-view/dist/capturekeys.js	2017-09-14 23:28:14.277647991 +0200
-@@ -30,8 +30,8 @@
-       if (next && (next instanceof NodeSelection)) { return apply(view, next) }
-       return false
-     } else {
--      var $head = sel.$head, node = $head.textOffset ? null : dir < 0 ? $head.nodeBefore : $head.nodeAfter
--      if (node && NodeSelection.isSelectable(node))
-+      var $head = sel.$head, node = $head.textOffset ? null : dir < 0 ? $head.nodeBefore : $head.nodeAfter, desc
-+      if (node && NodeSelection.isSelectable(node) && (node.isAtom || (desc = view.docView.descAt($head.pos)) && !desc.contentDOM))
-         { return apply(view, new NodeSelection(dir < 0 ? view.state.doc.resolve($head.pos - node.nodeSize) : $head)) }
-       return false
-     }
---- node_modules/prosemirror-view/dist/index.js	2017-09-13 17:07:49.000000000 +0200
-+++ node_modules.new/prosemirror-view/dist/index.js	2017-09-24 17:24:58.140990585 +0200
-@@ -2583,7 +2583,7 @@
-   if ((plainText || inCode || !html) && text) {
-     view.someProp("transformPastedText", function (f) { text = f(text); });
-     if (inCode) { return new prosemirrorModel.Slice(prosemirrorModel.Fragment.from(view.state.schema.text(text)), 0, 0) }
--    var parsed = view.someProp("clipboardTextParser", function (f) { return f(text); });
-+    var parsed = view.someProp("clipboardTextParser", function (f) { return f(text, $context); });
-     if (parsed) {
-       slice = parsed;
-     } else {
-
+     var nodeDOM = dom;
+     dom = applyOuterDeco(dom, outerDeco, node);

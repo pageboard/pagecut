@@ -69,7 +69,7 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	} else if (isDoc) {
 		// prosemirror doesn't transform doc, we just changed doc.attrs directly
 	} else {
-		tr.setNodeType(pos, null, attrs);
+		tr.setNodeMarkup(pos, null, attrs);
 	}
 	return tr;
 };

@@ -162,7 +162,7 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 		tr.removeMark(sel.from, sel.to, root.mark);
 		tr.addMark(sel.from, sel.to, root.mark.type.create(attrs));
 	} else {
-		tr.setNodeType(pos, null, attrs);
+		tr.setNodeMarkup(pos, null, attrs);
 	}
 	return tr;
 };
