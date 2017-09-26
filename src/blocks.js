@@ -361,6 +361,36 @@ Blocks.prototype.genId = function() {
 	return Date.now() + Math.round(Math.random() * 1e4) + '';
 };
 
+Blocks.prototype.idPlugin = function() {
+	var me = this;
+	return {
+		appendTransaction: function(trs, oldState, newState) {
+			var ids = {};
+			var tr = newState.tr;
+			var modified = false;
+			newState.doc.descendants(function(node, pos) {
+				var id = node.attrs.block_id;
+				if (id) {
+					if (ids[id]) {
+						var newId = me.genId();
+						var block = me.fromAttrs(node.attrs);
+						block.id = newId;
+						me.set(block);
+						tr.setNodeMarkup(pos, null, Object.assign({}, node.attrs, {
+							block_id: newId
+						}));
+						ids[newId] = true;
+						modified = true;
+					} else {
+						ids[id] = true;
+					}
+				}
+			});
+			if (modified) return tr;
+		}
+	};
+};
+
 Blocks.prototype.domQuery = function(id, opts) {
 	if (!opts) opts = {};
 	var rootDom = this.view.dom;

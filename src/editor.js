@@ -160,6 +160,7 @@ function Editor(opts) {
 		KeymapPlugin,
 		FocusPlugin,
 		TextInputPlugin,
+		this.blocks.idPlugin(),
 		HandlePaste,
 //		require("./test-plugin"),
 //	function(editor) {
