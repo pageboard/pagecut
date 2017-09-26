@@ -16,7 +16,7 @@ var UrlRegex = require('url-regex');
 
 var FocusPlugin = require("./focus-plugin");
 var KeymapPlugin = require("./keymap-plugin");
-var TextInputPlugin = require("./textinput-plugin");
+var InputPlugin = require("./input-plugin");
 
 var Utils = require("./utils");
 var Specs = require("./specs");
@@ -137,31 +137,11 @@ function Editor(opts) {
 	});
 	var cbParser = new Model.DOMParser(this.schema, cbParserRules);
 
-	cbParser.parseSlice = function(dom, opts) {
-		var blockDom = dom.querySelector('[block-type]');
-		var type = blockDom && blockDom.getAttribute("block-type");
-		// TODO do something if more than one block is being pasted at once
-		var state = editor.state;
-		var nodeType = type && state.schema.nodes[type];
-		if (nodeType) {
-			var from = state.selection.from;
-			var pos = Transform.insertPoint(state.doc, state.selection.from, nodeType);
-			if (pos == null) return Model.Slice.empty;
-			if (pos != from) {
-				var sel = State.TextSelection.create(state.doc, pos);
-				editor.dispatch(state.tr.setSelection(sel));
-				opts.context = sel.$from;
-			}
-		}
-		return Model.DOMParser.prototype.parseSlice.call(this, dom, opts);
-	};
-
 	this.plugins.push(
 		KeymapPlugin,
 		FocusPlugin,
-		TextInputPlugin,
+		InputPlugin,
 		this.blocks.idPlugin(),
-		HandlePaste,
 //		require("./test-plugin"),
 //	function(editor) {
 //		return Input.inputRules({
@@ -239,28 +219,3 @@ Editor.prototype.getPlugin = function(key) {
 	return new State.PluginKey(key).get(this.state);
 };
 
-function HandlePaste(editor) {
-	return new State.Plugin({
-		props: {
-			clipboardTextParser: function(str, $context) {
-				if (/^<iframe\s.*>.*<\/iframe>$/igm.test(str) == false) return;
-				var doc = document.cloneNode(false);
-				var dom = doc.createElement('div');
-				dom.innerHTML = str;
-				var parser = editor.someProp("clipboardParser") || editor.someProp("domParser") || Model.DOMParser.fromSchema(editor.state.schema);
-				return parser.parseSlice(dom, {preserveWhitespace: true, context: $context});
-			},
-			transformPasted: function(pslice) {
-				var frag = editor.utils.fragmentApply(pslice.content, function(node) {
-					delete node.attrs.block_focused;
-					var id = node.attrs.block_id;
-					if (!id) return;
-					var block = editor.blocks.get(id);
-					if (!block) return;
-					delete block.focused;
-				});
-				return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
-			}
-		}
-	});
-}
