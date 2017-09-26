@@ -18,7 +18,10 @@ ts:
 
 predist:
 	mkdir -p dist/
-	cp src/*.css dist/
+	ln -sf ../src/pagecut.css dist/
+	ln -sf ../src/pagecut-menu.css dist/
+	ln -sf ../src/prosemirror.css dist/
+	ln -sf ../src/prosemirror-menu.css dist/
 
 dist/pagecut-editor.js: src/*.js
 	-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
