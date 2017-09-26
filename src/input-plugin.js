@@ -47,7 +47,8 @@ InputPlugin.prototype.transformPasted = function(pslice) {
 		if (!block) return;
 		delete block.focused;
 	});
-	return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
+	return pslice; // we did not change anything, just removed block focus
+//	return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
 };
 
 InputPlugin.prototype.clipboardTextParser = function(str, $context) {
