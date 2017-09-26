@@ -15,8 +15,8 @@
  // string](#ParseRule.context) matches this context.
  ParseContext.prototype.matchesContext = function matchesContext (context) {
      var this$1 = this;
-+    if (Array.isArray(context)) {
-+      return context.some(this.matchesContext, this);
++	   if (context.indexOf("|") > -1) {
++      return context.split(/\s*\|\s*/).some(this.matchesContext, this);
 +    }
  
    var parts = context.split("/");
