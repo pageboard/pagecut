@@ -99,7 +99,7 @@ function nodeToHtml(node) {
 		for (var i=0; i < node.childNodes.length; i++) {
 			child = node.childNodes[i];
 			if (child.nodeType == Node.TEXT_NODE) html += child.nodeValue;
-			else html += child.outerHTML;
+			else if (!child.hasAttribute('block-virtual')) html += child.outerHTML;
 		}
 	} else {
 		html = node;
