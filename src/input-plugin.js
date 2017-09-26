@@ -70,10 +70,8 @@ InputPlugin.prototype.clipboardTextParser = function(str, $context) {
 			this.view.dispatch(state.tr.setSelection(sel));
 			opts.context = sel.$from;
 		}
-	} else if (dom.nodeType == 1) {
-		if (dom.nodeName != "IFRAME") return; // default handlers
-	} else {
-		return; // default handlers
+	} else if (dom.children.length != dom.childNodes.length) {
+		return;
 	}
 	var parser = this.view.someProp("clipboardParser")
 		|| this.view.someProp("domParser")
