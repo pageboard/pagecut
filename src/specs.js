@@ -194,7 +194,7 @@ function createRootSpec(view, elt, obj) {
 		typeName: "root",
 		inline: !!elt.inline,
 		defining: obj.dom == obj.contentDOM,
-		isolating: !elt.inline,
+		isolating: elt.isolating !== undefined ? elt.isolating : !elt.inline,
 		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [parseRule],
 		toDOM: function(node) {
