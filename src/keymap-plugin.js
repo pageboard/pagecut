@@ -26,14 +26,14 @@ function breakCommand(state, dispatch, view) {
 		if (elt && !elt.inplace && !elt.inline) {
 			// elements with id cannot be split consistently
 			// instead an element with the same type must be added after
-			if (dispatch) {
-				sel = State.TextSelection.create(state.doc, sel.$from.pos - bef.nodeSize);
-				var from = view.utils.insertTr(tr, view.blocks.create(elt.name), sel);
-				if (from != sel.from) {
-					tr.setSelection(State.Selection.near(tr.doc.resolve(from)));
-				}
-			}
-			handled = true;
+//			if (dispatch) {
+//				sel = state.textselection.create(state.doc, sel.$from.pos - bef.nodesize);
+//				var from = view.utils.inserttr(tr, view.blocks.create(elt.name), sel);
+//				if (from != sel.from) {
+//					tr.setselection(state.selection.near(tr.doc.resolve(from)));
+//				}
+//			}
+//			handled = true;
 		}
 	} else {
 		var hard_break = state.schema.nodes.hard_break;
