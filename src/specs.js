@@ -309,6 +309,7 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 	this.view = view;
 	this.element = elt;
 	this.domModel = domModel;
+	this.getPos = getPos;
 	this.id = node.attrs.block_id;
 	var block;
 	if (this.id) {
@@ -397,6 +398,33 @@ RootNodeView.prototype.update = function(node, decorations) {
 RootNodeView.prototype.ignoreMutation = function(record) {
 	if (record.target == this.contentDOM && record.type == "childList") {
 		return false;
+	} else if (record.target == this.dom && record.type == "attributes" && record.attributeName && record.attributeName.startsWith('data-')) {
+		var block = this.view.blocks.get(this.id);
+		if (block) {
+			var dataWhat = record.attributeName.split('-').slice(1).map(function(str, i) {
+				if (i == 0) return str;
+				return str[0].toUpperCase() + str.substring(1);
+			}).join('');
+			var prop = this.element.properties && this.element.properties[dataWhat];
+			if (prop) {
+				var val = record.target.getAttribute(record.attributeName);
+				if (type == "boolean") {
+					if (val == "true") val = true;
+					else if (val == "false") val = false;
+				} else if (type == "integer") {
+					val = parseInt(val);
+				} else if (type == "number") {
+					val = parseFloat(val);
+				}
+				block.data[dataWhat] = val;
+				var pos = this.getPos();
+				var attrs = this.view.blocks.toAttrs(block);
+				attrs.block_type = this.element.name;
+				var tr = this.view.state.tr.setNodeMarkup(pos, null, attrs);
+				this.view.dispatch(tr);
+			}
+		}
+		return true;
 	} else {
 		return true;
 	}
