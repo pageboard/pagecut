@@ -280,7 +280,11 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 				item.node.setAttribute('block-type', item.type);
 			}
 		});
-		parent.content[name] = nodeToHtml(content);
+		if (el.contents[name].ignore) {
+			delete parent.content[name];
+		} else {
+			parent.content[name] = nodeToHtml(content);
+		}
 	}, this);
 
 	if (el.inline && contentKeys && contentKeys.length) {
