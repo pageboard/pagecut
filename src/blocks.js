@@ -354,6 +354,7 @@ Blocks.prototype.set = function(data) {
 		}
 		this.store[cur.id] = cur;
 	}
+	return data;
 };
 
 Blocks.prototype.genId = function() {
