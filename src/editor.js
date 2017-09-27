@@ -135,7 +135,7 @@ function Editor(opts) {
 		};
 		return copy;
 	});
-	var cbParser = new Model.DOMParser(this.schema, cbParserRules);
+	this.clipboardParser = new Model.DOMParser(this.schema, cbParserRules);
 
 	this.plugins.push(
 		KeymapPlugin,
@@ -192,7 +192,7 @@ function Editor(opts) {
 			doc: opts.content ? this.parser.parse(opts.content) : undefined
 		}),
 		domParser: this.parser,
-		clipboardParser: cbParser,
+		clipboardParser: this.clipboardParser,
 		clipboardSerializer: cbSerializer,
 		dispatchTransaction: function(tr) {
 			editor.updateState(editor.state.apply(tr));

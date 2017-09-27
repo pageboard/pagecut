@@ -1,5 +1,6 @@
 var State = require("prosemirror-state");
 var Model = require("prosemirror-model");
+var Transform = require("prosemirror-transform");
 
 module.exports = function(view, options) {
 	return {
@@ -8,9 +9,9 @@ module.exports = function(view, options) {
 };
 
 function InputPlugin(view, options) {
-	for (var name in InputPlugin.prototype) {
-		this[name] = this[name].bind(this);
-	}
+	this.clipboardTextParser = this.clipboardTextParser.bind(this);
+	this.transformPasted = this.transformPasted.bind(this);
+	view.clipboardParser.parseSlice = this.cbParseSlice.bind(this, view);
 	this.view = view;
 }
 
@@ -53,31 +54,29 @@ InputPlugin.prototype.transformPasted = function(pslice) {
 
 InputPlugin.prototype.clipboardTextParser = function(str, $context) {
 	var dom = HTMLReader.read(str);
+	return this.view.someProp("clipboardParser").parseSlice(dom, {
+		preserveWhitespace: true,
+		context: $context
+	});
+};
+
+InputPlugin.prototype.cbParseSlice = function(view, dom, opts) {
 	// TODO do something if more than one block is being pasted at once
 	var blockDom = dom.querySelector('[block-type]');
 	var type = blockDom && blockDom.getAttribute("block-type");
-	var state = this.view.state;
-	var nodeType = type && state.schema.nodes[type];
-	var opts = {
-		preserveWhitespace: true,
-		context: $context
-	};
+	var state = view.state;
+	var nodeType = type && state.schema.nodes[type]; // TODO should search schema.marks too ?
 	if (nodeType) {
 		var from = state.selection.from;
 		var pos = Transform.insertPoint(state.doc, state.selection.from, nodeType);
 		if (pos == null) return Model.Slice.empty;
 		if (pos != from) {
 			var sel = State.TextSelection.create(state.doc, pos);
-			this.view.dispatch(state.tr.setSelection(sel));
+			view.dispatch(state.tr.setSelection(sel));
 			opts.context = sel.$from;
 		}
-	} else if (dom.children.length != dom.childNodes.length) {
-		return;
 	}
-	var parser = this.view.someProp("clipboardParser")
-		|| this.view.someProp("domParser")
-		|| Model.DOMParser.fromSchema(state.schema);
-	return parser.parseSlice(dom, opts);
+	return Model.DOMParser.prototype.parseSlice.call(view.clipboardParser, dom, opts);
 };
 
 var HTMLReader = {
