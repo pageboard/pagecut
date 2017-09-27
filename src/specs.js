@@ -408,12 +408,12 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 			var prop = this.element.properties && this.element.properties[dataWhat];
 			if (prop) {
 				var val = record.target.getAttribute(record.attributeName);
-				if (type == "boolean") {
+				if (prop.type == "boolean") {
 					if (val == "true") val = true;
 					else if (val == "false") val = false;
-				} else if (type == "integer") {
+				} else if (prop.type == "integer") {
 					val = parseInt(val);
-				} else if (type == "number") {
+				} else if (prop.type == "number") {
 					val = parseFloat(val);
 				}
 				block.data[dataWhat] = val;
