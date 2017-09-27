@@ -554,10 +554,9 @@ function mutateNodeView(obj, nobj, initial) {
 			if (node.nextSibling.elementRendered || initial) parent.removeChild(node.nextSibling);
 			else node = node.nextSibling;
 		}
-		node = ncont;
-		while (node.previousSibling) {
-			node.previousSibling.elementRendered = true;
-			parent.insertBefore(node.previousSibling, cont);
+		while ((node = ncont.parentNode.firstChild) != ncont) {
+			node.elementRendered = true;
+			parent.insertBefore(node, cont);
 		}
 		node = ncont;
 		while (node.nextSibling) {
