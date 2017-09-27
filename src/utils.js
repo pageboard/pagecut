@@ -78,7 +78,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	var to = sel.to;
 	var doc = this.view.state.doc;
 
-	if (from == to) {
+	if (from == to || sel.node) {
 		var $pos = sel.$from;
 		if (!replaceableInParent && parent.isTextblock) {
 			if ($pos.parentOffset == 0) {
