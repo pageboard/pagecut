@@ -4,7 +4,7 @@ module.exports = function(view, options) {
 	var plugin = new FocusPlugin(view, options);
 	return {
 		props: {
-//			handleClick: plugin.click
+			handleClick: plugin.click // needed to focus on uneditable dom
 		},
 		appendTransaction: function(transactions, oldState, newState) {
 			// focus once per transaction
@@ -30,20 +30,43 @@ module.exports = function(view, options) {
 function FocusPlugin(view, options) {
 	this.view = view;
 
-//	this.click = this.click.bind(this);
+	this.click = this.click.bind(this);
 }
 
-//FocusPlugin.prototype.click = function(view, pos, e) {
-//	var posObj = view.posAtCoords({
-//		left: e.clientX,
-//		top: e.clientY
-//	});
-//	pos = posObj.inside < 0 ? pos : posObj.inside;
-//	var tr = view.state.tr;
-//	if (this.focus(tr, State.TextSelection.create(view.state.doc, pos))) {
-//		view.dispatch(tr);
-//	}
-//};
+function hasParent(parent, node) {
+	while (node) {
+		if (node == parent) return true;
+		node = node.parentNode;
+	}
+	return false;
+}
+
+FocusPlugin.prototype.click = function(view, pos, e) {
+	var posObj = view.posAtCoords({
+		left: e.clientX,
+		top: e.clientY
+	});
+	pos = posObj.inside < 0 ? pos : posObj.inside;
+	var dom = view.root.elementFromPoint(e.clientX, e.clientY);
+	if (!dom) return;
+	var parent = dom;
+	var nodeView;
+	while (parent) {
+		nodeView = parent.pmViewDesc;
+		if (nodeView) break;
+		parent = parent.parentNode;
+	}
+	if (!nodeView) return;
+	// now find if dom is in view.dom or view.contentDOM
+	if (!hasParent(nodeView.dom, dom) || nodeView.contentDOM && hasParent(nodeView.contentDOM, dom)) {
+		return;
+	}
+
+	var tr = view.state.tr;
+	if (this.focus(tr, State.TextSelection.create(view.state.doc, pos))) {
+		view.dispatch(tr);
+	}
+};
 
 FocusPlugin.prototype.action = function(tr, editorUpdate) {
 	var sel = tr.selection;
