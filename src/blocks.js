@@ -82,15 +82,6 @@ Blocks.prototype.mount = function(block) {
 	});
 };
 
-Blocks.prototype.unmount = function(block) {
-	var contents = block.content;
-	var copy = this.copy(block);
-	if (contents) for (var name in contents) {
-		copy.content[name] = nodeToHtml(contents[name]);
-	}
-	return copy;
-};
-
 function nodeToHtml(node) {
 	var html;
 	if (node instanceof Node) {
