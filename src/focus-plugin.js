@@ -162,7 +162,8 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	if (selectedRoot) {
 		var el = this.view.element((root.mark || root.node).attrs.block_type);
 		if (!el.inline) {
-			tr.setSelection(this.view.utils.selectTr(tr, root.rpos));
+			sel = new State.NodeSelection(tr.doc.resolve(rootPos));
+			tr.setSelection(sel);
 		}
 	}
 	return tr.setMeta('focus-plugin', parents).setMeta('focus-selection', sel);

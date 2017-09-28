@@ -341,6 +341,16 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 	this.update(node);
 }
 
+RootNodeView.prototype.selectNode = function() {
+	this.selected = true;
+	this.dom.classList.add('ProseMirror-selectednode');
+};
+
+RootNodeView.prototype.deselectNode = function() {
+	this.selected = false;
+	this.dom.classList.remove('ProseMirror-selectednode');
+};
+
 RootNodeView.prototype.update = function(node, decorations) {
 	if (this.element.name != node.attrs.block_type) {
 		return false;
@@ -383,6 +393,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 	var dom = this.view.render(block, node.attrs.block_type);
 	mutateNodeView(this, flagDom(this.element, dom), !oldBlock);
+	if (this.selected) this.selectNode();
 	if (this.contentName) {
 		if (!block.content) block.content = {};
 		if (block.content[this.contentName] != this.contentDOM) {
@@ -400,30 +411,37 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 		return false;
 	} else if (record.target == this.dom && record.type == "attributes" && record.attributeName && record.attributeName.startsWith('data-')) {
 		var block = this.view.blocks.get(this.id);
-		if (block) {
-			var dataWhat = record.attributeName.split('-').slice(1).map(function(str, i) {
-				if (i == 0) return str;
-				return str[0].toUpperCase() + str.substring(1);
-			}).join('');
-			var prop = this.element.properties && this.element.properties[dataWhat];
-			if (prop) {
-				var val = record.target.getAttribute(record.attributeName);
-				if (prop.type == "boolean") {
-					if (val == "true") val = true;
-					else if (val == "false") val = false;
-				} else if (prop.type == "integer") {
-					val = parseInt(val);
-				} else if (prop.type == "number") {
-					val = parseFloat(val);
-				}
-				block.data[dataWhat] = val;
-				var pos = this.getPos();
-				var attrs = this.view.blocks.toAttrs(block);
-				attrs.block_type = this.element.name;
-				var tr = this.view.state.tr.setNodeMarkup(pos, null, attrs);
-				this.view.dispatch(tr);
-			}
+		if (!block) return true;
+
+		var dataWhat = record.attributeName.split('-').slice(1).map(function(str, i) {
+			if (i == 0) return str;
+			return str[0].toUpperCase() + str.substring(1);
+		}).join('');
+		var prop = this.element.properties && this.element.properties[dataWhat];
+		if (!prop) return true;
+
+		var val = record.target.getAttribute(record.attributeName);
+		if (prop.type == "boolean") {
+			if (val == "true") val = true;
+			else if (val == "false") val = false;
+		} else if (prop.type == "integer") {
+			val = parseInt(val);
+		} else if (prop.type == "number") {
+			val = parseFloat(val);
 		}
+		if (block.data[dataWhat] === val) return true;
+		block.data[dataWhat] = val;
+		var pos = this.getPos();
+		var attrs = this.view.blocks.toAttrs(block);
+		attrs.block_type = this.element.name;
+		var tr = this.view.state.tr;
+		var sel = tr.selection;
+		var selectedNode = sel.from === pos && sel.node;
+		tr.setNodeMarkup(pos, null, attrs);
+		if (selectedNode) {
+			tr.setSelection(new State.NodeSelection(tr.doc.resolve(pos)));
+		}
+		this.view.dispatch(tr);
 		return true;
 	} else {
 		return true;

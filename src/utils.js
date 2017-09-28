@@ -162,7 +162,12 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 		tr.removeMark(sel.from, sel.to, root.mark);
 		tr.addMark(sel.from, sel.to, root.mark.type.create(attrs));
 	} else {
+		var sel = tr.selection;
+		var selectedNode = sel.from === pos && sel.node;
 		tr.setNodeMarkup(pos, null, attrs);
+		if (selectedNode) {
+			tr.setSelection(new State.NodeSelection(tr.doc.resolve(pos)));
+		}
 	}
 	return tr;
 };
@@ -202,6 +207,12 @@ Utils.prototype.selectTr = function(tr, obj, textSelection) {
 			if (obj instanceof Node) {
 				if (obj == this.view.dom) {
 					return new State.AllSelection(tr.doc);
+				} else if (obj.pmViewDesc) {
+					if (textSelection) {
+						return new State.TextSelection.create(tr.doc, obj.pmViewDesc.posAtStart, obj.pmViewDesc.posAtEnd);
+					} else {
+						return new State.NodeSelection(tr.doc.resolve(obj.pmViewDesc.posBefore));
+					}
 				} else {
 					pos = this.posFromDOM(obj);
 				}
