@@ -271,12 +271,14 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 				item.node.setAttribute('block-type', item.type);
 			}
 		});
-		if (el.contents[name].ignore) {
-			delete parent.content[name];
-		} else {
-			parent.content[name] = nodeToHtml(content);
-		}
+		parent.content[name] = nodeToHtml(content);
 	}, this);
+
+	if (parent.content && contentKeys) Object.keys(parent.content).forEach(function(name) {
+		if (!el.contents[name]) {
+			delete parent.content[name];
+		}
+	});
 
 	if (el.inline && contentKeys && contentKeys.length) {
 		var hasContent = false;
