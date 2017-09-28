@@ -274,11 +274,12 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 		parent.content[name] = nodeToHtml(content);
 	}, this);
 
-	if (parent.content && contentKeys) Object.keys(parent.content).forEach(function(name) {
-		if (!el.contents[name]) {
-			delete parent.content[name];
-		}
-	});
+	if (parent.content && contentKeys) {
+		Object.keys(parent.content).forEach(function(name) {
+			if (!el.contents[name]) delete parent.content[name];
+		});
+		if (Object.keys(parent.content).length == 0) delete parent.content;
+	}
 
 	if (el.inline && contentKeys && contentKeys.length) {
 		var hasContent = false;
