@@ -380,7 +380,8 @@ RootNodeView.prototype.update = function(node, decorations) {
 	if (sameData && sameFocus) {
 		// no point in calling render
 		if (oldBlock && this.dom.update) {
-			setTimeout(this.dom.update.bind(this.dom));
+			// i don't understand why this was here in the first place
+			// setTimeout(this.dom.update.bind(this.dom), 30);
 		}
 		return true;
 	}
