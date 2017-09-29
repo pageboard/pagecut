@@ -15,6 +15,29 @@ function InputPlugin(view, options) {
 	this.view = view;
 }
 
+InputPlugin.prototype.handleClick = function(view, pos, e) {
+	// if pos is not a text node, select that node
+	var posObj = view.posAtCoords({
+		left: e.clientX,
+		top: e.clientY
+	});
+	pos = posObj.inside < 0 ? pos : posObj.inside;
+	var tr = view.state.tr;
+	var root = view.utils.parents(tr, pos, false, true);
+	if (!root) return;
+	root = root.root;
+	pos = root && root.level && root.rpos.before(root.level);
+	var rpos = tr.doc.resolve(pos);
+	if (rpos.nodeAfter && rpos.nodeAfter.isTextblock == false) {
+		view.dispatch(
+			tr.setSelection(
+				new State.NodeSelection(rpos)
+			)
+		);
+		return true;
+	}
+};
+
 InputPlugin.prototype.handleTextInput = function(view, from, to, text) {
 	var tr = view.state.tr;
 	// return true to disable default insertion
