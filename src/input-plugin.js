@@ -25,7 +25,8 @@ InputPlugin.prototype.handleClick = function(view, pos, e) {
 	var tr = view.state.tr;
 	var root = view.utils.parents(tr, pos, false, true);
 	if (!root) return;
-	root = root.root;
+	if (root.container && root.container.node.isTextblock) root = root.container;
+	else root = root.root;
 	pos = root && root.level && root.rpos.before(root.level);
 	var rpos = tr.doc.resolve(pos);
 	if (rpos.nodeAfter && rpos.nodeAfter.isTextblock == false) {
