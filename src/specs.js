@@ -401,7 +401,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 		}
 	}
 	if (oldBlock && this.dom.update) {
-		this.dom.update();
+		setTimeout(this.dom.update.bind(this.dom), 21);
 	}
 	return true;
 };
