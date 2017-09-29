@@ -435,12 +435,7 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 		var attrs = this.view.blocks.toAttrs(block);
 		attrs.block_type = this.element.name;
 		var tr = this.view.state.tr;
-		var sel = tr.selection;
-		var selectedNode = sel.from === pos && sel.node;
 		tr.setNodeMarkup(pos, null, attrs);
-		if (selectedNode) {
-			tr.setSelection(new State.NodeSelection(tr.doc.resolve(pos)));
-		}
 		this.view.dispatch(tr);
 		return true;
 	} else {
