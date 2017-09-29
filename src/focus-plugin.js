@@ -47,6 +47,21 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		top: e.clientY
 	});
 	pos = posObj.inside < 0 ? pos : posObj.inside;
+	var tr = view.state.tr;
+
+	var root = view.utils.parents(tr, pos, false, true);
+	if (root) {
+		if (root.container && root.container.node.isTextblock) root = root.container;
+		else root = root.root;
+		pos = root && root.level && root.rpos.before(root.level);
+		var rpos = tr.doc.resolve(pos);
+		if (rpos.nodeAfter && rpos.nodeAfter.isTextblock == false) {
+			tr.setSelection(
+				new State.NodeSelection(rpos)
+			)
+		}
+	}
+
 	var dom = view.root.elementFromPoint(e.clientX, e.clientY);
 	if (!dom) return;
 	var parent = dom;
@@ -62,7 +77,6 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		return;
 	}
 
-	var tr = view.state.tr;
 	if (this.focus(tr, State.TextSelection.create(view.state.doc, pos))) {
 		view.dispatch(tr);
 	}
