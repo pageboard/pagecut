@@ -155,6 +155,7 @@ Blocks.prototype.from = function(blocks, overrideType) {
 		// it's a map of blocks, we need to find the root block
 		var id = view.dom.getAttribute('block-id');
 		if (!id) {
+			// can't rely on id plugin until view.dom changes are applied by a Step instance
 			id = this.genId();
 			view.dom.setAttribute('block-id', id);
 		}
@@ -175,10 +176,6 @@ Blocks.prototype.from = function(blocks, overrideType) {
 		if (!overrideType) {
 			// mount() might change block.type, this ensures block will be rendered correctly
 			overrideType = block.type;
-		}
-		if (block.id === undefined) {
-			block.id = this.genId();
-			store[block.id] = block;
 		}
 		if (block.children) {
 			block.children.forEach(function(child) {
@@ -358,36 +355,6 @@ Blocks.prototype.set = function(data) {
 Blocks.prototype.genId = function() {
 	// weak and simple unique id generator
 	return Date.now() + Math.round(Math.random() * 1e4) + '';
-};
-
-Blocks.prototype.idPlugin = function() {
-	var me = this;
-	return {
-		appendTransaction: function(trs, oldState, newState) {
-			var ids = {};
-			var tr = newState.tr;
-			var modified = false;
-			newState.doc.descendants(function(node, pos) {
-				var id = node.attrs.block_id;
-				if (id) {
-					if (ids[id]) {
-						var newId = me.genId();
-						var block = me.fromAttrs(node.attrs);
-						block.id = newId;
-						me.set(block);
-						tr.setNodeMarkup(pos, null, Object.assign({}, node.attrs, {
-							block_id: newId
-						}));
-						ids[newId] = true;
-						modified = true;
-					} else {
-						ids[id] = true;
-					}
-				}
-			});
-			if (modified) return tr;
-		}
-	};
 };
 
 Blocks.prototype.domQuery = function(id, opts) {

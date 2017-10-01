@@ -14,6 +14,7 @@ var listSchema = require("prosemirror-schema-list");
 
 var UrlRegex = require('url-regex');
 
+var IdPlugin = require("./id-plugin");
 var FocusPlugin = require("./focus-plugin");
 var KeymapPlugin = require("./keymap-plugin");
 var InputPlugin = require("./input-plugin");
@@ -138,10 +139,10 @@ function Editor(opts) {
 	this.clipboardParser = new Model.DOMParser(this.schema, cbParserRules);
 
 	this.plugins.push(
+		IdPlugin,
 		KeymapPlugin,
 		FocusPlugin,
 		InputPlugin,
-		this.blocks.idPlugin(),
 //		require("./test-plugin"),
 //	function(editor) {
 //		return Input.inputRules({
