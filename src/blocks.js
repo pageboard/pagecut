@@ -278,7 +278,7 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 
 	if (parent.content && contentKeys) {
 		Object.keys(parent.content).forEach(function(name) {
-			if (!el.contents[name]) delete parent.content[name];
+			if (!el.contents[name] || el.contents[name].virtual) delete parent.content[name];
 		});
 		if (Object.keys(parent.content).length == 0) delete parent.content;
 	}
