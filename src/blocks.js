@@ -243,7 +243,7 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 			block = this.store[id];
 			if (!block) {
 				node.parentNode.removeChild(node);
-				console.warn("block not found", id, "while serializing");
+				console.warn("block", type, "not found", id, "while serializing");
 				continue;
 			}
 			div = content.ownerDocument.createElement(node.nodeName);
