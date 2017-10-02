@@ -219,6 +219,7 @@ Blocks.prototype.from = function(blocks, overrideType) {
 
 Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 	var el = this.view.element(overrideType || parent.type);
+
 	var contentKeys = (!el.contents || typeof el.contents == "string")
 		? null : Object.keys(el.contents);
 
@@ -271,6 +272,10 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 		parent.content[name] = nodeToHtml(content);
 	}, this);
 
+	if (el.unmount) {
+		parent = el.unmount(parent, this) || parent;
+	}
+
 	if (parent.content && contentKeys) {
 		Object.keys(parent.content).forEach(function(name) {
 			if (!el.contents[name]) delete parent.content[name];
@@ -294,7 +299,6 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 
 	blocks[parent.id] = parent;
 
-	if (el.unmount) parent = el.unmount(parent, this) || parent;
 	return parent;
 }
 
