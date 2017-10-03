@@ -394,7 +394,9 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 	var dom = this.view.render(block, node.attrs.block_type);
 	mutateNodeView(this, flagDom(this.element, dom), !oldBlock);
-	if (this.selected) this.selectNode();
+	if (this.selected) {
+		this.selectNode();
+	}
 	if (this.contentName) {
 		if (!block.content) block.content = {};
 		if (block.content[this.contentName] != this.contentDOM) {

@@ -55,15 +55,19 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		else root = root.root;
 		pos = root && root.level && root.rpos.before(root.level);
 		var rpos = tr.doc.resolve(pos);
-		if (rpos.nodeAfter && rpos.nodeAfter.isTextblock == false) {
-			tr.setSelection(
-				new State.NodeSelection(rpos)
-			)
+		if (tr.selection.node == root.node) {
+			tr.setSelection(new State.TextSelection(rpos));
+		} else if (rpos.nodeAfter && rpos.nodeAfter.isTextblock == false && root.node.attrs.block_focused == "last") {
+			tr.setSelection(new State.NodeSelection(rpos));
 		}
+		view.dispatch(tr);
 	}
+	tr = view.state.tr;
 
 	var dom = view.root.elementFromPoint(e.clientX, e.clientY);
-	if (!dom) return;
+	if (!dom) {
+		return;
+	}
 	var parent = dom;
 	var nodeView;
 	while (parent) {
@@ -71,9 +75,11 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		if (nodeView) break;
 		parent = parent.parentNode;
 	}
-	if (!nodeView) return;
+	if (!nodeView) {
+		return;
+	}
 	// now find if dom is in view.dom or view.contentDOM
-	if (!hasParent(nodeView.dom, dom) || nodeView.contentDOM && hasParent(nodeView.contentDOM, dom)) {
+	if (!hasParent(nodeView.dom, dom) || nodeView.contentDOM && nodeView.contentDOM != nodeView.dom && hasParent(nodeView.contentDOM, dom)) {
 		return;
 	}
 
