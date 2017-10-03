@@ -164,6 +164,10 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 	} else {
 		var sel = tr.selection;
 		var selectedNode = sel.from === pos && sel.node;
+		if (!attrs.block_id && root.node.attrs.block_focused) {
+			// block.focused cannot be stored here since it is inplace
+			attrs.block_focused = root.node.attrs.block_focused;
+		}
 		tr.setNodeMarkup(pos, null, attrs);
 		if (selectedNode) {
 			tr.setSelection(new State.NodeSelection(tr.doc.resolve(pos)));
