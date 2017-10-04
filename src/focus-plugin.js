@@ -79,7 +79,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		return;
 	}
 	// now find if dom is in view.dom or view.contentDOM
-	if (!hasParent(nodeView.dom, dom) || nodeView.contentDOM && nodeView.contentDOM != nodeView.dom && hasParent(nodeView.contentDOM, dom)) {
+	if (!hasParent(nodeView.dom, dom) || nodeView.contentDOM && hasParent(nodeView.contentDOM, dom)) {
 		return;
 	}
 
