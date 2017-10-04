@@ -212,8 +212,8 @@ Utils.prototype.selectTr = function(tr, obj, textSelection) {
 				if (obj == this.view.dom) {
 					return new State.AllSelection(tr.doc);
 				} else if (obj.pmViewDesc) {
-					if (textSelection) {
-						return new State.TextSelection.create(tr.doc, obj.pmViewDesc.posAtStart, obj.pmViewDesc.posAtEnd);
+					if (textSelection || obj.pmViewDesc.mark) {
+						return State.TextSelection.create(tr.doc, obj.pmViewDesc.posAtStart, obj.pmViewDesc.posAtEnd);
 					} else {
 						return new State.NodeSelection(tr.doc.resolve(obj.pmViewDesc.posBefore));
 					}
