@@ -55,12 +55,10 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		else root = root.root;
 		pos = root && root.level && root.rpos.before(root.level);
 		var rpos = tr.doc.resolve(pos);
-		if (tr.selection.node == root.node) {
+		if (tr.selection.node) {
 			tr.setSelection(new State.TextSelection(rpos));
-		} else if (rpos.nodeAfter && rpos.nodeAfter.isTextblock == false && root.node.attrs.block_focused == "last") {
-			tr.setSelection(new State.NodeSelection(rpos));
+			view.dispatch(tr);
 		}
-		view.dispatch(tr);
 	}
 	tr = view.state.tr;
 
@@ -82,7 +80,6 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 	if (!hasParent(nodeView.dom, dom) || nodeView.contentDOM && hasParent(nodeView.contentDOM, dom)) {
 		return;
 	}
-
 	if (this.focus(tr, State.TextSelection.create(view.state.doc, pos))) {
 		view.dispatch(tr);
 	}
