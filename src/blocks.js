@@ -87,6 +87,9 @@ function nodeToHtml(node) {
 	if (node instanceof Node) {
 		html = "";
 		var child;
+		while (child = node.querySelector('br:not([contenteditable])')) {
+			child.remove();
+		}
 		for (var i=0; i < node.childNodes.length; i++) {
 			child = node.childNodes[i];
 			if (child.nodeType == Node.TEXT_NODE) html += child.nodeValue;
