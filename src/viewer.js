@@ -4,7 +4,7 @@ var Blocks = require('./blocks');
 
 function Viewer(opts) {
 	if (!opts) opts = {};
-	this.doc = opts.document || document.implementation.createHTMLDocument();
+	this.doc = opts.document || document.cloneNode();
 	var map = this.elementsMap = opts.elements || {};
 	if (!map.fragment) map.fragment = {
 		contents: {
