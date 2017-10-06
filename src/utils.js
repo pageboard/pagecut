@@ -77,37 +77,21 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	var to = sel.to;
 	var doc = this.view.state.doc;
 
+	var fromto = from;
 	if (from == to || sel.node) {
 		var $pos = sel.$to;
-		if (parent.isTextblock) {
-			if ($pos.parentOffset == 0) {
-				from = $pos.before();
-			} else if ($pos.parentOffset == $pos.parent.nodeSize - 2) {
-				from = $pos.after();
-			} else {
-//				tr.split(from).insert(from + 1, slice.content);
-				tr.replaceRange(from, from, slice);
-				return from + 1;
-			}
-		} else {
-			// insert after otherwise
-			if (sel.$from.nodeAfter) {
-				from = from + sel.$from.nodeAfter.nodeSize;
-			} else if (parent.isTextblock) {
-				if ($pos.parentOffset == 0) {
-					from = $pos.before();
-				} else if ($pos.parentOffset == $pos.parent.nodeSize - 2) {
-					from = $pos.after();
-				}
-				tr.replaceRange(from, from, slice);
-				return from + 1;
-			}
+		var depth = $pos.resolveDepth();
+		if ($pos.parentOffset == $pos.parent.nodeSize - 2 && depth) {
+			fromto = to = from = $pos.after();
+		} else if ($pos.parentOffset == 0 && depth) {
+			fromto = to = from = $pos.before();
+		} else if (parent.isTextblock) {
+			to = from;
+			fromto = from + 1;
 		}
-		tr.replaceRange(from, from, slice);
-	} else {
-		tr.replaceRange(from, to, slice);
 	}
-	return from;
+	tr.replaceRange(from, to, slice);
+	return fromto;
 };
 
 function normalizeSiblings(slice, $context) {
