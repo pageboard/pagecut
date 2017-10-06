@@ -14,7 +14,7 @@ clean:
 	rm -rf dist/*
 
 ts:
-	tsc --allowJs --checkJs --noEmit --lib es2015,dom src/editor.js
+	./node_modules/.bin/tsc --allowJs --checkJs --noEmit --lib es2015,dom src/editor.js
 
 predist:
 	mkdir -p dist/
