@@ -83,7 +83,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		var canBefore = !nodeType || depth && this.canInsert(doc.resolve(before), nodeType);
 		var canAfter = !nodeType || depth && this.canInsert(doc.resolve(after), nodeType);
 		var canInplace = !nodeType || depth && this.canInsert(sel.$from, nodeType);
-		var atEnd = $pos.parentOffset == $pos.parent.nodeSize;
+		var atEnd = $pos.parentOffset == $pos.parent.nodeSize - 2;
 		var atStart = $pos.parentOffset == 0;
 		if (parent.isTextblock && canInplace) {
 			if (!atEnd && !atStart) tr.split(from);
