@@ -82,15 +82,20 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		var before = depth && $pos.before();
 		var canBefore = !nodeType || depth && this.canInsert(doc.resolve(before), nodeType);
 		var canAfter = !nodeType || depth && this.canInsert(doc.resolve(after), nodeType);
-		if (parent.isTextblock) {
-			to = from;
-			fromto = from + 1;
-		} else if ($pos.parentOffset == $pos.parent.nodeSize - 2 && canAfter) {
-			fromto = to = from = $pos.after();
-		} else if ($pos.parentOffset == 0 && canBefore) {
-			fromto = to = from = $pos.before();
+		var canInplace = !nodeType || depth && this.canInsert(sel.$from, nodeType);
+		var atEnd = $pos.parentOffset == $pos.parent.nodeSize;
+		var atStart = $pos.parentOffset == 0;
+		if (parent.isTextblock && canInplace) {
+			if (!atEnd && !atStart) tr.split(from);
+			if (atStart && !atEnd) fromto = from - 1;
+			else fromto = from + 1;
+		} else if (atEnd && canAfter) {
+			fromto = $pos.after();
+		} else if (atStart && canBefore) {
+			fromto = $pos.before();
 		} else {
 		}
+		to = from = fromto;
 	} else {
 	}
 	tr.replaceRange(from, to, slice);
