@@ -2,6 +2,7 @@ var State = require("prosemirror-state");
 var Model = require("prosemirror-model");
 var Commands = require("prosemirror-commands");
 var Slice = Model.Slice;
+var Fragment = Model.Fragment;
 
 module.exports = Utils;
 
