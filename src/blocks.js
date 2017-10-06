@@ -380,7 +380,7 @@ Blocks.prototype.domQuery = function(id, opts) {
 			sel += '[block-focused]';
 		}
 	} else if (!id) {
-		throw new Error("domQuery expects at least id or opts.focused to be set", id, opts);
+		throw new Error("domQuery expects at least id or opts.focused to be set " + id);
 	}
 	var nodes = Array.from(rootDom.querySelectorAll(sel));
 	if (opts.all) return nodes;

@@ -348,12 +348,12 @@ Utils.prototype.replaceTr = function(tr, by, sel, textSelection) {
 };
 
 Utils.prototype.remove = function(src) {
-	var tr = this.removeTr(src);
+	var tr = this.removeTr(this.view.state.tr, src);
 	if (!tr) console.error("Cannot remove", src);
 	else this.view.dispatch(tr);
 };
 
-Utils.prototype.removeTr = function(src) {
+Utils.prototype.removeTr = function(tr, src) {
 	var sel = this.selectTr(tr, src);
 	if (!sel) return false;
 	return this.deleteTr(tr, sel);
