@@ -1,6 +1,7 @@
 var State = require("prosemirror-state");
 var Model = require("prosemirror-model");
 var Commands = require("prosemirror-commands");
+var Slice = Model.Slice;
 
 module.exports = Utils;
 
@@ -61,32 +62,31 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		dom = this.view.render(dom);
 	}
 	var type = dom.nodeType == Node.ELEMENT_NODE && dom.getAttribute('block-type');
-	var opts = {};
+	var opts = {
+		context: sel.$to
+	};
 	var parent = sel.$from.parent;
 	var nodeType = type && this.view.state.schema.nodes[type];
-	var replaceableInParent = nodeType && this.canInsert(sel.$from, nodeType);
+	var replaceableInParent = nodeType && this.canInsert(sel.$to, nodeType);
 	if (replaceableInParent) {
-		opts.topNode = replaceableInParent;
+//		opts.topNode = replaceableInParent;
 	}
-	var frag = this.parse(dom, opts);
-	var node;
-	if (frag.content.length == 1) {
-		node = frag.content[0];
-	}
+	var slice = this.parse(dom, opts);
 
 	var from = sel.from;
 	var to = sel.to;
 	var doc = this.view.state.doc;
 
 	if (from == to || sel.node) {
-		var $pos = sel.$from;
-		if (!replaceableInParent && parent.isTextblock) {
+		var $pos = sel.$to;
+		if (parent.isTextblock) {
 			if ($pos.parentOffset == 0) {
 				from = $pos.before();
 			} else if ($pos.parentOffset == $pos.parent.nodeSize - 2) {
 				from = $pos.after();
 			} else {
-				tr.split(from).insert(from + 1, frag);
+//				tr.split(from).insert(from + 1, slice.content);
+				tr.replaceRange(from, from, slice);
 				return from + 1;
 			}
 		} else {
@@ -99,16 +99,66 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 				} else if ($pos.parentOffset == $pos.parent.nodeSize - 2) {
 					from = $pos.after();
 				}
-				tr.insert(from, frag);
-				return from;
+				tr.replaceRange(from, from, slice);
+				return from + 1;
 			}
 		}
-		tr.replaceRangeWith(from, from, frag);
+		tr.replaceRange(from, from, slice);
 	} else {
-		tr.replaceRangeWith(from, to, frag);
+		tr.replaceRange(from, to, slice);
 	}
 	return from;
 };
+
+function normalizeSiblings(slice, $context) {
+	if (slice.content.childCount < 2) return slice
+	for (let d = $context.depth; d >= 0; d--) {
+		let parent = $context.node(d)
+		let match = parent.contentMatchAt($context.index(d))
+		let lastWrap, result = []
+		slice.content.forEach(node => {
+			if (!result) return
+			let wrap = match.findWrapping(node.type), inLast
+			if (!wrap) return result = null
+			if (inLast = result.length && lastWrap.length && addToSibling(wrap, lastWrap, node, result[result.length - 1], 0)) {
+				result[result.length - 1] = inLast
+			} else {
+				if (result.length) result[result.length - 1] = closeRight(result[result.length - 1], lastWrap.length)
+				let wrapped = withWrappers(node, wrap)
+				result.push(wrapped)
+				match = match.matchType(wrapped.type, wrapped.attrs)
+				lastWrap = wrap
+			}
+		})
+		if (result) return Slice.maxOpen(Fragment.from(result))
+	}
+	return slice
+}
+
+function withWrappers(node, wrap, from = 0) {
+	for (let i = wrap.length - 1; i >= from; i--)
+		node = wrap[i].create(null, Fragment.from(node))
+	return node
+}
+
+// Used to group adjacent nodes wrapped in similar parents by
+// normalizeSiblings into the same parent node
+function addToSibling(wrap, lastWrap, node, sibling, depth) {
+	if (depth < wrap.length && depth < lastWrap.length && wrap[depth] == lastWrap[depth]) {
+		let inner = addToSibling(wrap, lastWrap, node, sibling.lastChild, depth + 1)
+		if (inner) return sibling.copy(sibling.content.replaceChild(sibling.childCount - 1, inner))
+		let match = sibling.contentMatchAt(sibling.childCount)
+		if (match.matchType(depth == wrap.length - 1 ? node.type : wrap[depth + 1]))
+			return sibling.copy(sibling.content.append(Fragment.from(withWrappers(node, wrap, depth + 1))))
+	}
+}
+
+function closeRight(node, depth) {
+	if (depth == 0) return node
+	let fragment = node.content.replaceChild(node.childCount - 1, closeRight(node.lastChild, depth - 1))
+	let fill = node.contentMatchAt(node.childCount).fillBefore(Fragment.empty, true)
+	return node.copy(fragment.append(fill))
+}
 
 Utils.prototype.delete = function(sel) {
 	var tr = this.view.state.tr;
@@ -130,9 +180,33 @@ Utils.prototype.parse = function(dom, opts) {
 		parent.appendChild(dom);
 		dom = parent;
 	}
-	var node = this.view.parser.parse(dom, opts);
-	return node.content;
+	var slice = this.view.parser.parseSlice(dom, opts);
+	slice = closeIsolatingStart(slice);
+	slice = normalizeSiblings(slice, opts.context);
+
+	return slice;
 };
+
+
+function closeIsolatingStart(slice) {
+  let closeTo = 0, frag = slice.content
+  for (let i = 1; i <= slice.openStart; i++) {
+    let node = frag.firstChild
+    if (node.type.spec.isolating) { closeTo = i; break }
+    frag = node.content
+  }
+
+  if (closeTo == 0) return slice
+  return new Slice(closeFragment(slice.content, closeTo, slice.openEnd), slice.openStart - closeTo, slice.openEnd)
+}
+
+function closeFragment(frag, n, openEnd) {
+  if (n == 0) return frag
+  let node = frag.firstChild
+  let content = closeFragment(node.content, n - 1, openEnd - 1)
+  let fill = node.contentMatchAt(0).fillBefore(node.content, openEnd <= 0)
+  return frag.replaceChild(0, node.copy(fill.append(content)))
+}
 
 Utils.prototype.refresh = function(dom, block) {
 	var tr = this.refreshTr(this.view.state.tr, dom, block);
