@@ -66,29 +66,32 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		context: sel.$to
 	};
 	var parent = sel.$from.parent;
-	var nodeType = type && this.view.state.schema.nodes[type];
-	var replaceableInParent = nodeType && this.canInsert(sel.$to, nodeType);
-	if (replaceableInParent) {
-//		opts.topNode = replaceableInParent;
-	}
 	var slice = this.parse(dom, opts);
 
 	var from = sel.from;
 	var to = sel.to;
 	var doc = this.view.state.doc;
 
+	var nodeType = type && this.view.state.schema.nodes[type];
+
 	var fromto = from;
 	if (from == to || sel.node) {
 		var $pos = sel.$to;
 		var depth = $pos.resolveDepth();
-		if ($pos.parentOffset == $pos.parent.nodeSize - 2 && depth) {
-			fromto = to = from = $pos.after();
-		} else if ($pos.parentOffset == 0 && depth) {
-			fromto = to = from = $pos.before();
-		} else if (parent.isTextblock) {
+		var after = depth && $pos.after();
+		var before = depth && $pos.before();
+		var canBefore = !nodeType || depth && this.canInsert(doc.resolve(before), nodeType);
+		var canAfter = !nodeType || depth && this.canInsert(doc.resolve(after), nodeType);
+		if (parent.isTextblock) {
 			to = from;
 			fromto = from + 1;
+		} else if ($pos.parentOffset == $pos.parent.nodeSize - 2 && canAfter) {
+			fromto = to = from = $pos.after();
+		} else if ($pos.parentOffset == 0 && canBefore) {
+			fromto = to = from = $pos.before();
+		} else {
 		}
+	} else {
 	}
 	tr.replaceRange(from, to, slice);
 	return fromto;
