@@ -41,30 +41,41 @@ function define(view, elt, schema, views) {
 				return child.name;
 			}).join(" ");
 		} else if (elt.contents) {
-			if (typeof elt.contents != "string") {
-				var contentName = (obj.contentDOM || obj.dom).getAttribute('block-content');
+			var contentName = (obj.contentDOM || obj.dom).getAttribute('block-content');
+			var contents = elt.contents;
+			if (typeof contents != "string") {
 				if (!contentName) {
-					var specKeys = Object.keys(elt.contents);
-					if (specKeys.length == 1) {
-						contentName = specKeys[0];
-					} else if (specKeys.length > 1) {
-						console.warn(`element ${elt.name} cannot choose a default block-content among`, elt.contents, obj);
+					var contentKeys = Object.keys(contents);
+					if (contentKeys.length == 1) {
+						contentName = contentKeys[0];
+					} else if (contentKeys.length > 1) {
+						console.warn(`element ${elt.name} has no sane default block-content`, contents, obj);
+						return;
+					} else {
+						// no contents
 						return;
 					}
 				}
 				if (contentName) {
-					if (!elt.contents[contentName]) {
+					var contentSpec = contents[contentName];
+					if (!contentSpec) {
 						console.warn(`element ${elt.name} has no matching contents`, contentName);
 						return;
 					} else {
-						var specStr = elt.contents[contentName];
-						if (typeof specStr != "string" && specStr.spec) specStr = specStr.spec;
-						spec.content = specStr;
+						spec.contentName = contentName;
+						if (typeof contentSpec != "string" && contentSpec.spec) contentSpec = contentSpec.spec;
+						spec.content = contentSpec;
 					}
+				} else {
+					// else cannot happen at this point
+					throw new Error("FIXME");
 				}
 			} else {
-				if (!elt.inplace) console.error("contents can be a string spec only for inplace element", elt);
-				else spec.content = elt.contents;
+				if (!elt.inplace) {
+					console.error("contents can be a string spec only for inplace element", elt);
+				} else {
+					spec.content = contents;
+				}
 			}
 		}
 
@@ -296,14 +307,6 @@ function createContainerSpec(view, elt, obj) {
 function setupView(me) {
 	me.dom = me.domModel.cloneNode(true);
 	me.contentDOM = findContent(me.element, me.dom);
-
-	if (me.contentDOM) {
-		me.contentName = me.contentDOM.getAttribute('block-content');
-		if (!me.contentName && typeof me.element.contents != "string") {
-			var contentKeys = Object.keys(me.element.contents);
-			if (contentKeys.length == 1) me.contentName = contentKeys[0];
-		}
-	}
 }
 
 function RootNodeView(elt, domModel, node, view, getPos) {
@@ -398,10 +401,10 @@ RootNodeView.prototype.update = function(node, decorations) {
 	if (this.selected) {
 		this.selectNode();
 	}
-	if (this.contentName) {
+	if (node.type.spec.contentName) {
 		if (!block.content) block.content = {};
-		if (block.content[this.contentName] != this.contentDOM) {
-			block.content[this.contentName] = this.contentDOM;
+		if (block.content[node.type.spec.contentName] != this.contentDOM) {
+			block.content[node.type.spec.contentName] = this.contentDOM;
 		}
 	}
 	if (oldBlock && this.dom.update) {
@@ -481,10 +484,10 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 		console.warn("container has no root node id", this, node);
 		return false;
 	}
-	if (this.contentName) {
+	if (node.type.spec.contentName) {
 		if (!block.content) block.content = {};
-		if (block.content[this.contentName] != this.contentDOM) {
-			block.content[this.contentName] = this.contentDOM;
+		if (block.content[node.type.spec.contentName] != this.contentDOM) {
+			block.content[node.type.spec.contentName] = this.contentDOM;
 		}
 	}
 	return true;
