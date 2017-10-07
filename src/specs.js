@@ -250,6 +250,7 @@ function createWrapSpec(view, elt, obj) {
 		typeName: "wrap",
 		attrs: defaultSpecAttrs,
 		parseDOM: [parseRule],
+		defining: obj.dom == obj.contentDOM,
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
 		},
