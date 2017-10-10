@@ -180,25 +180,23 @@ Utils.prototype.parse = function(dom, opts) {
 	return slice;
 };
 
-
 function closeIsolatingStart(slice) {
-  let closeTo = 0, frag = slice.content
-  for (let i = 1; i <= slice.openStart; i++) {
-    let node = frag.firstChild
-    if (node.type.spec.isolating) { closeTo = i; break }
-    frag = node.content
-  }
-
-  if (closeTo == 0) return slice
-  return new Slice(closeFragment(slice.content, closeTo, slice.openEnd), slice.openStart - closeTo, slice.openEnd)
+	let closeTo = 0, frag = slice.content
+	for (let i = 1; i <= slice.openStart; i++) {
+		let node = frag.firstChild
+		if (node.type.spec.isolating) { closeTo = i; break }
+		frag = node.content
+	}
+	if (closeTo == 0) return slice
+	return new Slice(closeFragment(slice.content, closeTo, slice.openEnd), slice.openStart - closeTo, slice.openEnd)
 }
 
 function closeFragment(frag, n, openEnd) {
-  if (n == 0) return frag
-  let node = frag.firstChild
-  let content = closeFragment(node.content, n - 1, openEnd - 1)
-  let fill = node.contentMatchAt(0).fillBefore(node.content, openEnd <= 0)
-  return frag.replaceChild(0, node.copy(fill.append(content)))
+	if (n == 0) return frag
+	let node = frag.firstChild
+	let content = closeFragment(node.content, n - 1, openEnd - 1)
+	let fill = node.contentMatchAt(0).fillBefore(node.content, openEnd <= 0)
+	return frag.replaceChild(0, node.copy(fill.append(content)))
 }
 
 Utils.prototype.refresh = function(dom, block) {
