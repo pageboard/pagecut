@@ -53,6 +53,9 @@ InputPlugin.prototype.transformPasted = function(pslice) {
 };
 
 InputPlugin.prototype.clipboardTextParser = function(str, $context) {
+	if (str instanceof Model.Slice) {
+		return str;
+	}
 	var dom = HTMLReader.read(str);
 	return this.view.someProp("clipboardParser").parseSlice(dom, {
 		preserveWhitespace: true,

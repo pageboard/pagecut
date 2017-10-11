@@ -1,6 +1,7 @@
 var State = require("prosemirror-state");
 var Model = require("prosemirror-model");
 var Commands = require("prosemirror-commands");
+var View = require("prosemirror-view");
 var Slice = Model.Slice;
 var Fragment = Model.Fragment;
 
@@ -174,10 +175,8 @@ Utils.prototype.parse = function(dom, opts) {
 		dom = parent;
 	}
 	var slice = this.view.parser.parseSlice(dom, opts);
-	slice = closeIsolatingStart(slice);
-	slice = normalizeSiblings(slice, opts.context);
-
-	return slice;
+	// parseFromClipboard calls clipboardTextParser which returns the slice untouched
+	return View.__parseFromClipboard(this.view, slice, null, null, opts.context);
 };
 
 function closeIsolatingStart(slice) {
