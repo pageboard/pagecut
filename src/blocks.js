@@ -61,13 +61,13 @@ Blocks.prototype.mount = function(block) {
 	if (contents) for (var name in contents) {
 		content = contents[name];
 		if (content instanceof Node) {
-			frag = content;
-		} else {
-			div = view.doc.createElement("div");
-			div.innerHTML = content;
-			frag = view.doc.createDocumentFragment();
-			while (div.firstChild) frag.appendChild(div.firstChild);
+			console.warn("A block should not be mounted twice");
+			content = content.innerHTML;
 		}
+		div = view.doc.createElement("div");
+		div.innerHTML = content;
+		frag = view.doc.createDocumentFragment();
+		while (div.firstChild) frag.appendChild(div.firstChild);
 		copy.content[name] = frag;
 	}
 	var el = view.element(copy.type);
@@ -129,33 +129,36 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 		if (!node) return;
 		var content = contents[name];
 		if (!content) return;
-		node.appendChild(node.ownerDocument.importNode(content, true));
+		if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
+			node.appendChild(node.ownerDocument.importNode(content, true));
+		} else {
+			console.warn("cannot merge content", content);
+		}
 	});
 	else if (Object.keys(block.content).length) {
 		console.warn("Cannot mount block", block);
 	}
 };
 
-Blocks.prototype.from = function(blocks, overrideType) {
+Blocks.prototype.from = function(blocks) {
 	// blocks can be a block or a map of blocks
 	// if it's a block, it can have a 'children' property
-	var p = Promise.resolve();
 	var self = this;
 	var view = this.view;
+	var store = {};
 
 	var frag = "";
+	var block;
 	if (typeof blocks == "string") {
 		frag = blocks
 		blocks = null;
+	} else if (blocks.type) {
+		block = blocks;
+		blocks = null;
 	}
 	if (!blocks) blocks = {};
-	var block;
-	var store = this.store;
-	if (blocks.type === undefined) {
-		if (blocks != store) {
-			store = this.store = Object.assign({}, blocks); // copy blocks
-		}
-		// it's a map of blocks, we need to find the root block
+	// it's a map of blocks, we need to find the root block
+	if (!block) {
 		var id = view.dom.getAttribute('block-id');
 		if (!id) {
 			// can't rely on id plugin until view.dom changes are applied by a Step instance
@@ -173,26 +176,34 @@ Blocks.prototype.from = function(blocks, overrideType) {
 			};
 			block.content[contentName] = frag;
 		}
-	} else {
-		// it's a block
-		block = blocks;
-		if (!overrideType) {
-			// mount() might change block.type, this ensures block will be rendered correctly
-			overrideType = block.type;
-		}
-		if (block.children) {
-			block.children.forEach(function(child) {
-				store[child.id] = child;
-			});
-			// children can be consumed once only
-			delete block.children;
-		}
 	}
+	return this.parseFrom(block, blocks, store).then(function(result) {
+		self.store = store;
+		return result;
+	});
+};
 
-	return p.then(function() {
+Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
+	var view = this.view;
+	var self = this;
+
+	if (!overrideType) {
+		// mount() might change block.type, this ensures block will be rendered correctly
+		overrideType = block.type;
+	}
+	if (block.children) {
+		block.children.forEach(function(child) {
+			blocks[child.id] = child;
+		});
+		// children can be consumed once only
+		delete block.children;
+	}
+	return Promise.resolve().then(function() {
 		return self.mount(block);
 	}).then(function(block) {
-		if (block.id) store[block.id] = block;
+		if (block.id) {
+			store[block.id] = block;
+		}
 		var fragment;
 		try {
 			fragment = view.render(block, overrideType);
@@ -205,13 +216,13 @@ Blocks.prototype.from = function(blocks, overrideType) {
 		return Promise.all(Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
 			var id = node.getAttribute('block-id');
 			if (id === block.id) return;
-			var child = store[id];
+			var child = blocks[id];
 			if (!child) {
 				console.warn("ignoring unknown block id", id);
 				return;
 			}
 			var type = node.getAttribute('block-type');
-			return self.from(child, type).then(function(child) {
+			return self.parseFrom(child, blocks, store, type).then(function(child) {
 				if (child) node.parentNode.replaceChild(child, node);
 			});
 		}, this)).then(function() {
