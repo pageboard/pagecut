@@ -70,13 +70,15 @@ InputPlugin.prototype.cbParseSlice = function(view, dom, opts) {
 	var state = view.state;
 	var nodeType = type && state.schema.nodes[type]; // TODO should search schema.marks too ?
 	if (nodeType) {
-		var from = state.selection.from;
-		var pos = Transform.insertPoint(state.doc, state.selection.from, nodeType);
+		var to = state.selection.to;
+		var pos = Transform.insertPoint(state.tr.doc, to, nodeType);
 		if (pos == null) return Model.Slice.empty;
-		if (pos != from) {
-			var sel = State.TextSelection.create(state.doc, pos);
-			view.dispatch(state.tr.setSelection(sel));
-			opts.context = sel.$from;
+		if (pos != to) {
+			var tr = opts.tr || state.tr;
+			var sel = State.TextSelection.create(tr.doc, pos);
+			tr.setSelection(sel);
+			if (!opts.tr) view.dispatch(tr);
+			opts.context = sel.$to;
 		}
 	}
 	return Model.DOMParser.prototype.parseSlice.call(view.clipboardParser, dom, opts);

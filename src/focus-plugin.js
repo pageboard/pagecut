@@ -80,7 +80,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 	if (!hasParent(nodeView.dom, dom) || nodeView.contentDOM && hasParent(nodeView.contentDOM, dom)) {
 		return;
 	}
-	if (this.focus(tr, State.TextSelection.create(view.state.doc, pos))) {
+	if (this.focus(tr, State.TextSelection.create(tr.doc, pos))) {
 		view.dispatch(tr);
 	}
 };

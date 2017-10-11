@@ -23,13 +23,13 @@ Utils.prototype.setDom = function(dom) {
 	}
 	var state = this.view.state;
 	var tr = state.tr;
-	this.insertTr(tr, dom, new State.AllSelection(state.doc));
+	this.insertTr(tr, dom, new State.AllSelection(tr.doc));
 	if (!tr) {
 		console.error("Cannot insert", dom);
 		return;
 	}
 	var sel = tr.selection;
-	if (!sel.empty) tr.setSelection(State.Selection.atStart(state.doc));
+	if (!sel.empty) tr.setSelection(State.Selection.atStart(tr.doc));
 	tr.setMeta('addToHistory', false);
 	this.view.dispatch(tr);
 
@@ -64,15 +64,12 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		dom = this.view.render(dom);
 	}
 	var type = dom.nodeType == Node.ELEMENT_NODE && dom.getAttribute('block-type');
-	var opts = {
-		context: sel.$to
-	};
 	var parent = sel.$from.parent;
-	var slice = this.parse(dom, opts);
+	var slice = this.parse(dom, {context: sel.$to, tr: tr});
 
 	var from = sel.from;
 	var to = sel.to;
-	var doc = this.view.state.doc;
+	var doc = tr.doc;
 
 	var nodeType = type && this.view.state.schema.nodes[type];
 
@@ -323,7 +320,7 @@ Utils.prototype.selectTr = function(tr, obj, textSelection) {
 			return tr.selection;
 		}
 	} else {
-		if (root.node == this.view.state.doc) {
+		if (root.node == tr.doc) {
 			return new State.AllSelection(root.node);
 		} else {
 			return new State.NodeSelection($rootPos);
@@ -445,7 +442,7 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 Utils.prototype.selectionParents = function(tr, sel) {
 	if (!sel) sel = tr.selection;
 	if (sel instanceof State.AllSelection) {
-		return [{root: {node: this.view.state.doc}}];
+		return [{root: {node: tr.doc}}];
 	}
 	var fromParents = this.parents(tr, sel.from, true, false);
 	if (sel.empty) return fromParents;
