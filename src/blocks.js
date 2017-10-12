@@ -186,6 +186,8 @@ Blocks.prototype.from = function(blocks) {
 Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 	var view = this.view;
 	var self = this;
+	if (!store) store = this.store;
+	if (!blocks) blocks = {};
 
 	if (!overrideType) {
 		// mount() might change block.type, this ensures block will be rendered correctly
