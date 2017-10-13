@@ -383,10 +383,6 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 	if (sameData && sameFocus) {
 		// no point in calling render
-		if (oldBlock && this.dom.update) {
-			// i don't understand why this was here in the first place
-			// setTimeout(this.dom.update.bind(this.dom), 30);
-		}
 		return true;
 	}
 
@@ -408,6 +404,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 		}
 	}
 	if (oldBlock && this.dom.update) {
+		// tell custom elements the editor updates this dom node
 		setTimeout(this.dom.update.bind(this.dom), 30);
 	}
 	return true;
