@@ -9,16 +9,4 @@
  
      var nodeDOM = dom;
      dom = applyOuterDeco(dom, outerDeco, node);
---- node_modules/prosemirror-model/dist/index.js	2017-09-25 10:28:45.000000000 +0200
-+++ node_modules.new/prosemirror-model/dist/index.js	2017-09-25 20:15:52.997799178 +0200
-@@ -3059,6 +3059,9 @@
- // string](#ParseRule.context) matches this context.
- ParseContext.prototype.matchesContext = function matchesContext (context) {
-     var this$1 = this;
-+	   if (context.indexOf("|") > -1) {
-+      return context.split(/\s*\|\s*/).some(this.matchesContext, this);
-+    }
- 
-   var parts = context.split("/");
-   var option = this.options.context;
 
