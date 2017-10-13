@@ -32,7 +32,6 @@
   "homepage": "https://github.com/pageboard/pagecut#readme",
   "devDependencies": {
     "@kapouer/common-ancestor": "^0.2.0",
-    "@kapouer/prosemirror-dropcursor": "^0.24.0",
     "@types/node": "^8.0.32",
     "@types/prosemirror-commands": "^0.24.0",
     "@types/prosemirror-history": "^0.21.2",
@@ -45,21 +44,22 @@
     "@types/prosemirror-state": "^0.24.0",
     "@types/prosemirror-transform": "^0.24.0",
     "@types/prosemirror-view": "^0.24.0",
+    "@kapouer/prosemirror-dropcursor": "^1.0.0",
     "babel-preset-es2015": "^6.24.1",
     "babelify": "^7.3.0",
     "browserify": "^14.3.0",
     "diff-dom": "^2.2.3",
     "dom-template-strings": "^2.0.1",
     "esequal": "^0.1.15",
-    "prosemirror-commands": "^0.24.0",
-    "prosemirror-history": "^0.24.0",
-    "prosemirror-inputrules": "^0.24.0",
-    "prosemirror-keymap": "^0.24.0",
-    "prosemirror-model": "^0.24.0",
-    "prosemirror-schema-basic": "^0.24.0",
-    "prosemirror-schema-list": "^0.24.0",
-    "prosemirror-state": "^0.24.0",
-    "prosemirror-transform": "^0.24.0",
+    "prosemirror-commands": "^1.0.0",
+    "prosemirror-history": "^1.0.0",
+    "prosemirror-inputrules": "^1.0.0",
+    "prosemirror-keymap": "^1.0.0",
+    "prosemirror-model": "^1.0.0",
+    "prosemirror-schema-basic": "^1.0.0",
+    "prosemirror-schema-list": "^1.0.0",
+    "prosemirror-state": "^1.0.0",
+    "prosemirror-transform": "^1.0.0",
     "typescript": "^2.5.3",
     "url-regex": "^3.2.0",
     "window-agent": "^1.2.0"
@@ -73,7 +73,7 @@
   },
   "dependencies": {
     "postinstall-links": "^0.3.0",
-    "prosemirror-menu": "^0.24.0",
-    "prosemirror-view": "^0.24.0"
+    "prosemirror-menu": "^1.0.0",
+    "prosemirror-view": "^1.0.0"
   }
 }
