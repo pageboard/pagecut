@@ -165,7 +165,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 				break;
 			}
 		}
-		if (!changed) changes.unshift({pos:pos, node:node, focus: false});
+		if (!changed && node.attrs.block_focused) changes.unshift({pos:pos, node:node, focus: false});
 	}
 	hasChanged(tr.doc);
 	tr.doc.descendants(hasChanged);
