@@ -109,6 +109,7 @@ Utils.prototype.delete = function(sel) {
 
 Utils.prototype.deleteTr = function(tr, sel) {
 	if (!sel) sel = tr.selection;
+	if (sel.empty) return;
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
 	tr.delete(start, end);
@@ -414,6 +415,41 @@ Utils.prototype.canInsert = function($pos, nodeType, attrs) {
 		}
 	}
 	return false;
+};
+
+
+function canInsertAtPos($pos, nodeType) {
+	for (var d = $pos.depth; d >= 0; d--) {
+		var index = $pos.index(d);
+		var node = $pos.node(d);
+		if (node.canReplaceWith(index, index, nodeType)) {
+			return d;
+		}
+	}
+}
+
+Utils.prototype.move = function(tr, dir) {
+	var sel = tr.selection;
+	var node = sel.node;
+	if (!node) return;
+	tr.delete(sel.from, sel.to);
+	var from = sel.from + dir;
+
+	var depth;
+	var $pos;
+	var docSize = tr.doc.content.size;
+	while (from >= 0 && from < docSize) {
+		$pos = tr.doc.resolve(from);
+		depth = canInsertAtPos($pos, node.type);
+		if (depth >= 0) break;
+		from = from + dir;
+	}
+	if (depth == null) return;
+	var npos = dir == 1 ? $pos.after(depth + 1) : $pos.before(depth + 1);
+	node = node.cut(0);
+	tr.insert(npos, node);
+	tr.setSelection(State.NodeSelection.create(tr.doc, npos));
+	return tr;
 };
 
 Utils.prototype.markActive = function(sel, nodeType) {
