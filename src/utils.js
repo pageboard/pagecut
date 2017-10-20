@@ -75,7 +75,6 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		var $pos = sel.$to;
 		var atEnd = sel.node || $pos.parentOffset == $pos.parent.nodeSize - 2;
 		var atStart = !sel.node && $pos.parentOffset == 0;
-		var depth = canInsertAtPos($pos, node.type);
 		var depthStart = atStart ? canInsertAtPos($pos, node.type) : null;
 		var depthEnd = atEnd ? canInsertAtPos($pos, node.type, true) : null;
 
