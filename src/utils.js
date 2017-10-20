@@ -113,6 +113,7 @@ Utils.prototype.deleteTr = function(tr, sel) {
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
 	tr.delete(start, end);
+	return true;
 };
 
 Utils.prototype.parse = function(dom, opts) {
