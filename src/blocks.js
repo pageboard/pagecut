@@ -60,15 +60,13 @@ Blocks.prototype.mount = function(block, blocks) {
 	var content, div, frag, view = this.view;
 	if (contents) for (var name in contents) {
 		content = contents[name];
-		if (content instanceof Node) {
-			console.warn("A block should not be mounted twice");
-			content = content.innerHTML;
+		if (!(content instanceof Node)) {
+			div = view.doc.createElement("div");
+			div.innerHTML = content;
+			frag = view.doc.createDocumentFragment();
+			while (div.firstChild) frag.appendChild(div.firstChild);
+			copy.content[name] = frag;
 		}
-		div = view.doc.createElement("div");
-		div.innerHTML = content;
-		frag = view.doc.createDocumentFragment();
-		while (div.firstChild) frag.appendChild(div.firstChild);
-		copy.content[name] = frag;
 	}
 	var el = view.element(copy.type);
 	if (!el) {
