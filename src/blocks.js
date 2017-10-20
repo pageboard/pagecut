@@ -54,7 +54,7 @@ Blocks.prototype.render = function(block, overrideType) {
 	return el.render(this.view.doc, block, this.view);
 };
 
-Blocks.prototype.mount = function(block) {
+Blocks.prototype.mount = function(block, blocks) {
 	var contents = block.content;
 	var copy = this.copy(block);
 	var content, div, frag, view = this.view;
@@ -76,7 +76,7 @@ Blocks.prototype.mount = function(block) {
 		return copy;
 	}
 	return Promise.resolve().then(function() {
-		if (el.mount) return el.mount(copy, view);
+		if (el.mount) return el.mount(copy, blocks, view);
 	}).then(function() {
 		return copy;
 	});
@@ -201,7 +201,7 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 		delete block.children;
 	}
 	return Promise.resolve().then(function() {
-		return self.mount(block);
+		return self.mount(block, blocks);
 	}).then(function(block) {
 		if (block.id) {
 			store[block.id] = block;
@@ -289,7 +289,7 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 	}, this);
 
 	if (el.unmount) {
-		parent = el.unmount(parent, this) || parent;
+		parent = el.unmount(parent, blocks, this.view) || parent;
 	}
 
 	if (parent.content && contentKeys) {
