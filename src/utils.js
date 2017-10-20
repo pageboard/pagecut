@@ -63,36 +63,33 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	if (!(dom instanceof Node)) {
 		dom = this.view.render(dom);
 	}
-	var type = dom.nodeType == Node.ELEMENT_NODE && dom.getAttribute('block-type');
 	var parent = sel.$from.parent;
 	var slice = this.parse(dom, {context: sel.$to, tr: tr});
 
 	var from = sel.from;
 	var to = sel.to;
-	var doc = tr.doc;
-
-	var nodeType = type && this.view.state.schema.nodes[type];
 
 	var fromto = from;
-	if (from == to || sel.node) {
+	if (slice.content.childCount == 1 && (from == to || sel.node)) {
+		var node = fillNode(slice.content.firstChild);
 		var $pos = sel.$to;
-		var depth = $pos.resolveDepth();
-		var after = depth && $pos.after();
-		var before = depth && $pos.before();
-		var canBefore = !nodeType || depth && this.canInsert(doc.resolve(before), nodeType);
-		var canAfter = !nodeType || depth && this.canInsert(doc.resolve(after), nodeType);
-		var canInplace = !nodeType || depth && this.canInsert(sel.$from, nodeType);
-		var atEnd = $pos.parentOffset == $pos.parent.nodeSize - 2;
-		var atStart = $pos.parentOffset == 0;
-		if (parent.isTextblock && canInplace) {
-			if (!atEnd && !atStart) tr.split(from);
-			if (atStart && !atEnd) fromto = from - 1;
-			else fromto = from + 1;
-		} else if (atEnd && canAfter) {
-			fromto = $pos.after();
-		} else if (atStart && canBefore) {
-			fromto = $pos.before();
-		} else {
+		var atEnd = sel.node || $pos.parentOffset == $pos.parent.nodeSize - 2;
+		var atStart = !sel.node && $pos.parentOffset == 0;
+		var depth = canInsertAtPos($pos, node.type);
+		var depthStart = atStart ? canInsertAtPos($pos, node.type) : null;
+		var depthEnd = atEnd ? canInsertAtPos($pos, node.type, true) : null;
+
+		if (depthStart != null) {
+			fromto = $pos.before(depthStart + 1);
+			tr.insert(fromto, node);
+			return fromto;
+		} else if (depthEnd != null) {
+			fromto = $pos.after(depthEnd + 1);
+			tr.insert(fromto, node);
+			return fromto;
+		} else if (parent.isTextblock) {
+			tr.split(from);
+			fromto = from + 1;
 		}
 		to = from = fromto;
 	} else {
@@ -100,6 +97,18 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	tr.replaceRange(from, to, slice);
 	return fromto;
 };
+
+function fillNode(node) {
+	var content = node.content;
+	if (content.size) {
+		var before = node.type.contentMatch.fillBefore(content);
+		if (before) content = before.append(content)
+	}
+	var after = node.type.contentMatch.matchFragment(content).fillBefore(Model.Fragment.empty, true);
+	if (after) content = content.append(after);
+	node.content = content;
+	return node;
+}
 
 Utils.prototype.delete = function(sel) {
 	var tr = this.view.state.tr;
@@ -419,9 +428,9 @@ Utils.prototype.canInsert = function($pos, nodeType, attrs) {
 };
 
 
-function canInsertAtPos($pos, nodeType) {
+function canInsertAtPos($pos, nodeType, after) {
 	for (var d = $pos.depth; d >= 0; d--) {
-		var index = $pos.index(d);
+		var index = after ? $pos.indexAfter(d) : $pos.index(d);
 		var node = $pos.node(d);
 		if (node.canReplaceWith(index, index, nodeType)) {
 			return d;
