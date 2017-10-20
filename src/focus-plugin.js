@@ -122,8 +122,9 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	var parents = this.view.utils.selectionParents(tr, sel);
 	var root = parents.length && parents[0].root;
 	if (root && (root.mark || root.node).attrs.block_focused == "last") {
+		// TODO have some way to force this when selected node has moved !
 		// already done
-//		return;
+		// return;
 	}
 	var rootPos = root && root.level && root.rpos.before(root.level);
 	var selectedRoot = root && tr.selection.node == root.node;
