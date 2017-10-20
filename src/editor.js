@@ -5,6 +5,7 @@ var Model = require("prosemirror-model");
 var Input = require("prosemirror-inputrules");
 var keymap = require("prosemirror-keymap").keymap;
 var Commands = require("prosemirror-commands");
+var Setup = require("prosemirror-example-setup");
 var DropCursor = require("@kapouer/prosemirror-dropcursor").dropCursor;
 var History = require("prosemirror-history");
 
@@ -144,11 +145,11 @@ function Editor(opts) {
 		FocusPlugin,
 		InputPlugin,
 //		require("./test-plugin"),
-//	function(editor) {
-//		return Input.inputRules({
-//			rules: Setup.buildInputRules(editor.schema)
-//		});
-//	},
+	function(editor) {
+		return Input.inputRules({
+			rules: Setup.buildInputRules(editor.schema)
+		});
+	},
 	function(editor, opts) {
 		return keymap(opts.mapKeys);
 	}, function(editor) {
