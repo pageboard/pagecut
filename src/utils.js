@@ -58,6 +58,31 @@ Utils.prototype.insert = function(dom, sel) {
 	}
 };
 
+Utils.prototype.splitTr = function(tr) {
+	// before or inside or after and check we can
+	var sel = tr.selection;
+	var $pos = sel.$to;
+	var type = sel.$from.parent.type;
+	var atEnd = $pos.parentOffset == $pos.parent.nodeSize - 2;
+	var atStart = $pos.parentOffset == 0;
+	var depthStart = canInsertAtPos($pos, type);
+	var depthEnd = atEnd ? canInsertAtPos($pos, type, true) : null;
+	var fromto = sel.from;
+	var splitto = sel.from;
+	if (atStart && depthStart != null) {
+		splitto = $pos.start(depthStart + 1);
+		fromto = sel.from - 1;
+	} else if (depthEnd != null) {
+		splitto = fromto = $pos.end(depthEnd + 1);
+	} else if (depthStart != null) {
+		splitto = fromto = $pos.pos;
+	} else {
+		return;
+	}
+	tr.split(splitto);
+	return fromto;
+};
+
 Utils.prototype.insertTr = function(tr, dom, sel) {
 	if (!sel) sel = tr.selection;
 	if (!(dom instanceof Node)) {
