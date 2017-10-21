@@ -146,15 +146,16 @@ Blocks.prototype.from = function(block, blocks) {
 	var store = {};
 
 	var frag = "";
-	if (!blocks) blocks = block;
-	if (typeof blocks == "string") {
-		frag = blocks
-		blocks = null;
-	} else if (blocks.type) {
-		block = blocks;
-		blocks = null;
+	if (typeof block == "string") {
+		frag = block;
+		block = null;
 	}
-	if (!blocks) blocks = {};
+	if (!blocks) {
+		if (block && !block.type) {
+			blocks = block;
+			block = null;
+		}
+	}
 	// it's a map of blocks, we need to find the root block
 	if (!block) {
 		var id = view.dom.getAttribute('block-id');
