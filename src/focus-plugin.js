@@ -123,8 +123,13 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	var firstParent = parents.length && parents[0];
 	var root = firstParent.root;
 	var container = firstParent.container;
-	var selectedRoot = root && tr.selection.node == root.node || (!root.node.isTextblock && (!container || !container.node.isTextblock));
 	var rootPos = root && root.level && root.rpos.before(root.level);
+	var selectedRoot = rootPos !== undefined &&
+		(
+			(root && tr.selection.node == root.node)
+			||
+			(!root.node.isTextblock && (!container || !container.node.isTextblock))
+		);
 
 	var me = this;
 
