@@ -138,7 +138,7 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 	}
 };
 
-Blocks.prototype.from = function(blocks) {
+Blocks.prototype.from = function(block, blocks) {
 	// blocks can be a block or a map of blocks
 	// if it's a block, it can have a 'children' property
 	var self = this;
@@ -146,7 +146,7 @@ Blocks.prototype.from = function(blocks) {
 	var store = {};
 
 	var frag = "";
-	var block;
+	if (!blocks) blocks = block;
 	if (typeof blocks == "string") {
 		frag = blocks
 		blocks = null;

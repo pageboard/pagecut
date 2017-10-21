@@ -46,8 +46,8 @@ function Viewer(opts) {
 	});
 }
 
-Viewer.prototype.from = function(blocks) {
-	return this.blocks.from(blocks);
+Viewer.prototype.from = function(block, blocks) {
+	return this.blocks.from(block, blocks);
 };
 
 Viewer.prototype.to = function(blocks) {
