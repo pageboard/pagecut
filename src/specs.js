@@ -439,7 +439,11 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 		var attrs = this.view.blocks.toAttrs(block);
 		attrs.block_type = this.element.name;
 		var tr = this.view.state.tr;
+		var reselect = tr.selection.node && tr.selection.from == pos;
 		tr.setNodeMarkup(pos, null, attrs);
+		if (reselect) {
+			tr.setSelection(State.NodeSelection.create(tr.doc, pos));
+		}
 		this.view.dispatch(tr);
 		return true;
 	} else {
