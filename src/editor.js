@@ -199,7 +199,8 @@ function Editor(opts) {
 		dispatchTransaction: function(tr) {
 			editor.updateState(editor.state.apply(tr));
 		},
-		nodeViews: views
+		nodeViews: views,
+		genId: opts.genId
 	});
 
 	place.ownerDocument.execCommand("enableObjectResizing", false, false);

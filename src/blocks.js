@@ -1,8 +1,9 @@
 module.exports = Blocks;
 
-function Blocks(view) {
+function Blocks(view, genId) {
 	this.view = view;
 	this.store = {};
+	if (genId) this.genId = genId;
 }
 
 Blocks.prototype.create = function(type) {

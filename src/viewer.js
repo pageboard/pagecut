@@ -23,7 +23,7 @@ function Viewer(opts) {
 	};
 
 	this.plugins = opts.plugins || [];
-	this.blocks = new Blocks(this);
+	this.blocks = new Blocks(this, opts.genId);
 	var viewer = this;
 	viewer.modules = {};
 
