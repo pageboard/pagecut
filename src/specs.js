@@ -432,6 +432,10 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 			val = parseInt(val);
 		} else if (prop.type == "number") {
 			val = parseFloat(val);
+		} else if (prop.type == "string") {
+			// nothing to do
+		} else {
+			console.warn("TODO support the type of that property", prop);
 		}
 		if (block.data[dataWhat] === val) return true;
 		block.data[dataWhat] = val;
