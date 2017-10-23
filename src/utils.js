@@ -483,7 +483,8 @@ Utils.prototype.move = function(tr, dir) {
 	node = node.cut(0);
 	tr.insert(npos, node);
 	if (tr.doc.content.size > 0) {
-		tr.setSelection(State.NodeSelection.create(tr.doc, npos));
+		var $npos = tr.doc.resolve(npos);
+		if ($npos.nodeAfter) tr.setSelection(new State.NodeSelection($npos));
 	}
 	return tr;
 };
