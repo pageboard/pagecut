@@ -21,7 +21,6 @@ function define(view, elt, schema, views) {
 
 	flagDom(elt, dom, function(type, obj, parentObj) {
 		var spec;
-		if (elt.name == "portfolio_item") console.log(type);
 		if (type == "root") {
 			spec = createRootSpec(view, elt, obj);
 			obj.name = elt.name; // wrap and container are set further
@@ -34,11 +33,6 @@ function define(view, elt, schema, views) {
 		}
 		spec.parent = parentObj;
 		specs.push(spec);
-
-		if (parentObj && type != "root") {
-			console.log(JSON.stringify(parentObj));
-			spec.parseDOM[0].context = parentObj.name + '/';
-		}
 
 		if (obj.children.length) {
 			// this type of node has content that is wrap or container type nodes
