@@ -131,6 +131,7 @@ function fillNode(node) {
 	var after = node.type.contentMatch.matchFragment(content).fillBefore(Model.Fragment.empty, true);
 	if (after) content = content.append(after);
 	node.content = content;
+	node.forEach(fillNode);
 	return node;
 }
 
