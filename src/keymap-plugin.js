@@ -50,7 +50,17 @@ function deleteCommand(back, state, dispatch, view) {
 	if (!sel.empty) return false;
 	if (!sel.$from.parent.isTextblock) return false;
 	// if selection is inside an empty paragraph, remove that paragraph
-	if (sel.$from.parent.childCount == 0) {
+	var offFrom = back ? -1 : 0;
+	var offTo = back ? 0 : 1;
+	if (sel.$from.parent.childCount == 1 && sel.$from.parent.firstChild.nodeSize == 1) {
+		if (dispatch) {
+			dispatch(
+				// .setMeta('addToHistory', true) doesn't work
+				state.tr.delete(sel.from + offFrom, sel.from + offTo).scrollIntoView()
+			);
+		}
+		return true;
+	} else if (sel.$from.parent.childCount == 1 && sel.$from.parent.firstChild.nodeSize == 0) {
 		if (dispatch) {
 			dispatch(
 				// .setMeta('addToHistory', true) doesn't work
