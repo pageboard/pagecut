@@ -17,9 +17,7 @@ function define(view, elt, schema, views) {
 	if (dom.parentNode) dom = dom.cloneNode(true);
 	var index = 0;
 
-	var specs = [];
-
-	flagDom(elt, dom, function(type, obj, parentObj) {
+	flagDom(elt, dom, function(type, obj) {
 		var spec;
 		if (type == "root") {
 			spec = createRootSpec(view, elt, obj);
@@ -31,8 +29,6 @@ function define(view, elt, schema, views) {
 		} else {
 			throw new Error("Missing type in flagDom iterator", type, obj);
 		}
-		spec.parent = parentObj;
-		specs.push(spec);
 
 		if (obj.children.length) {
 			// this type of node has content that is wrap or container type nodes
@@ -87,14 +83,6 @@ function define(view, elt, schema, views) {
 			views[obj.name] = spec.nodeView;
 		}
 	});
-	specs.forEach(function(spec) {
-		var parent = spec.parent;
-		if (!parent) return;
-		delete spec.parent;
-		if (parent.name && spec.typeName != "root") {
-			spec.parseDOM[0].context = parent.name + '/';
-		}
-	});
 }
 
 function getImmediateContents(root, list) {
@@ -115,7 +103,7 @@ function findContent(elt, dom) {
 	return commonAncestor.apply(null, list);
 }
 
-function flagDom(elt, dom, iterate, parentObj) {
+function flagDom(elt, dom, iterate) {
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return;
 	var obj = {
 		dom: dom,
@@ -138,10 +126,10 @@ function flagDom(elt, dom, iterate, parentObj) {
 
 	if (iterate) {
 		if (!dom.parentNode) {
-			iterate('root', obj, parentObj);
+			iterate('root', obj);
 		} else if (obj.contentDOM) {
-			if (!wrapper) iterate('container', obj, parentObj);
-			else iterate('wrap', obj, parentObj);
+			if (!wrapper) iterate('container', obj);
+			else iterate('wrap', obj);
 		}
 	}
 	return obj;
