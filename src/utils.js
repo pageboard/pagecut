@@ -465,24 +465,29 @@ function canInsertAtPos($pos, nodeType, after) {
 	}
 }
 
-Utils.prototype.move = function(tr, dir) {
-	var sel = tr.selection;
-	var node = sel.node;
-	if (!node) return;
-	tr.delete(sel.from, sel.to);
-	var from = sel.from + dir;
-
+Utils.prototype.insertPoint = function(doc, from, nodeType, dir) {
+	from = from + dir;
 	var depth;
 	var $pos;
-	var docSize = tr.doc.content.size;
+	var docSize = doc.content.size;
 	while (from >= 0 && from < docSize) {
-		$pos = tr.doc.resolve(from);
-		depth = canInsertAtPos($pos, node.type);
+		$pos = doc.resolve(from);
+		depth = canInsertAtPos($pos, nodeType);
 		if (depth >= 0) break;
 		from = from + dir;
 	}
 	if (depth == null) return;
 	var npos = dir == 1 ? $pos.after(depth + 1) : $pos.before(depth + 1);
+	return npos;
+};
+
+Utils.prototype.move = function(tr, dir) {
+	var sel = tr.selection;
+	var node = sel.node;
+	if (!node) return;
+	tr.delete(sel.from, sel.to);
+	var npos = this.insertPoint(tr.doc, sel.from, node.type, dir);
+	if (npos == null) return;
 	node = node.cut(0);
 	tr.insert(npos, node);
 	if (tr.doc.content.size > 0) {
