@@ -130,9 +130,11 @@ function fillNode(node) {
 	}
 	var after = node.type.contentMatch.matchFragment(content).fillBefore(Model.Fragment.empty, true);
 	if (after) content = content.append(after);
-	node.content = content;
-	node.forEach(fillNode);
-	return node;
+	var list = [];
+	content.forEach(function(child) {
+		list.push(fillNode(child));
+	});
+	return node.copy(Model.Fragment.from(list));
 }
 
 Utils.prototype.delete = function(sel) {
