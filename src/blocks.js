@@ -220,8 +220,8 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 			if (id === block.id) return;
 			var child = blocks[id];
 			if (!child) {
-				node.removeAttribute('block-id');
-				console.warn("ignoring unknown block id", id);
+				node.remove();
+				console.warn("DOM node removed because it has unknown block id", node.outerHTML);
 				return;
 			}
 			var type = node.getAttribute('block-type');
