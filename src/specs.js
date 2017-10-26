@@ -5,6 +5,7 @@ var Model = require('prosemirror-model');
 exports.define = define;
 
 var index;
+var tags = {};
 
 function define(view, elt, schema, views) {
 	// ignore virtual elements
@@ -72,6 +73,17 @@ function define(view, elt, schema, views) {
 		}
 		if (!obj.name) {
 			obj.name = `${elt.name}_${type}_${spec.contentName || index++}`;
+		}
+
+		var parseTag = spec.parseDOM[0].tag;
+		if (parseTag) {
+			var parseTagKey = spec.typeName == "root" ? parseTag : `${elt.name}_${parseTag}`;
+			var oldName = tags[parseTagKey];
+			if (oldName) {
+				console.info(`Two elements with same tag "${parseTag}" - ${oldName} and ${obj.name}`);
+			} else {
+				tags[parseTagKey] = obj.name;
+			}
 		}
 
 		if (spec.inline) {
