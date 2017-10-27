@@ -414,8 +414,10 @@ RootNodeView.prototype.update = function(node, decorations) {
 	if (oldBlock && this.dom.update) {
 		// tell custom elements the editor updates this dom node
 		setTimeout(function() {
+			var x = window.scrollX;
+			var y = window.scrollY;
 			this.dom.update();
-			this.view.dispatch(this.view.state.tr.scrollIntoView());
+			window.scrollTo(x, y);
 		}.bind(this), 30);
 	}
 	return true;
