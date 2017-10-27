@@ -309,12 +309,12 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 			}
 		}
 		if (!hasContent) {
-			delete blocks[parent.id];
+			if (parent.id) delete blocks[parent.id];
 			return;
 		}
 	}
 
-	blocks[parent.id] = parent;
+	if (parent.id) blocks[parent.id] = parent;
 
 	return parent;
 }
