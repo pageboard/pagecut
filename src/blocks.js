@@ -279,8 +279,7 @@ Blocks.prototype.serializeTo = function(parent, overrideType, ancestor) {
 
 			if (this.serializeTo(block, type, ancestor)) {
 				if (el.contents[name].virtual) {
-					// orphan block when it is used inside virtual content
-					delete ancestor.blocks[block.id]; // effectively getting rid of "orphan"
+					block.virtual = true;
 				}
 				if (type && type == block.type) type = null;
 				list.push({node: div, block: block, type: type});
