@@ -301,7 +301,7 @@ Blocks.prototype.serializeTo = function(parent, overrideType, ancestor) {
 	}, this);
 
 	if (el.unmount) {
-		parent = el.unmount(parent, blocks, this.view) || parent;
+		parent = el.unmount(parent, ancestor && ancestor.blocks, this.view) || parent;
 	}
 
 	if (parent.content && contentKeys) {
