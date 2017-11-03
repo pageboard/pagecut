@@ -165,7 +165,8 @@ function createRootSpec(view, elt, obj) {
 		block_id: null,
 		block_focused: null,
 		block_data: null,
-		block_type: elt.name
+		block_type: elt.name,
+		block_standalone: elt.standalone || null
 	};
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
