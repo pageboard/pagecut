@@ -3,6 +3,7 @@ module.exports = Blocks;
 function Blocks(view, genId) {
 	this.view = view;
 	this.store = {};
+	this.initial = {};
 	if (genId) this.genId = genId;
 }
 
@@ -159,6 +160,7 @@ Blocks.prototype.from = function(block, blocks) {
 			block = null;
 		}
 	}
+	if (!blocks) blocks = this.initial = {};
 	// it's a map of blocks, we need to find the root block
 	if (!block) {
 		var id = view.dom.getAttribute('block-id');
