@@ -12,11 +12,13 @@ Blocks.prototype.create = function(type) {
 	for (var k in el.properties) {
 		if (el.properties[k].default !== undefined) data[k] = el.properties[k].default;
 	}
-	return {
+	var block = {
 		type: type,
 		data: data,
 		content: {}
 	};
+	if (el.standalone) block.standalone = true;
+	return block;
 };
 
 Blocks.prototype.fromAttrs = function(attrs) {
@@ -188,21 +190,20 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 	var self = this;
 	if (!store) store = this.store;
 	if (!blocks) blocks = {};
-
 	if (!overrideType) {
 		// mount() might change block.type, this ensures block will be rendered correctly
 		overrideType = block.type;
 	}
-	if (block.children) {
-		block.children.forEach(function(child) {
-			blocks[child.id] = child;
-		});
-		// children can be consumed once only
-		delete block.children;
-	}
 	return Promise.resolve().then(function() {
 		return self.mount(block, blocks);
 	}).then(function(block) {
+		if (block.children) {
+			block.children.forEach(function(child) {
+				blocks[child.id] = child;
+			});
+			// children can be consumed once only
+			delete block.children;
+		}
 		if (block.id) {
 			store[block.id] = block;
 		}
@@ -234,8 +235,13 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 	});
 };
 
-Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
+Blocks.prototype.serializeTo = function(parent, overrideType, ancestor) {
 	var el = this.view.element(overrideType || parent.type);
+	if (ancestor) ancestor.blocks[parent.id] = parent;
+	if (el.standalone || parent.standalone) ancestor = parent;
+	if (parent == ancestor) {
+		parent.blocks = {};
+	}
 
 	var contentKeys = (!el.contents || typeof el.contents == "string")
 		? null : Object.keys(el.contents);
@@ -269,11 +275,16 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 			parentNode.replaceChild(div, node);
 			block = this.copy(block);
 
-			if (this.serializeTo(block, blocks, type)) {
+			if (this.serializeTo(block, type, ancestor)) {
+				if (el.contents[name].virtual) {
+					// orphan block when it is used inside virtual content
+					delete ancestor.blocks[block.id]; // effectively getting rid of "orphan"
+				}
 				if (type && type == block.type) type = null;
 				list.push({node: div, block: block, type: type});
 			} else {
 				parentNode.removeChild(div);
+				delete ancestor.blocks[block.id];
 			}
 		}
 		while (node = content.querySelector('[block-focused]')) {
@@ -309,18 +320,20 @@ Blocks.prototype.serializeTo = function(parent, blocks, overrideType) {
 			}
 		}
 		if (!hasContent) {
-			if (parent.id) delete blocks[parent.id];
+			// TODO find the meaning of this
 			return;
 		}
 	}
-
-	if (parent.id) blocks[parent.id] = parent;
-
+	if (parent == ancestor) {
+		parent.children = Object.keys(parent.blocks).map(function(kid) {
+			return parent.blocks[kid];
+		});
+		delete parent.blocks;
+	}
 	return parent;
 }
 
-Blocks.prototype.to = function(blocks) {
-	if (!blocks) blocks = {};
+Blocks.prototype.to = function() {
 	var domFragment = this.view.utils.getDom();
 
 	var id = this.view.dom.getAttribute('block-id');
@@ -330,17 +343,7 @@ Blocks.prototype.to = function(blocks) {
 	var block = this.copy(this.store[id]);
 	if (!block.content) block.content = {};
 	block.content[contentName] = domFragment;
-	// because serializeTo can return null if there was no content
-	block = this.serializeTo(block, blocks, type) || block;
-
-	var item;
-	block.children = [];
-	for (var childId in blocks) {
-		if (childId === id) continue;
-		item = blocks[childId];
-		if (!item.orphan) block.children.push(item);
-	}
-	return block;
+	return this.serializeTo(block, type);
 };
 
 
