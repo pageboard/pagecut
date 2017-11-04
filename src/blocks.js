@@ -25,7 +25,9 @@ Blocks.prototype.create = function(type) {
 Blocks.prototype.fromAttrs = function(attrs) {
 	var block = {};
 	for (var name in attrs) {
-		if (name.startsWith('block_')) block[name.substring(6)] = attrs[name];
+		if (name.startsWith('block_') && attrs[name] != null) {
+			block[name.substring(6)] = attrs[name];
+		}
 	}
 	if (block.data) block.data = JSON.parse(block.data);
 	else block.data = {};
