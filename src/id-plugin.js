@@ -2,7 +2,20 @@ module.exports = function(view) {
 	return {
 		appendTransaction: function(trs, oldState, newState) {
 			var tr = newState.tr;
-			if (processStandalone(tr, newState.doc)) {
+			var itr;
+			var standaloned = false;
+			for (var i=0; i < trs.length; i++) {
+				itr = trs[i];
+				if (itr.getMeta('focus-plugin')) {
+					// bad loops happen
+					return;
+				}
+				if (itr.getMeta('standaloned')) {
+					standaloned = true;
+				}
+			}
+			if (!standaloned && processStandalone(tr, newState.doc)) {
+				tr.setMeta('standaloned', true);
 				return tr;
 			}
 		}
