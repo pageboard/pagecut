@@ -108,6 +108,7 @@ function Editor(opts) {
 				'block-data': node.attrs.block_data
 			});
 			delete out[1]['block-focused'];
+			if (node.attrs.block_standalone) out[1]['block-standalone'] = 'true';
 			return out;
 		};
 	}
@@ -126,7 +127,8 @@ function Editor(opts) {
 		var copy = Object.assign({}, rule);
 		copy.getAttrs = function(dom) {
 			var id = dom.getAttribute("block-id");
-			if (id) {
+			var standalone = dom.hasAttribute("block-standalone");
+			if (id && !standalone) {
 				var block = editor.blocks.get(id);
 				if (block && editor.blocks.domQuery(id)) {
 					dom.removeAttribute('block-id');

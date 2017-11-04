@@ -176,6 +176,7 @@ function createRootSpec(view, elt, obj) {
 		getAttrs: function(dom) {
 			var type = dom.getAttribute('block-type') || elt.name;
 			var id = dom.getAttribute('block-id');
+			var standalone = dom.hasAttribute('block-standalone');
 			var data = dom.getAttribute('block-data');
 			var attrs = {
 				block_type: type
@@ -191,6 +192,10 @@ function createRootSpec(view, elt, obj) {
 			var block;
 			if (id) block = view.blocks.get(id);
 			if (!block) {
+				if (standalone) {
+					attrs.block_id = id;
+					attrs.block_standalone = true;
+				}
 				block = view.blocks.fromAttrs(attrs);
 				view.blocks.set(block);
 			}
