@@ -193,8 +193,12 @@ function createRootSpec(view, elt, obj) {
 			if (id) block = view.blocks.get(id);
 			if (!block) {
 				if (standalone) {
-					attrs.block_id = id;
-					attrs.block_standalone = true;
+					if (!id) {
+						console.warn("standalone block missing id", dom.outerHTML);
+					} else {
+						attrs.block_id = id;
+						attrs.block_standalone = true;
+					}
 				}
 				block = view.blocks.fromAttrs(attrs);
 				view.blocks.set(block);
