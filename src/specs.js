@@ -1,6 +1,15 @@
 var commonAncestor = require('@kapouer/common-ancestor');
 var State = require('prosemirror-state');
 var Model = require('prosemirror-model');
+var DiffDOM = require('diff-dom');
+
+var differ = new DiffDOM({
+	preDiffApply: function(info) {
+		if (/Attribute$/.test(info.diff.action) && info.diff.name == "block-focused") {
+			return true;
+		}
+	}
+});
 
 exports.define = define;
 
@@ -406,32 +415,52 @@ RootNodeView.prototype.update = function(node, decorations) {
 	var sameData = oldBlock && this.view.utils.equal(oldBlock.data, block.data);
 	var sameFocus = oldBlock && this.oldBlock.focused == node.attrs.block_focused;
 
-	if (sameData && sameFocus) {
+	if (!sameData || !sameFocus) {
+		this.oldBlock = this.view.blocks.copy(block);
+		this.oldBlock.focused = node.attrs.block_focused;
+
+		if (node.attrs.block_focused) block.focused = node.attrs.block_focused;
+		else delete block.focused;
+
+		var dom = this.view.render(block, node.attrs.block_type);
+		mutateNodeView(this, flagDom(this.element, dom), !oldBlock);
+		if (this.selected) {
+			this.selectNode();
+		}
+		if (oldBlock && this.dom.update) {
+			// tell custom elements the editor updates this dom node
+			setTimeout(this.dom.update.bind(this.dom), 30);
+		}
+	} else {
 		// no point in calling render
-		return true;
 	}
 
-	this.oldBlock = this.view.blocks.copy(block);
-	this.oldBlock.focused = node.attrs.block_focused;
-
-	if (node.attrs.block_focused) block.focused = node.attrs.block_focused;
-	else delete block.focused;
-
-	var dom = this.view.render(block, node.attrs.block_type);
-	mutateNodeView(this, flagDom(this.element, dom), !oldBlock);
-	if (this.selected) {
-		this.selectNode();
-	}
-	if (node.type.spec.contentName) {
+	var cname = node.type.spec.contentName;
+	if (oldBlock && cname) {
+		var cdom = this.contentDOM;
 		if (!block.content) block.content = {};
-		if (block.content[node.type.spec.contentName] != this.contentDOM) {
-			block.content[node.type.spec.contentName] = this.contentDOM;
+		if (block.standalone) {
+			if (!Array.isArray(block.content[cname])) {
+				block.content[cname] = [];
+			}
+			var found = false;
+			block.content[cname].forEach(function(idom) {
+				if (idom == cdom) {
+					found = true;
+				} else {
+					differ.apply(idom, differ.diff(idom, cdom));
+				}
+			});
+			if (!found) {
+				block.content[cname].push(cdom);
+			}
+		} else {
+			if (block.content[cname] != cdom) {
+				block.content[cname] = cdom;
+			}
 		}
 	}
-	if (oldBlock && this.dom.update) {
-		// tell custom elements the editor updates this dom node
-		setTimeout(this.dom.update.bind(this.dom), 30);
-	}
+
 	return true;
 };
 

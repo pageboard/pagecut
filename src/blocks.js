@@ -260,6 +260,10 @@ Blocks.prototype.serializeTo = function(parent, overrideType, ancestor) {
 		if (!content || typeof content == "string") {
 			return;
 		}
+		if (parent.standalone && Array.isArray(content)) {
+			// this is set by nodeView.update
+			content = content[0];
+		}
 		content = content.cloneNode(true);
 		var node, div, id, type, block, parentNode;
 		if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
