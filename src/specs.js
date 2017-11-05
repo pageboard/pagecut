@@ -244,9 +244,10 @@ function createRootSpec(view, elt, obj) {
 	};
 	if (elt.marks) spec.marks = elt.marks;
 	if (obj.dom.childNodes.length || elt.contents) {
+		elt.domModel = obj.dom;
 		// there's a bug somewhere (in prosemirror ?) with leaf nodes having a nodeView
 		if (!elt.inline || !elt.inplace) spec.nodeView = function(node, view, getPos, decorations) {
-			return new RootNodeView(elt, obj.dom, node, view, getPos);
+			return new RootNodeView(node, view, getPos, decorations);
 		};
 		// explicitely allow dragging for nodes without contentDOM
 		if (!obj.contentDOM) spec.draggable = true;
@@ -327,15 +328,19 @@ function setupView(me) {
 	me.contentDOM = findContent(me.element, me.dom);
 }
 
-function RootNodeView(elt, domModel, node, view, getPos) {
+function RootNodeView(node, view, getPos) {
 	this.view = view;
-	this.element = elt;
-	this.domModel = domModel;
+	var type = node.attrs.block_type;
+	if (!type) {
+		throw new Error("nodeView instance for a node without block_type");
+	}
+	this.element = view.element(type);
+	this.domModel = this.element.domModel;
 	this.getPos = getPos;
 	this.id = node.attrs.block_id;
 	var block;
 	if (this.id) {
-		if (elt.inplace) {
+		if (this.element.inplace) {
 			delete node.attrs.block_id;
 			delete this.id;
 		} else {
@@ -349,7 +354,7 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 		}
 		block = view.blocks.fromAttrs(node.attrs);
 	}
-	if (!elt.inplace && !this.id) {
+	if (!this.element.inplace && !this.id) {
 		this.id = block.id = node.attrs.block_id = view.blocks.genId();
 		view.blocks.set(block);
 	}
@@ -498,7 +503,9 @@ function ContainerNodeView(elt, domModel, node, view) {
 	this.view = view;
 	this.element = elt;
 	this.domModel = domModel;
-	if (node.blockId) this.id = node.blockId;
+	if (node.blockId) {
+		this.id = node.blockId;
+	}
 	setupView(this);
 	this.update(node);
 }
