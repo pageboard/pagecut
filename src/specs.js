@@ -343,8 +343,10 @@ function RootNodeView(elt, domModel, node, view, getPos) {
 		}
 	}
 	if (!block) {
-		delete node.attrs.block_id;
-		delete this.id;
+		if (node.attrs.block_id) {
+			delete node.attrs.block_id;
+			delete this.id;
+		}
 		block = view.blocks.fromAttrs(node.attrs);
 	}
 	if (!elt.inplace && !this.id) {
