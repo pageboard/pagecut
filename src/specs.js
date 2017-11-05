@@ -166,7 +166,7 @@ function createRootSpec(view, elt, obj) {
 		block_focused: null,
 		block_data: null,
 		block_type: elt.name,
-		block_standalone: elt.standalone || null
+		block_standalone: elt.standalone ? "true" : null
 	};
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
@@ -176,7 +176,7 @@ function createRootSpec(view, elt, obj) {
 		getAttrs: function(dom) {
 			var type = dom.getAttribute('block-type') || elt.name;
 			var id = dom.getAttribute('block-id');
-			var standalone = dom.hasAttribute('block-standalone');
+			var standalone = dom.getAttribute('block-standalone') == "true";
 			var data = dom.getAttribute('block-data');
 			var attrs = {
 				block_type: type
@@ -197,7 +197,7 @@ function createRootSpec(view, elt, obj) {
 						console.warn("standalone block missing id", dom.outerHTML);
 					} else {
 						attrs.block_id = id;
-						attrs.block_standalone = true;
+						attrs.block_standalone = "true";
 					}
 				}
 				block = view.blocks.fromAttrs(attrs);

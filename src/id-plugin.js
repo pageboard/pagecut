@@ -1,42 +1,36 @@
 module.exports = function(view) {
+	var count = 0;
+	setInterval(function() {
+		count = 0;
+	}, 2000);
 	return {
 		appendTransaction: function(trs, oldState, newState) {
 			var tr = newState.tr;
 			var itr;
 			var standaloned = false;
-			for (var i=0; i < trs.length; i++) {
-				itr = trs[i];
-				if (itr.getMeta('focus-plugin')) {
-					// bad loops happen
-					return;
-				}
-				if (itr.getMeta('standaloned')) {
-					standaloned = true;
-				}
+			if (count++ > 500) {
+				console.error("Loop in appendTransaction for id-plugin");
+				return;
 			}
-			if (!standaloned && processStandalone(tr, newState.doc)) {
-				tr.setMeta('standaloned', true);
+			if (processStandalone(tr, newState.doc)) {
 				return tr;
 			}
 		}
 	};
-	function processStandalone(tr, root) {
+	function processStandalone(tr, root, offset) {
 		var modified = false;
+		if (!offset) offset = 0;
 		var ids = {};
 		root.descendants(function(node, pos, parent) {
 			var attrs = node.attrs;
+			pos += offset;
 			var id = attrs.block_id;
 			var type = attrs.block_type;
 			if (!type) return;
 			var el = view.element(type);
 			if (!el) return;
-			if (attrs.block_standalone) {
-				if (processStandalone(tr, node)) {
-					modified = true;
-				}
-				return false;
-			}
-			var gen = !attrs.block_standalone && !el.inplace && (!id || ids[id]);
+			var standalone = attrs.block_standalone == "true";
+			var gen = !standalone && !el.inplace && (!id || ids[id]);
 			var rem = id && el.inplace;
 			if (gen) {
 				var newId = view.blocks.genId();
@@ -55,6 +49,12 @@ module.exports = function(view) {
 				modified = true;
 			} else if (id) {
 				ids[id] = true;
+			}
+			if (standalone) {
+				if (processStandalone(tr, node, pos + 1)) {
+					modified = true;
+				}
+				return false;
 			}
 		});
 		return modified;

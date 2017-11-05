@@ -39,6 +39,8 @@ Blocks.prototype.fromAttrs = function(attrs) {
 			data[k] = el.properties[k].default;
 		}
 	}
+	if (attrs.block_standalone == "true") block.standalone = true;
+	else delete block.standalone;
 	return block;
 };
 
@@ -49,7 +51,7 @@ Blocks.prototype.toAttrs = function(block) {
 	if (block.type != null) attrs.block_type = block.type;
 	if (block.data) attrs.block_data = JSON.stringify(block.data);
 	if (block.focused) attrs.block_focused = block.focused;
-	if (block.standalone) attrs.block_standalone = block.standalone;
+	if (block.standalone) attrs.block_standalone = "true";
 	if (attrs.block_data == "{}") delete attrs.block_data;
 	return attrs;
 };
