@@ -17,8 +17,7 @@ var index;
 var tags = {};
 
 function define(view, elt, schema, views) {
-	// ignore virtual elements
-	if (!elt.render) return;
+	if (!elt.render) return; // some elements are not meant to be rendered
 	var dom = view.render(view.blocks.create(elt.name));
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) {
 		console.error(`ignoring ${elt.name} element - render does not return a DOM Node`);
