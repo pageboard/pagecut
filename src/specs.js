@@ -435,10 +435,10 @@ RootNodeView.prototype.update = function(node, decorations) {
 	}
 
 	var cname = node.type.spec.contentName;
-	if (oldBlock && cname) {
+	if (cname) {
 		var cdom = this.contentDOM;
 		if (!block.content) block.content = {};
-		if (block.standalone) {
+		if (block.standalone && oldBlock) {
 			if (!Array.isArray(block.content[cname])) {
 				block.content[cname] = [];
 			}
