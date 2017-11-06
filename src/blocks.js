@@ -206,12 +206,13 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 	}).then(function(block) {
 		if (block.children) {
 			block.children.forEach(function(child) {
-				blocks[child.id] = child;
+				if (!child.virtual) blocks[child.id] = child;
 			});
 			// children can be consumed once only
 			delete block.children;
 		}
-		if (block.id) {
+		if (block.id && !store[block.id]) {
+			// overwrite can happen with virtual blocks
 			store[block.id] = block;
 		}
 		var fragment;
