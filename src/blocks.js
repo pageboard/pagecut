@@ -245,7 +245,8 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 Blocks.prototype.serializeTo = function(parent, overrideType, ancestor) {
 	var el = this.view.element(overrideType || parent.type);
 	if (ancestor) ancestor.blocks[parent.id] = parent;
-	if (el.standalone || parent.standalone) ancestor = parent;
+	if ((el.standalone || parent.standalone) && !parent.virtual) ancestor = parent;
+
 	if (parent == ancestor) {
 		parent.blocks = {};
 	}
@@ -316,9 +317,13 @@ Blocks.prototype.serializeTo = function(parent, overrideType, ancestor) {
 
 	if (parent.content && contentKeys) {
 		Object.keys(parent.content).forEach(function(name) {
-			if (!el.contents[name] || el.contents[name].virtual) delete parent.content[name];
+			if (!el.contents[name] || el.contents[name].virtual) {
+				delete parent.content[name];
+			}
 		});
-		if (Object.keys(parent.content).length == 0) delete parent.content;
+		if (Object.keys(parent.content).length == 0) {
+			delete parent.content;
+		}
 	}
 
 	if (el.inline && contentKeys && contentKeys.length) {
