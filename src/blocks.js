@@ -242,8 +242,8 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 	});
 };
 
-Blocks.prototype.serializeTo = function(parent, overrideType, ancestor) {
-	var el = this.view.element(overrideType || parent.type);
+Blocks.prototype.serializeTo = function(parent, el, ancestor) {
+	if (!el || typeof el == "string") el = this.view.element(el || parent.type);
 	if (ancestor) ancestor.blocks[parent.id] = parent;
 	if ((el.standalone || parent.standalone) && !parent.virtual) ancestor = parent;
 
@@ -272,7 +272,7 @@ Blocks.prototype.serializeTo = function(parent, overrideType, ancestor) {
 			frag.appendChild(content);
 			content = frag;
 		}
-		var list = [];
+		var list = [], blockEl;
 		while (node = content.querySelector('[block-id]')) {
 			id = node.getAttribute('block-id');
 			type = node.getAttribute('block-type');
@@ -282,12 +282,16 @@ Blocks.prototype.serializeTo = function(parent, overrideType, ancestor) {
 				console.warn("block", type, "not found", id, "while serializing");
 				continue;
 			}
+			blockEl = this.view.element(type || block.type);
+			if (blockEl.unmount) {
+				block = blockEl.unmount(block, node, this.view) || block;
+			}
 			div = content.ownerDocument.createElement(node.nodeName);
 			parentNode = node.parentNode;
 			parentNode.replaceChild(div, node);
 			block = this.copy(block);
 
-			if (this.serializeTo(block, type, ancestor)) {
+			if (this.serializeTo(block, blockEl, ancestor)) {
 				if (el.contents[name].virtual) {
 					block.virtual = true;
 				}
@@ -310,10 +314,6 @@ Blocks.prototype.serializeTo = function(parent, overrideType, ancestor) {
 		});
 		parent.content[name] = nodeToHtml(content);
 	}, this);
-
-	if (el.unmount) {
-		parent = el.unmount(parent, ancestor && ancestor.blocks, this.view) || parent;
-	}
 
 	if (parent.content && contentKeys) {
 		Object.keys(parent.content).forEach(function(name) {
