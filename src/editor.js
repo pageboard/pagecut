@@ -70,16 +70,6 @@ function Editor(opts) {
 		plugins: []
 	}, Editor.defaults, opts);
 
-	opts.elements.virtual = {
-		name: 'virtual',
-		inplace: true,
-		virtual: true,
-		tag: "div[block-virtual]",
-		render: function(doc, block) {
-			return doc.dom`<div block-virtual></div>`;
-		}
-	};
-
 	Viewer.call(this, opts);
 
 	var spec = {
