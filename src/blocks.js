@@ -246,7 +246,9 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 	if (!el || typeof el == "string") el = this.view.element(el || parent.type);
 	if (ancestor) ancestor.blocks[parent.id] = parent;
-	if ((el.standalone || parent.standalone) && !parent.virtual) ancestor = parent;
+	if ((el.standalone || parent.standalone) && !parent.virtual) {
+		ancestor = parent;
+	}
 
 	if (parent == ancestor) {
 		parent.blocks = {};
