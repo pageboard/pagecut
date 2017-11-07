@@ -12,14 +12,13 @@ module.exports = function(view) {
 				console.error("Loop in appendTransaction for id-plugin");
 				return;
 			}
-			if (processStandalone(tr, newState.doc, 0)) {
+			if (processStandalone(tr, newState.doc, 0, false)) {
 				return tr;
 			}
 		}
 	};
 	function processStandalone(tr, root, offset, forceGen) {
 		var modified = false;
-		var forceGen = false;
 		var ids = {};
 		root.descendants(function(node, pos, parent) {
 			var attrs = node.attrs;
