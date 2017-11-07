@@ -200,15 +200,17 @@ function createRootSpec(view, elt, obj) {
 			var block;
 			if (id) block = view.blocks.get(id);
 			if (!block) {
+				block = view.blocks.fromAttrs(attrs);
 				if (standalone) {
 					if (!id) {
 						console.warn("standalone block missing id", dom.outerHTML);
 					} else {
-						attrs.block_id = id;
-						attrs.block_standalone = "true";
+						block.id = id;
+						block.standalone = true;
 					}
+				} else if (dom.closest('[block-standalone="true"]')) {
+					block.id = id;
 				}
-				block = view.blocks.fromAttrs(attrs);
 				view.blocks.set(block);
 			}
 			attrs = view.blocks.toAttrs(block);
