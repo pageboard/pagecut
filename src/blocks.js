@@ -206,7 +206,7 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 	}).then(function(block) {
 		if (block.children) {
 			block.children.forEach(function(child) {
-				if (!child.virtual) blocks[child.id] = child;
+				blocks[child.id] = child;
 			});
 			// children can be consumed once only
 			delete block.children;
