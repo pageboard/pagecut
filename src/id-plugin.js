@@ -12,14 +12,14 @@ module.exports = function(view) {
 				console.error("Loop in appendTransaction for id-plugin");
 				return;
 			}
-			if (processStandalone(tr, newState.doc)) {
+			if (processStandalone(tr, newState.doc, 0)) {
 				return tr;
 			}
 		}
 	};
-	function processStandalone(tr, root, offset) {
+	function processStandalone(tr, root, offset, forceGen) {
 		var modified = false;
-		if (!offset) offset = 0;
+		var forceGen = false;
 		var ids = {};
 		root.descendants(function(node, pos, parent) {
 			var attrs = node.attrs;
@@ -33,8 +33,9 @@ module.exports = function(view) {
 			var gen = false;
 			if (standalone && id && ids[id]) {
 				standalone = false;
+				forceGen = true;
 			}
-			var gen = !standalone && !el.inplace && (!id || ids[id]);
+			var gen = id && forceGen || !standalone && !el.inplace && (!id || ids[id]);
 			var rem = id && el.inplace;
 			if (gen) {
 				var newId = view.blocks.genId();
@@ -59,8 +60,8 @@ module.exports = function(view) {
 			} else if (id) {
 				ids[id] = true;
 			}
-			if (standalone) {
-				if (processStandalone(tr, node, pos + 1)) {
+			if (standalone || forceGen) {
+				if (processStandalone(tr, node, pos + 1, forceGen)) {
 					modified = true;
 				}
 				return false;
