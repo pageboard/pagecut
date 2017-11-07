@@ -30,6 +30,10 @@ module.exports = function(view) {
 			var el = view.element(type);
 			if (!el) return;
 			var standalone = attrs.block_standalone == "true";
+			var gen = false;
+			if (standalone && id && ids[id]) {
+				standalone = false;
+			}
 			var gen = !standalone && !el.inplace && (!id || ids[id]);
 			var rem = id && el.inplace;
 			if (gen) {
@@ -37,9 +41,14 @@ module.exports = function(view) {
 				var block = view.blocks.fromAttrs(attrs);
 				block.id = newId;
 				view.blocks.set(block);
-				tr.setNodeMarkup(pos, null, Object.assign({}, attrs, {
+				var newAttrs = Object.assign({}, attrs, {
 					block_id: newId
-				}));
+				});
+				if (!standalone) {
+					delete newAttrs.block_standalone;
+					block.standalone = false;
+				}
+				tr.setNodeMarkup(pos, null, newAttrs);
 				ids[newId] = true;
 				modified = true;
 			} else if (rem) {
