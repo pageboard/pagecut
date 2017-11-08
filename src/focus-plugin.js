@@ -175,7 +175,11 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	var change;
 	for (var i=0; i < changes.length; i++) {
 		change = changes[i];
-		me.focusRoot(tr, change.pos, change.node, change.focus);
+		try {
+			me.focusRoot(tr, change.pos, change.node, change.focus);
+		} catch(ex) {
+			console.error(ex);
+		}
 	}
 
 	if (selectedRoot) {
