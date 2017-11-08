@@ -28,17 +28,17 @@ var Viewer = global.Pagecut && global.Pagecut.Viewer || require("./viewer");
 Editor.prototype = Object.create(View.EditorView.prototype);
 Object.assign(Editor.prototype, Viewer.prototype);
 
-Editor.defaults = {};
-Editor.defaults.nodes = listSchema.addListNodes(
-	Editor.defaults.nodes,
-	"paragraph block*",
-	"block"
-);
+Editor.defaults = {
+	nodes: listSchema.addListNodes(
+		baseSchema.spec.nodes,
+		"paragraph block*",
+		"block"
+	),
+	marks: baseSchema.spec.marks
+};
 // Editor.defaults.nodes = tableSchema.addTableNodes(
 // 	Editor.defaults.nodes, "inline<_>*", "block"
 // );
-
-Editor.defaults.marks = baseSchema.spec.marks;
 
 const mac = typeof navigator != "undefined" ? /Mac/.test(navigator.platform) : false
 
