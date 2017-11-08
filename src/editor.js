@@ -29,7 +29,6 @@ Editor.prototype = Object.create(View.EditorView.prototype);
 Object.assign(Editor.prototype, Viewer.prototype);
 
 Editor.defaults = {};
-Editor.defaults.nodes = baseSchema.spec.nodes.remove('image');
 Editor.defaults.nodes = listSchema.addListNodes(
 	Editor.defaults.nodes,
 	"paragraph block*",

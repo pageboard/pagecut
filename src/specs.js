@@ -94,6 +94,18 @@ function define(view, elt, schema, views) {
 			}
 		}
 
+		if (type == "root") {
+			var existingName = elt.replaces || elt.name;
+			if (elt.inline) {
+				if (schema.marks.get(existingName)) {
+					schema.marks = schema.marks.remove(existingName);
+				}
+			} else {
+				if (schema.nodes.get(existingName)) {
+					schema.nodes = schema.nodes.remove(existingName);
+				}
+			}
+		}
 		if (spec.inline) {
 			schema.marks = schema.marks.addToStart(obj.name, spec);
 		} else {
