@@ -98,7 +98,7 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	var attrs = isDoc ? node.attrs : Object.assign({}, node.attrs);
 	var prev = attrs.block_focused;
 	if (prev == focus) {
-		return tr;
+		return;
 	}
 	if (focus) attrs.block_focused = focus;
 	else delete attrs.block_focused;
@@ -111,7 +111,6 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	} else {
 		tr.setNodeMarkup(pos, null, attrs);
 	}
-	return tr;
 };
 
 FocusPlugin.prototype.focus = function(tr, sel) {
