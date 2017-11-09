@@ -243,6 +243,8 @@ function createRootSpec(view, elt, obj) {
 
 	var spec = {
 		typeName: "root",
+		element: elt,
+		domModel: obj.dom,
 		inline: !!elt.inline,
 		defining: obj.dom == obj.contentDOM,
 		isolating: elt.isolating !== undefined ? elt.isolating : !elt.inline,
@@ -266,11 +268,8 @@ function createRootSpec(view, elt, obj) {
 	};
 	if (elt.marks) spec.marks = elt.marks;
 	if (obj.dom.childNodes.length || elt.contents) {
-		elt.domModel = obj.dom;
 		// there's a bug somewhere (in prosemirror ?) with leaf nodes having a nodeView
-		if (!elt.inline || !elt.inplace) spec.nodeView = function(node, view, getPos, decorations) {
-			return new RootNodeView(node, view, getPos, decorations);
-		};
+		if (!elt.inline || !elt.inplace) spec.nodeView = RootNodeView;
 		// explicitely allow dragging for nodes without contentDOM
 		if (!obj.contentDOM) spec.draggable = true;
 	} else {
@@ -300,15 +299,15 @@ function createWrapSpec(view, elt, obj) {
 
 	var spec = {
 		typeName: "wrap",
+		element: elt,
+		domModel: obj.dom,
 		attrs: defaultSpecAttrs,
 		parseDOM: [parseRule],
 		defining: obj.dom == obj.contentDOM,
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
 		},
-		nodeView: function(node, view, getPos, decorations) {
-			return new WrapNodeView(elt, obj.dom, node, view);
-		}
+		nodeView: WrapNodeView
 	};
 	return spec;
 }
@@ -332,15 +331,15 @@ function createContainerSpec(view, elt, obj) {
 
 	var spec = {
 		typeName: "container",
+		element: elt,
+		domModel: obj.dom,
 		attrs: defaultSpecAttrs,
 		defining: obj.dom == obj.contentDOM,
 		parseDOM: [parseRule],
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
 		},
-		nodeView: function(node, view, getPos, decorations) {
-			return new ContainerNodeView(elt, obj.dom, node, view);
-		}
+		nodeView: ContainerNodeView
 	};
 	return spec;
 }
@@ -350,14 +349,13 @@ function setupView(me) {
 	me.contentDOM = findContent(me.element, me.dom);
 }
 
-function RootNodeView(node, view, getPos) {
-	this.view = view;
-	var type = node.attrs.block_type;
-	if (!type) {
-		throw new Error("nodeView instance for a node without block_type");
+function RootNodeView(node, view, getPos, decorations) {
+	if (!(this instanceof RootNodeView)) {
+		return new RootNodeView(node, view, getPos, decorations);
 	}
-	this.element = view.element(type);
-	this.domModel = this.element.domModel;
+	this.view = view;
+	this.element = node.type.spec.element;
+	this.domModel = node.type.spec.domModel;
 	this.getPos = getPos;
 	this.id = node.attrs.block_id;
 	var block;
@@ -522,9 +520,13 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 	}
 };
 
-function WrapNodeView(elt, domModel, node, view) {
-	this.dom = domModel.cloneNode(true);
-	this.contentDOM = findContent(elt, this.dom);
+function WrapNodeView(node, view, getPos, decorations) {
+	if (!(this instanceof WrapNodeView)) {
+		return new WrapNodeView(node, view, getPos, decorations);
+	}
+	this.element = node.type.spec.element;
+	this.domModel = node.type.spec.domModel;
+	setupView(this);
 	this.update(node);
 }
 
@@ -541,10 +543,13 @@ WrapNodeView.prototype.ignoreMutation = function(record) {
 	return true;
 };
 
-function ContainerNodeView(elt, domModel, node, view) {
+function ContainerNodeView(node, view, getPos, decorations) {
+	if (!(this instanceof ContainerNodeView)) {
+		return new ContainerNodeView(node, view, getPos, decorations);
+	}
 	this.view = view;
-	this.element = elt;
-	this.domModel = domModel;
+	this.element = node.type.spec.element;
+	this.domModel = node.type.spec.domModel;
 	if (node.blockId) {
 		this.id = node.blockId;
 	}
