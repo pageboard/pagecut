@@ -24,6 +24,7 @@ function Viewer(opts) {
 
 	this.plugins = opts.plugins || [];
 	this.blocks = new Blocks(this, opts.genId);
+	this.block = {};
 	var viewer = this;
 	viewer.modules = {};
 
@@ -47,6 +48,7 @@ function Viewer(opts) {
 }
 
 Viewer.prototype.from = function(block, blocks) {
+	this.block = block;
 	return this.blocks.from(block, blocks);
 };
 

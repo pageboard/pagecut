@@ -382,11 +382,6 @@ Blocks.prototype.get = function(id) {
 	return this.store[id];
 };
 
-Blocks.prototype.root = function() {
-	var rootId = this.view.state.doc.attrs.block_id;
-	return rootId && this.store[rootId] || {};
-};
-
 Blocks.prototype.set = function(data) {
 	if (!Array.isArray(data)) data = [data];
 	for (var i = 0, cur; i < data.length; i++) {
