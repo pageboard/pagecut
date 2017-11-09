@@ -24,7 +24,7 @@ function Viewer(opts) {
 
 	this.plugins = opts.plugins || [];
 	this.blocks = new Blocks(this, opts.genId);
-	this.block = {};
+	this.block = {data:{}, content:{}};
 	var viewer = this;
 	viewer.modules = {};
 
