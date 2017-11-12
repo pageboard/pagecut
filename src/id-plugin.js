@@ -17,7 +17,7 @@ module.exports = function(view) {
 			}
 		}
 	};
-	function processStandalone(tr, root, offset, forceGen) {
+	function processStandalone(tr, root, offset, regen) {
 		var modified = false;
 		var ids = {};
 		root.descendants(function(node, pos, parent) {
@@ -29,8 +29,15 @@ module.exports = function(view) {
 			var el = view.element(type);
 			if (!el) return;
 			var standalone = attrs.block_standalone == "true";
-			var gen = false;
+			var forceGen = regen;
+			var knownBlock = view.blocks.get(id);
+			// Important: RootSpec parser.getAttrs works in combination with id-plugin
+			if (!standalone && knownBlock && knownBlock.standalone) {
+				// user changes a block to become not standalone
+				forceGen = true;
+			}
 			if (standalone && id && ids[id]) {
+				// two instances of the same standalone block are not yet supported
 				standalone = false;
 				forceGen = true;
 			}
@@ -59,7 +66,7 @@ module.exports = function(view) {
 			} else if (id) {
 				ids[id] = true;
 			}
-			if (standalone || forceGen) {
+			if (node.childCount && (standalone || forceGen)) {
 				if (processStandalone(tr, node, pos + 1, forceGen)) {
 					modified = true;
 				}

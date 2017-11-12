@@ -222,6 +222,8 @@ function createRootSpec(view, elt, obj) {
 					}
 				} else if (dom.closest('[block-standalone="true"]')) {
 					block.id = id;
+				} else {
+					// attrs does not contain block_id so it's like setting a new id
 				}
 				view.blocks.set(block);
 			}
