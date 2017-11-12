@@ -1,3 +1,8 @@
+This patch does not apply right now. It is supposed to be used in conjonction with
+document.execCommand("enableObjectResizing", false, false);
+However it is either fixed, or is only needed when dragging two consecutive images,
+see https://github.com/ProseMirror/prosemirror/issues/692 for link to upstream chrome issue.
+
 --- node_modules/prosemirror-view/dist/index.js	2017-09-25 10:29:03.000000000 +0200
 +++ node_modules.new/prosemirror-view/dist/index.js	2017-09-25 14:42:54.841108621 +0200
 @@ -1001,7 +1001,7 @@
