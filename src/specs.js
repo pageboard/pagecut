@@ -65,8 +65,13 @@ function define(view, elt, schema, views) {
 						return;
 					} else {
 						spec.contentName = contentName;
-						if (typeof contentSpec != "string" && contentSpec.spec) {
-							contentSpec = contentSpec.spec;
+						if (typeof contentSpec != "string") {
+							if (contentSpec.spec) {
+								contentSpec = contentSpec.spec;
+							} else {
+								console.warn(`element ${elt.name} has bad definition for content ${contentName}`);
+								return;
+							}
 						}
 						spec.content = contentSpec;
 					}
