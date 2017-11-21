@@ -39,7 +39,7 @@
     "diff-dom": "^2.3.0",
     "dom-template-strings": "^2.0.1",
     "esequal": "^0.1.15",
-    "prosemirror-commands": "^1.0.1",
+    "prosemirror-commands": "^1.0.2",
     "prosemirror-example-setup": "^1.0.0",
     "prosemirror-history": "^1.0.0",
     "prosemirror-inputrules": "^1.0.1",
