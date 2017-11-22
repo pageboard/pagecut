@@ -39,7 +39,7 @@ function define(view, elt, schema, views) {
 			throw new Error("Missing type in flagDom iterator", type, obj);
 		}
 
-		if (obj.children.length) {
+		if (obj.children && obj.children.length) {
 			// this type of node has content that is wrap or container type nodes
 			spec.content = obj.children.map(function(child) {
 				if (!child.name) console.warn(obj, "has no name for child", child);
@@ -88,7 +88,7 @@ function define(view, elt, schema, views) {
 			obj.name = `${elt.name}_${type}_${spec.contentName || index++}`;
 		}
 
-		var parseTag = spec.parseDOM[0].tag;
+		var parseTag = spec.parseDOM && spec.parseDOM[0].tag;
 		if (parseTag) {
 			var parseTagKey = spec.typeName == "root" ? parseTag : `${elt.name}_${parseTag}`;
 			var oldName = tags[parseTagKey];
