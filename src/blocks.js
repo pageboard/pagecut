@@ -230,13 +230,21 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 		return Promise.all(Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
 			var id = node.getAttribute('block-id');
 			if (id === block.id) return;
+			var type = node.getAttribute('block-type');
 			var child = blocks[id];
 			if (!child) {
-				node.remove();
-				console.warn("DOM node removed because it has unknown block id", node.outerHTML);
-				return;
+				console.warn("Block not found", id);
+				if (type) {
+					console.warn("Replacing it with a new block", type);
+					child = self.create(type);
+					child.id = self.genId();
+				} else {
+					// TODO find a gentler way that doesn't NUKE all page
+					console.error("removing block without type", node.outerHTML);
+					node.remove();
+					return;
+				}
 			}
-			var type = node.getAttribute('block-type');
 			return self.parseFrom(child, blocks, store, type).then(function(child) {
 				if (child) node.parentNode.replaceChild(child, node);
 			});
