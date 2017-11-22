@@ -137,6 +137,9 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 		var content = contents[name];
 		if (!content) return;
 		if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
+			if (node.childNodes.length == 1 && node.firstChild.nodeType == Node.TEXT_NODE) {
+				node.textContent = "";
+			}
 			node.appendChild(node.ownerDocument.importNode(content, true));
 		} else {
 			console.warn("cannot merge content", content);

@@ -98,7 +98,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 
 	var fromto = from;
 	if (slice.content.childCount == 1 && (from == to || sel.node)) {
-		var node = fillNode(slice.content.firstChild);
+		var node = fillNode(slice.content.firstChild, this.view);
 		var $pos = sel.$to;
 		var atEnd = sel.node || $pos.parentOffset == $pos.parent.nodeSize - 2;
 		var atStart = !sel.node && $pos.parentOffset == 0;
@@ -124,7 +124,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	return fromto;
 };
 
-function fillNode(node) {
+function fillNode(node, view) {
 	var content = node.content;
 	if (content.size) {
 		var before = node.type.contentMatch.fillBefore(content);
@@ -134,8 +134,11 @@ function fillNode(node) {
 	if (after) content = content.append(after);
 	var list = [];
 	content.forEach(function(child) {
-		list.push(fillNode(child));
+		list.push(fillNode(child, view));
 	});
+	if (node.attrs.block_default_text && list.length == 0) {
+		list.push(view.schema.text(node.attrs.block_default_text));
+	}
 	return node.copy(Model.Fragment.from(list));
 }
 

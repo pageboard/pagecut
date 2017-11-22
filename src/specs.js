@@ -141,7 +141,11 @@ function findContent(elt, dom) {
 }
 
 function flagDom(elt, dom, iterate) {
-	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return;
+	if (!dom) return;
+	if (dom.nodeType == Node.TEXT_NODE) {
+		return {text: dom.nodeValue};
+	}
+	if (dom.nodeType != Node.ELEMENT_NODE) return;
 	var obj = {
 		dom: dom,
 		contentDOM: findContent(elt, dom)
@@ -150,9 +154,15 @@ function flagDom(elt, dom, iterate) {
 	var wrapper = false;
 	if (obj.contentDOM) {
 		var child;
-		for (var i=0; i < obj.contentDOM.childNodes.length; i++) {
+		var childCount = obj.contentDOM.childNodes.length;
+		for (var i=0; i < childCount; i++) {
 			child = flagDom(elt, obj.contentDOM.childNodes[i], iterate, obj);
-			if (child) {
+			if (!child) continue;
+			if (child.text) {
+				if (childCount == 1) {
+					obj.defaultText = child.text;
+				}
+			}	else {
 				obj.children.push(child);
 				if (child.contentDOM) {
 					wrapper = true;
@@ -191,7 +201,8 @@ function createRootSpec(view, elt, obj) {
 		block_focused: null,
 		block_data: null,
 		block_type: elt.name,
-		block_standalone: elt.standalone ? "true" : null
+		block_standalone: elt.standalone ? "true" : null,
+		block_default_text: obj.defaultText || null
 	};
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
