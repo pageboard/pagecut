@@ -202,7 +202,7 @@ function createRootSpec(view, elt, obj) {
 		block_data: null,
 		block_type: elt.name,
 		block_standalone: elt.standalone ? "true" : null,
-		block_default_text: obj.defaultText || null
+		default_text: obj.defaultText || null
 	};
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
