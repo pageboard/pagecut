@@ -185,11 +185,14 @@ function flagDom(elt, dom, iterate) {
 function toDOMOutputSpec(obj, node) {
 	var out = 0;
 	var dom = obj.contentDOM || obj.dom;
+	var first = true;
 	while (dom) {
 		var attrs = domAttrsMap(dom);
+		if (first) for (var k in node.attrs) attrs[k] = node.attrs[k];
 		if (!obj.contentDOM || node instanceof Model.Mark) return [dom.nodeName, attrs];
 		out = [dom.nodeName, attrs, out];
 		if (dom == obj.dom) break;
+		first = false;
 		dom = dom.parentNode;
 	}
 	return out;
