@@ -675,13 +675,19 @@ function mutateNodeView(pmNode, obj, nobj, initial) {
 		parent = cont.parentNode;
 		node = cont;
 		while (node.previousSibling) {
-			if (node.previousSibling.elementRendered || initial) parent.removeChild(node.previousSibling);
-			else node = node.previousSibling;
+			if (node.previousSibling.elementRendered || initial) {
+				parent.removeChild(node.previousSibling);
+			} else {
+				node = node.previousSibling;
+			}
 		}
 		node = cont;
 		while (node.nextSibling) {
-			if (node.nextSibling.elementRendered || initial) parent.removeChild(node.nextSibling);
-			else node = node.nextSibling;
+			if (node.nextSibling.elementRendered || initial) {
+				parent.removeChild(node.nextSibling);
+			} else {
+				node = node.nextSibling;
+			}
 		}
 		while ((node = ncont.parentNode.firstChild) != ncont) {
 			node.elementRendered = true;
@@ -699,11 +705,12 @@ function mutateNodeView(pmNode, obj, nobj, initial) {
 
 function mutateAttributes(dom, ndom) {
 	// TODO remove only spec-defined attributes that are not in ndom
-	var attr;
+	var attr, val;
 	var natts = ndom.attributes;
 	for (var k=0; k < natts.length; k++) {
 		attr = natts[k];
-		dom.setAttribute(attr.name, ndom.getAttribute(attr.name));
+		val = ndom.getAttribute(attr.name);
+		dom.setAttribute(attr.name, val);
 	}
 	var atts = dom.attributes;
 	for (var j=0; j < atts.length; j++) {
