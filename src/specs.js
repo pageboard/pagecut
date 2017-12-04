@@ -545,6 +545,10 @@ function WrapNodeView(node, view, getPos, decorations) {
 }
 
 WrapNodeView.prototype.update = function(node, decorations) {
+	var updatedAttrs = attrsTo(node.attrs);
+	for (var k in updatedAttrs) {
+		this.dom.setAttribute(k, updatedAttrs[k]);
+	}
 	return true;
 };
 
@@ -572,6 +576,10 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 	if (!block) {
 		console.warn("container has no root node id", this, node);
 		return false;
+	}
+	var updatedAttrs = attrsTo(node.attrs);
+	for (var k in updatedAttrs) {
+		this.dom.setAttribute(k, updatedAttrs[k]);
 	}
 	if (node.type.spec.contentName) {
 		if (!block.content) block.content = {};
