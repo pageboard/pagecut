@@ -542,10 +542,6 @@ function WrapNodeView(node, view, getPos, decorations) {
 }
 
 WrapNodeView.prototype.update = function(node, decorations) {
-	if (node.uView) {
-		mutateNodeView(this, node.uView);
-		delete node.uView;
-	}
 	return true;
 };
 
