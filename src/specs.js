@@ -445,7 +445,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 		else delete block.focused;
 
 		var dom = this.view.render(block, node.attrs.block_type);
-		mutateNodeView(this, flagDom(this.element, dom), !oldBlock);
+		mutateNodeView(node, this, flagDom(this.element, dom), !oldBlock);
 		if (this.selected) {
 			this.selectNode();
 		}
@@ -602,7 +602,7 @@ function mergeNodeAttrsToDom(attrs, dom) {
 	}
 }
 
-function mutateNodeView(obj, nobj, initial) {
+function mutateNodeView(pmNode, obj, nobj, initial) {
 	var dom = obj.dom;
 	if (nobj.dom.nodeName != dom.nodeName) {
 		var emptyDom = dom.ownerDocument.createElement(nobj.dom.nodeName);
@@ -615,6 +615,18 @@ function mutateNodeView(obj, nobj, initial) {
 		obj.dom = emptyDom;
 		while (dom.firstChild) emptyDom.appendChild(dom.firstChild);
 		obj.contentDOM = obj.dom;
+	}
+	if (nobj.children.length) {
+			// TODO use getPos() and tr.setNodeMarkup(pos, null, attrs) ?
+		nobj.children.forEach(function(childObj, i) {
+			var pmChild = pmNode.child(i);
+			var viewDom = Array.prototype.find.call(obj.contentDOM.childNodes, function(child, i) {
+				return child.pmViewDesc && child.pmViewDesc.node == pmChild;
+			});
+			if (viewDom) {
+				mutateNodeView(pmChild, viewDom.pmViewDesc, childObj, initial);
+			}
+		}, this);
 	}
 	// first upgrade attributes
 	mutateAttributes(obj.dom, nobj.dom);
