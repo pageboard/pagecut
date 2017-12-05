@@ -424,7 +424,6 @@ RootNodeView.prototype.deselectNode = function() {
 };
 
 RootNodeView.prototype.update = function(node, decorations) {
-	if (this.element.name == "input_select") console.log("update node", node.attrs);
 	if (this.element.name != node.attrs.type) {
 		return false;
 	}
@@ -458,7 +457,12 @@ RootNodeView.prototype.update = function(node, decorations) {
 		else delete block.focused;
 
 		var dom = this.view.render(block, node.attrs.type);
-		mutateNodeView(node, this, flagDom(this.element, dom), !oldBlock);
+		var tr = this.view.state.tr;
+		mutateNodeView(tr, this.getPos(), node, this, flagDom(this.element, dom), !oldBlock);
+		// this is completely crazy to do that
+		setTimeout(function() {
+			if (oldBlock) this.view.dispatch(tr);
+		}.bind(this));
 		if (this.selected) {
 			this.selectNode();
 		}
@@ -608,7 +612,7 @@ by front-end. So when applying a new rendered DOM, one only wants to apply
 diff between initial rendering and new rendering, leaving user modifications
 untouched.
 */
-function mutateNodeView(pmNode, obj, nobj, initial) {
+function mutateNodeView(tr, pos, pmNode, obj, nobj, initial) {
 	var dom = obj.dom;
 	if (nobj.dom.nodeName != dom.nodeName) {
 		var emptyDom = dom.ownerDocument.createElement(nobj.dom.nodeName);
@@ -622,16 +626,20 @@ function mutateNodeView(pmNode, obj, nobj, initial) {
 		while (dom.firstChild) emptyDom.appendChild(dom.firstChild);
 		obj.contentDOM = obj.dom;
 	}
-	if (nobj.children.length) {
+	if (nobj.children.length && pos !== undefined) {
 			// TODO use getPos() and tr.setNodeMarkup(pos, null, attrs) ?
+		var curpos = pos + 1;
 		nobj.children.forEach(function(childObj, i) {
 			var pmChild = pmNode.child(i);
+			var newAttrs = Object.assign({}, pmChild.attrs, {_json: saveDomAttrs(childObj.dom)});
+			tr.setNodeMarkup(curpos, null, newAttrs);
 			var viewDom = Array.prototype.find.call(obj.contentDOM.childNodes, function(child, i) {
 				return child.pmViewDesc && child.pmViewDesc.node == pmChild;
 			});
 			if (viewDom) {
-				mutateNodeView(pmChild, viewDom.pmViewDesc, childObj, initial);
+				mutateNodeView(tr, curpos, pmChild, viewDom.pmViewDesc, childObj, initial);
 			}
+			curpos += pmChild.nodeSize;
 		}, this);
 	}
 	// first upgrade attributes
@@ -735,6 +743,13 @@ function restoreDomAttrs(json, dom) {
 	if (!dom) return map;
 	for (var k in map) {
 		dom.setAttribute(k, map[k]);
+	}
+	var atts = dom.attributes, att;
+	for (var i=0; i < atts.length; i++) {
+		att = atts[i].name;
+		if (!att.startsWith('block-') && map[att] === undefined) {
+			dom.removeAttribute(att);
+		}
 	}
 }
 
