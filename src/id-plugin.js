@@ -23,12 +23,12 @@ module.exports = function(view) {
 		root.descendants(function(node, pos, parent) {
 			var attrs = node.attrs;
 			pos += offset;
-			var id = attrs.block_id;
-			var type = attrs.block_type;
+			var id = attrs.id;
+			var type = attrs.type;
 			if (!type) return;
 			var el = view.element(type);
 			if (!el) return;
-			var standalone = attrs.block_standalone == "true";
+			var standalone = attrs.standalone == "true";
 			var forceGen = regen;
 			var knownBlock = view.blocks.get(id);
 			// Important: RootSpec parser.getAttrs works in combination with id-plugin
@@ -49,10 +49,10 @@ module.exports = function(view) {
 				block.id = newId;
 				view.blocks.set(block);
 				var newAttrs = Object.assign({}, attrs, {
-					block_id: newId
+					id: newId
 				});
 				if (!standalone) {
-					delete newAttrs.block_standalone;
+					delete newAttrs.standalone;
 					block.standalone = false;
 				}
 				tr.setNodeMarkup(pos, null, newAttrs);
@@ -60,7 +60,7 @@ module.exports = function(view) {
 				modified = true;
 			} else if (rem) {
 				var copy = Object.assign({}, attrs);
-				delete copy.block_id;
+				delete copy.id;
 				tr.setNodeMarkup(pos, null, copy);
 				modified = true;
 			} else if (id) {

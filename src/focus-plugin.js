@@ -96,12 +96,12 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	var isDoc = node.type.name == tr.doc.type.name;
 	// TODO create a new Step that updates doc.attrs
 	var attrs = isDoc ? node.attrs : Object.assign({}, node.attrs);
-	var prev = attrs.block_focused;
+	var prev = attrs.focused;
 	if (prev == focus) {
 		return;
 	}
-	if (focus) attrs.block_focused = focus;
-	else delete attrs.block_focused;
+	if (focus) attrs.focused = focus;
+	else delete attrs.focused;
 	if (node.type.spec.inline) {
 		var sel = this.view.utils.selectTr(tr, pos);
 		tr.removeMark(sel.from, sel.to, node.type);
@@ -167,7 +167,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 				break;
 			}
 		}
-		if (!changed && node.attrs.block_focused) changes.unshift({pos:pos, node:node, focus: false});
+		if (!changed && node.attrs.focused) changes.unshift({pos:pos, node:node, focus: false});
 	}
 	hasChanged(tr.doc);
 	tr.doc.descendants(hasChanged);
@@ -183,7 +183,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	}
 
 	if (selectedRoot) {
-		var el = this.view.element((root.mark || root.node).attrs.block_type);
+		var el = this.view.element((root.mark || root.node).attrs.type);
 		if (!el.inline) {
 			sel = new State.NodeSelection(tr.doc.resolve(rootPos));
 			tr.setSelection(sel);

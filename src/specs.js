@@ -160,7 +160,7 @@ function flagDom(elt, dom, iterate) {
 			if (!child) continue;
 			if (child.text) {
 				if (childCount == 1) {
-					obj.defaultText = child.text;
+					obj._default = child.text;
 				}
 			}	else {
 				obj.children.push(child);
@@ -185,14 +185,15 @@ function flagDom(elt, dom, iterate) {
 function toDOMOutputSpec(obj, node) {
 	var out = 0;
 	var dom = obj.contentDOM || obj.dom;
-	var first = true;
+	var attrs = Object.assign(attrsTo(node.attrs), restoreDomAttrs(node.attrs._json));
 	while (dom) {
-		var attrs = domAttrsMap(dom);
-		if (first) for (var k in node.attrs) attrs[k] = node.attrs[k];
 		if (!obj.contentDOM || node instanceof Model.Mark) return [dom.nodeName, attrs];
-		out = [dom.nodeName, attrs, out];
-		if (dom == obj.dom) break;
-		first = false;
+		if (dom != obj.dom) {
+			out = [dom.nodeName, {}, out];
+		} else {
+			out = [dom.nodeName, attrs, out];
+			break;
+		}
 		dom = dom.parentNode;
 	}
 	return out;
@@ -200,12 +201,12 @@ function toDOMOutputSpec(obj, node) {
 
 function createRootSpec(view, elt, obj) {
 	var defaultAttrs = {
-		block_id: null,
-		block_focused: null,
-		block_data: null,
-		block_type: elt.name,
-		block_standalone: elt.standalone ? "true" : null,
-		default_text: obj.defaultText || null
+		id: null,
+		focused: null,
+		data: null,
+		type: elt.name,
+		standalone: elt.standalone ? "true" : null,
+		_default: obj._default || null
 	};
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
@@ -218,12 +219,12 @@ function createRootSpec(view, elt, obj) {
 			var standalone = dom.getAttribute('block-standalone') == "true";
 			var data = dom.getAttribute('block-data');
 			var attrs = {
-				block_type: type
+				type: type
 			};
 			if (data) {
-				attrs.block_data = data;
+				attrs.data = data;
 			} else if (elt.parse) {
-				attrs.block_data = JSON.stringify(elt.parse(dom));
+				attrs.data = JSON.stringify(elt.parse(dom));
 			}
 			if (elt.inplace) {
 				return attrs;
@@ -242,12 +243,12 @@ function createRootSpec(view, elt, obj) {
 				} else if (dom.closest('[block-standalone="true"]')) {
 					block.id = id;
 				} else {
-					// attrs does not contain block_id so it's like setting a new id
+					// attrs does not contain id so it's like setting a new id
 				}
 				view.blocks.set(block);
 			}
 			attrs = view.blocks.toAttrs(block);
-			attrs.block_type = type;
+			attrs.type = type;
 			return attrs;
 		},
 		contentElement: function(dom) { return findContent(elt, dom); }
@@ -257,7 +258,7 @@ function createRootSpec(view, elt, obj) {
 	if (elt.tag) {
 		parseRule.tag = elt.tag;
 	} else if (elt.inplace) {
-		parseRule.tag = domSelector(obj.dom.nodeName, {class: obj.dom.className});
+		parseRule.tag = domSelector(obj.dom);
 	} else {
 		parseRule.tag = `[block-type="${elt.name}"]`;
 	}
@@ -272,17 +273,17 @@ function createRootSpec(view, elt, obj) {
 		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [parseRule],
 		toDOM: function(node) {
-			var id = node.attrs.block_id;
+			var id = node.attrs.id;
 			if (!id && node.marks && node.marks[0]) {
-				id = node.marks[0].attrs.block_id;
+				id = node.marks[0].attrs.id;
 				console.warn("Probably unsupported case of id from in node.marks", elt.inline, node);
 			}
 			var block;
 			if (id) block = view.blocks.get(id);
 			if (!block) block = view.blocks.fromAttrs(node.attrs);
-			else block.focused = node.attrs.block_focused;
+			else block.focused = node.attrs.focused;
 
-			var dom = view.render(block, node.attrs.block_type);
+			var dom = view.render(block, node.attrs.type);
 			var uView = flagDom(elt, dom);
 			return toDOMOutputSpec(uView, node);
 		}
@@ -301,12 +302,16 @@ function createRootSpec(view, elt, obj) {
 
 function createWrapSpec(view, elt, obj) {
 	var defaultAttrs = attrsFrom(obj.dom);
+	defaultAttrs._json = null;
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	var parseRule = {
-		tag: domSelector(obj.dom.nodeName, defaultAttrs) + ':not([block-type])',
+		tag: domSelector(obj.dom) + ':not([block-type])',
 		getAttrs: function(dom) {
-			return attrsFrom(dom);
+			var attrs = attrsFrom(dom);
+			var json = saveDomAttrs(dom);
+			if (json) attrs._json = json;
+			return attrs;
 		},
 		contentElement: function(dom) { return findContent(elt, dom); }
 	};
@@ -328,17 +333,21 @@ function createWrapSpec(view, elt, obj) {
 
 function createContainerSpec(view, elt, obj) {
 	var defaultAttrs = attrsFrom(obj.dom);
+	defaultAttrs._json = null;
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 	var tag;
 	if (obj.dom == obj.contentDOM) {
-		tag = `${obj.dom.nodeName.toLowerCase()}[block-content="${defaultAttrs.block_content}"]`;
+		tag = `${obj.dom.nodeName.toLowerCase()}[block-content="${defaultAttrs.content}"]`;
 	} else {
-		tag = domSelector(obj.dom.nodeName, defaultAttrs);
+		tag = domSelector(obj.dom);
 	}
 	var parseRule = {
 		tag: tag + ':not([block-type])',
 		getAttrs: function(dom) {
-			return attrsFrom(dom);
+			var attrs = attrsFrom(dom);
+			var json = saveDomAttrs(dom);
+			if (json) attrs._json = json;
+			return attrs;
 		},
 		contentElement: function(dom) { return findContent(elt, dom); }
 	};
@@ -371,25 +380,25 @@ function RootNodeView(node, view, getPos, decorations) {
 	this.element = node.type.spec.element;
 	this.domModel = node.type.spec.domModel;
 	this.getPos = getPos;
-	this.id = node.attrs.block_id;
+	this.id = node.attrs.id;
 	var block;
 	if (this.id) {
 		if (this.element.inplace) {
-			delete node.attrs.block_id;
+			delete node.attrs.id;
 			delete this.id;
 		} else {
 			block = view.blocks.get(this.id);
 		}
 	}
 	if (!block) {
-		if (node.attrs.block_id) {
-			delete node.attrs.block_id;
+		if (node.attrs.id) {
+			delete node.attrs.id;
 			delete this.id;
 		}
 		block = view.blocks.fromAttrs(node.attrs);
 	}
 	if (!this.element.inplace && !this.id) {
-		this.id = block.id = node.attrs.block_id = view.blocks.genId();
+		this.id = block.id = node.attrs.id = view.blocks.genId();
 		view.blocks.set(block);
 	}
 
@@ -415,11 +424,12 @@ RootNodeView.prototype.deselectNode = function() {
 };
 
 RootNodeView.prototype.update = function(node, decorations) {
-	if (this.element.name != node.attrs.block_type) {
+	if (this.element.name == "input_select") console.log("update node", node.attrs);
+	if (this.element.name != node.attrs.type) {
 		return false;
 	}
 	var oldBlock = this.oldBlock;
-	if (node.attrs.block_id != this.id) {
+	if (node.attrs.id != this.id) {
 		return false;
 	}
 	var uBlock = this.view.blocks.fromAttrs(node.attrs);
@@ -438,16 +448,16 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 	// consider it's the same data when it's initializing
 	var sameData = oldBlock && this.view.utils.equal(oldBlock.data, block.data);
-	var sameFocus = oldBlock && this.oldBlock.focused == node.attrs.block_focused;
+	var sameFocus = oldBlock && this.oldBlock.focused == node.attrs.focused;
 
 	if (!sameData || !sameFocus) {
 		this.oldBlock = this.view.blocks.copy(block);
-		this.oldBlock.focused = node.attrs.block_focused;
+		this.oldBlock.focused = node.attrs.focused;
 
-		if (node.attrs.block_focused) block.focused = node.attrs.block_focused;
+		if (node.attrs.focused) block.focused = node.attrs.focused;
 		else delete block.focused;
 
-		var dom = this.view.render(block, node.attrs.block_type);
+		var dom = this.view.render(block, node.attrs.type);
 		mutateNodeView(node, this, flagDom(this.element, dom), !oldBlock);
 		if (this.selected) {
 			this.selectNode();
@@ -520,7 +530,7 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 		block.data[dataWhat] = val;
 		var pos = this.getPos();
 		var attrs = this.view.blocks.toAttrs(block);
-		attrs.block_type = this.element.name;
+		attrs.type = this.element.name;
 		var tr = this.view.state.tr;
 		var reselect = tr.selection.node && tr.selection.from == pos;
 		tr.setNodeMarkup(pos, null, attrs);
@@ -545,10 +555,7 @@ function WrapNodeView(node, view, getPos, decorations) {
 }
 
 WrapNodeView.prototype.update = function(node, decorations) {
-	var updatedAttrs = attrsTo(node.attrs);
-	for (var k in updatedAttrs) {
-		this.dom.setAttribute(k, updatedAttrs[k]);
-	}
+	restoreDomAttrs(node.attrs._json, this.dom);
 	return true;
 };
 
@@ -577,10 +584,7 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 		console.warn("container has no root node id", this, node);
 		return false;
 	}
-	var updatedAttrs = attrsTo(node.attrs);
-	for (var k in updatedAttrs) {
-		this.dom.setAttribute(k, updatedAttrs[k]);
-	}
+	restoreDomAttrs(node.attrs._json, this.dom);
 	if (node.type.spec.contentName) {
 		if (!block.content) block.content = {};
 		if (block.content[node.type.spec.contentName] != this.contentDOM) {
@@ -598,17 +602,12 @@ ContainerNodeView.prototype.ignoreMutation = function(record) {
 	}
 };
 
-function mergeNodeAttrsToDom(attrs, dom) {
-	var domAttrs = attrsTo(Object.assign(
-		{},
-		attrs,
-		attrsFrom(dom)
-	));
-	for (var k in domAttrs) {
-		dom.setAttribute(k, domAttrs[k]);
-	}
-}
-
+/*
+problem: nodes between obj.dom and obj.contentDOM (included) can be modified
+by front-end. So when applying a new rendered DOM, one only wants to apply
+diff between initial rendering and new rendering, leaving user modifications
+untouched.
+*/
 function mutateNodeView(pmNode, obj, nobj, initial) {
 	var dom = obj.dom;
 	if (nobj.dom.nodeName != dom.nodeName) {
@@ -669,7 +668,6 @@ function mutateNodeView(pmNode, obj, nobj, initial) {
 	var cont = obj.contentDOM;
 	var ncont = nobj.contentDOM;
 
-	// replace only nodes rendered by element
 	while (cont != obj.dom) {
 		mutateAttributes(cont, ncont);
 		parent = cont.parentNode;
@@ -719,18 +717,43 @@ function mutateAttributes(dom, ndom) {
 	}
 }
 
+function saveDomAttrs(dom) {
+	var map = domAttrsMap(dom);
+	if (Object.keys(map).length == 0) return;
+	return JSON.stringify(map);
+}
+
+function restoreDomAttrs(json, dom) {
+	if (!json) return;
+	var map;
+	try {
+		map = JSON.parse(json);
+	} catch(ex) {
+		console.info("Bad attributes", json);
+	}
+	if (!map) return;
+	if (!dom) return map;
+	for (var k in map) {
+		dom.setAttribute(k, map[k]);
+	}
+}
+
 function domAttrsMap(dom) {
 	var map = {};
 	var atts = dom.attributes;
+	var att;
 	for (var k=0; k < atts.length; k++) {
-		map[atts[k].name] = atts[k].value;
+		att = atts[k];
+		if (att.value && !att.name.startsWith('block-')) map[att.name] = att.value;
 	}
 	return map;
 }
 
 function attrsTo(attrs) {
 	var domAttrs = {};
-	for (var k in attrs) if (attrs[k] != null) domAttrs[k.replace(/_/g, '-')] = attrs[k];
+	for (var k in attrs) {
+		if (!k.startsWith('_') && attrs[k] != null) domAttrs['block-' + k] = attrs[k];
+	}
 	return domAttrs;
 }
 
@@ -739,7 +762,7 @@ function attrsFrom(dom) {
 	var att, attrs = {}, name;
 	for (var i=0; i < domAttrs.length; i++) {
 		att = domAttrs[i];
-		attrs[att.name.replace(/-/g, '_')] = att.value;
+		if (att.name.startsWith('block-')) attrs[att.name.substring(6)] = att.value;
 	}
 	return attrs;
 }
@@ -755,9 +778,9 @@ function specAttrs(atts) {
 	return obj;
 }
 
-function domSelector(tag, attrs) {
-	var sel = tag.toLowerCase();
-	var className = attrs.class;
+function domSelector(dom) {
+	var sel = dom.nodeName.toLowerCase();
+	var className = dom.className;
 	if (className) {
 		sel += className.split(' ').filter(function(str) {
 			return !!str;

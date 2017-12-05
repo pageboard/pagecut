@@ -25,8 +25,8 @@ Blocks.prototype.create = function(type) {
 Blocks.prototype.fromAttrs = function(attrs) {
 	var block = {};
 	for (var name in attrs) {
-		if (name.startsWith('block_') && attrs[name] != null) {
-			block[name.substring(6)] = attrs[name];
+		if (!name.startsWith("_")) {
+			block[name] = attrs[name];
 		}
 	}
 	if (block.data) block.data = JSON.parse(block.data);
@@ -39,7 +39,7 @@ Blocks.prototype.fromAttrs = function(attrs) {
 			data[k] = el.properties[k].default;
 		}
 	}
-	if (attrs.block_standalone == "true") block.standalone = true;
+	if (attrs.standalone == "true") block.standalone = true;
 	else delete block.standalone;
 	return block;
 };
@@ -47,12 +47,12 @@ Blocks.prototype.fromAttrs = function(attrs) {
 Blocks.prototype.toAttrs = function(block) {
 	var attrs = {};
 	if (!block) return attrs;
-	if (block.id != null) attrs.block_id = block.id;
-	if (block.type != null) attrs.block_type = block.type;
-	if (block.data) attrs.block_data = JSON.stringify(block.data);
-	if (block.focused) attrs.block_focused = block.focused;
-	if (block.standalone) attrs.block_standalone = "true";
-	if (attrs.block_data == "{}") delete attrs.block_data;
+	if (block.id != null) attrs.id = block.id;
+	if (block.type != null) attrs.type = block.type;
+	if (block.data) attrs.data = JSON.stringify(block.data);
+	if (block.focused) attrs.focused = block.focused;
+	if (block.standalone) attrs.standalone = "true";
+	if (attrs.data == "{}") delete attrs.data;
 	return attrs;
 };
 

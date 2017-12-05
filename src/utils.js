@@ -136,8 +136,8 @@ function fillNode(node, view) {
 	content.forEach(function(child) {
 		list.push(fillNode(child, view));
 	});
-	if (node.attrs.default_text && list.length == 0) {
-		list.push(view.schema.text(node.attrs.default_text));
+	if (node.attrs.text && list.length == 0) {
+		list.push(view.schema.text(node.attrs.text));
 	}
 	return node.copy(Model.Fragment.from(list));
 }
@@ -182,14 +182,14 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 	if (!parent) return;
 	var root = parent.root;
 	if (!block) {
-		var id = (root.mark || root.node).attrs.block_id;
+		var id = (root.mark || root.node).attrs.id;
 		if (!id) return;
 		block = this.view.blocks.get(id);
 		if (!block) return; // nothing to refresh
 	}
 	var attrs = this.view.blocks.toAttrs(block);
 	var type = dom.getAttribute('block-type');
-	if (type) attrs.block_type = type; // dom can override block.type
+	if (type) attrs.type = type; // dom can override block.type
 	else type = block.type;
 	if (root.mark) {
 		var sel = this.selectTr(tr, parent);
@@ -199,9 +199,9 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 	} else {
 		var sel = tr.selection;
 		var selectedNode = sel.from === pos && sel.node;
-		if (!attrs.block_id && root.node.attrs.block_focused) {
+		if (!attrs.id && root.node.attrs.focused) {
 			// block.focused cannot be stored here since it is inplace
-			attrs.block_focused = root.node.attrs.block_focused;
+			attrs.focused = root.node.attrs.focused;
 		}
 		tr.setNodeMarkup(pos, null, attrs);
 		if (selectedNode) {
@@ -398,9 +398,9 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 			obj[type] = {rpos: rpos, level: level, node: node};
 			if (mark) obj[type].mark = mark;
 		}
-		if ((type == "container" || level != depth) && node && node.attrs.block_content) {
+		if ((type == "container" || level != depth) && node && node.attrs.content) {
 			if (!obj.container) obj.container = obj.root || {};
-			obj.container.name = node.attrs.block_content;
+			obj.container.name = node.attrs.content;
 		}
 		if (type == "root") {
 			if (!all) break;

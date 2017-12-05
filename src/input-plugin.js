@@ -41,8 +41,8 @@ InputPlugin.prototype.handleTextInput = function(view, from, to, text) {
 InputPlugin.prototype.transformPasted = function(pslice) {
 	var view = this.view;
 	var frag = view.utils.fragmentApply(pslice.content, function(node) {
-		delete node.attrs.block_focused;
-		var id = node.attrs.block_id;
+		delete node.attrs.focused;
+		var id = node.attrs.id;
 		if (!id) return;
 		var block = view.blocks.get(id);
 		if (!block) return;

@@ -94,10 +94,10 @@ function Editor(opts) {
 		return function(node) {
 			var out = fun(node);
 			Object.assign(out[1], {
-				'block-data': node.attrs.block_data
+				'block-data': node.attrs.data
 			});
 			delete out[1]['block-focused'];
-			if (node.attrs.block_standalone) out[1]['block-standalone'] = 'true';
+			if (node.attrs.standalone) out[1]['block-standalone'] = 'true';
 			return out;
 		};
 	}
@@ -180,11 +180,11 @@ function Editor(opts) {
 
 	var rootId = this.dom.getAttribute('block-id');
 	if (rootId) {
-		this.state.doc.attrs.block_id = rootId;
+		this.state.doc.attrs.id = rootId;
 	}
 	var rootType = this.dom.getAttribute('block-type');
 	if (rootType) {
-		this.state.doc.attrs.block_type = rootType;
+		this.state.doc.attrs.type = rootType;
 	}
 }
 
