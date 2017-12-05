@@ -458,7 +458,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 		var dom = this.view.render(block, node.attrs.type);
 		var tr = this.view.state.tr;
-		mutateNodeView(tr, this.getPos(), node, this, flagDom(this.element, dom), !oldBlock);
+		mutateNodeView(tr, this.getPos && this.getPos() || undefined, node, this, flagDom(this.element, dom), !oldBlock);
 		// this is completely crazy to do that
 		setTimeout(function() {
 			if (oldBlock) this.view.dispatch(tr);
@@ -627,7 +627,6 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj, initial) {
 		obj.contentDOM = obj.dom;
 	}
 	if (nobj.children.length && pos !== undefined) {
-			// TODO use getPos() and tr.setNodeMarkup(pos, null, attrs) ?
 		var curpos = pos + 1;
 		nobj.children.forEach(function(childObj, i) {
 			var pmChild = pmNode.child(i);
