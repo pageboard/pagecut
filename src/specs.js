@@ -192,6 +192,7 @@ function toDOMOutputSpec(obj, node) {
 			out = [dom.nodeName, {}, out];
 		} else {
 			out = [dom.nodeName, attrs, out];
+			if (node.type.spec.contentName) out[1]['block-content'] = node.type.spec.contentName;
 			break;
 		}
 		dom = dom.parentNode;
