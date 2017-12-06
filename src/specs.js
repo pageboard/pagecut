@@ -748,7 +748,7 @@ function restoreDomAttrs(json, dom) {
 	var atts = dom.attributes, att;
 	for (var i=0; i < atts.length; i++) {
 		att = atts[i].name;
-		if (!att.startsWith('block-') && map[att] === undefined) {
+		if (!att.startsWith('block-') && att != "block-content" && map[att] === undefined) {
 			dom.removeAttribute(att);
 		}
 	}
