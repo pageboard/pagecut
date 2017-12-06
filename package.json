@@ -1,6 +1,6 @@
 {
   "name": "pagecut",
-  "version": "1.0.0-beta.33",
+  "version": "1.0.0-beta.34",
   "description": "Extensible web content editor",
   "main": "index.js",
   "scripts": {
