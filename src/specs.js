@@ -459,11 +459,10 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 		var dom = this.view.render(block, node.attrs.type);
 		var tr = this.view.state.tr;
-		mutateNodeView(tr, this.getPos && this.getPos() || undefined, node, this, flagDom(this.element, dom), !oldBlock);
+		var curpos = this.getPos && this.getPos() || undefined;
+		mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom), !oldBlock);
 		// this is completely crazy to do that
-		setTimeout(function() {
-			if (oldBlock) this.view.dispatch(tr);
-		}.bind(this));
+		if (oldBlock && curpos !== undefined) this.view.dispatch(tr);
 		if (this.selected) {
 			this.selectNode();
 		}
