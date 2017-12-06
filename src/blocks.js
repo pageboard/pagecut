@@ -25,7 +25,7 @@ Blocks.prototype.create = function(type) {
 Blocks.prototype.fromAttrs = function(attrs) {
 	var block = {};
 	for (var name in attrs) {
-		if (!name.startsWith("_")) {
+		if (!name.startsWith("_") && name != "content") {
 			block[name] = attrs[name];
 		}
 	}
