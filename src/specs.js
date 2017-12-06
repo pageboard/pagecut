@@ -720,7 +720,9 @@ function mutateAttributes(dom, ndom) {
 	var atts = dom.attributes;
 	for (var j=0; j < atts.length; j++) {
 		attr = atts[j]
-		if (attr.name.startsWith('block-') && !ndom.hasAttribute(attr.name)) dom.removeAttribute(attr.name);
+		if (attr.name.startsWith('block-') && !ndom.hasAttribute(attr.name)) {
+			dom.removeAttribute(attr.name);
+		}
 	}
 }
 
@@ -776,7 +778,9 @@ function attrsFrom(dom) {
 	var att, attrs = {}, name;
 	for (var i=0; i < domAttrs.length; i++) {
 		att = domAttrs[i];
-		if (att.name.startsWith('block-')) attrs[att.name.substring(6)] = att.value;
+		if (att.name.startsWith('block-')) {
+			attrs[att.name.substring(6)] = att.value;
+		}
 	}
 	return attrs;
 }
