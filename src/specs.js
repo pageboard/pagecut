@@ -632,6 +632,7 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj, initial) {
 			var pmChild = pmNode.child(i);
 			var newAttrs = Object.assign({}, pmChild.attrs, {_json: saveDomAttrs(childObj.dom)});
 			tr.setNodeMarkup(curpos, null, newAttrs);
+			pmChild.attrs = newAttrs; // because we want the modification NOW
 			var viewDom = Array.prototype.find.call(obj.contentDOM.childNodes, function(child, i) {
 				return child.pmViewDesc && child.pmViewDesc.node == pmChild;
 			});
