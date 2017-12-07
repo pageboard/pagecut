@@ -90,8 +90,6 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	}
 	var parent = sel.$from.parent;
 	var slice = this.parse(dom, {context: sel.$to, tr: tr});
-	// it usually hurts to have openStart, openEnd at another depth
-	slice = new Model.Slice(slice.content, 0, 0);
 
 	var from = sel.from;
 	var to = sel.to;
@@ -117,8 +115,10 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 			tr.split(from);
 			fromto = from + 1;
 		}
+		slice = new Model.Slice(Model.Fragment.from(node), 0, 0);
 		to = from = fromto;
 	} else {
+		slice = new Model.Slice(slice.content, 0, 0);
 	}
 	tr.replaceRange(from, to, slice);
 	return fromto;
