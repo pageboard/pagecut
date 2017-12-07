@@ -136,8 +136,8 @@ function fillNode(node, view) {
 	content.forEach(function(child) {
 		list.push(fillNode(child, view));
 	});
-	if (node.attrs.text && list.length == 0) {
-		list.push(view.schema.text(node.attrs.text));
+	if (node.attrs._default && list.length == 0) {
+		list.push(view.schema.text(node.attrs._default));
 	}
 	return node.copy(Model.Fragment.from(list));
 }
