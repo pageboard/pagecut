@@ -406,11 +406,6 @@ function RootNodeView(node, view, getPos, decorations) {
 	if (block.focused) delete block.focused;
 
 	setupView(this);
-	if (node.forEach) node.forEach(function(child) {
-		if (child.type.spec.typeName == "container" || child.type.spec.typeName == "wrap") {
-			child.blockId = this.id;
-		}
-	}.bind(this));
 	this.update(node);
 }
 
@@ -429,8 +424,16 @@ RootNodeView.prototype.update = function(node, decorations) {
 		return false;
 	}
 	var oldBlock = this.oldBlock;
-	if (node.attrs.id != this.id) {
+	var id = this.id;
+	if (node.attrs.id != id) {
 		return false;
+	}
+	if (node.forEach) {
+		node.forEach(function(child, offset, index) {
+			if (child.type.spec.typeName == "container") {
+				if (!child.attrs.root_id) child.attrs.root_id = id;
+			}
+		});
 	}
 	var uBlock = this.view.blocks.fromAttrs(node.attrs);
 	var block;
@@ -460,7 +463,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 		var dom = this.view.render(block, node.attrs.type);
 		var tr = this.view.state.tr;
 		var curpos = this.getPos && this.getPos() || undefined;
-		mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom), !oldBlock);
+		mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom));
 		// this is completely crazy to do that
 		if (oldBlock && curpos !== undefined) this.view.dispatch(tr);
 		if (this.selected) {
@@ -575,20 +578,21 @@ function ContainerNodeView(node, view, getPos, decorations) {
 	this.view = view;
 	this.element = node.type.spec.element;
 	this.domModel = node.type.spec.domModel;
-	if (node.blockId) {
-		this.id = node.blockId;
-	}
 	setupView(this);
 	this.update(node);
 }
 
 ContainerNodeView.prototype.update = function(node, decorations) {
-	var block = this.view.blocks.get(this.id);
+	restoreDomAttrs(node.attrs._json, this.dom);
+	var id = node.attrs.root_id;
+	if (!id) {
+		return false;
+	}
+	var block = this.view.blocks.get(id);
 	if (!block) {
 		console.warn("container has no root node id", this, node);
 		return false;
 	}
-	restoreDomAttrs(node.attrs._json, this.dom);
 	if (node.type.spec.contentName) {
 		if (!block.content) block.content = {};
 		if (block.content[node.type.spec.contentName] != this.contentDOM) {
@@ -612,8 +616,10 @@ by front-end. So when applying a new rendered DOM, one only wants to apply
 diff between initial rendering and new rendering, leaving user modifications
 untouched.
 */
-function mutateNodeView(tr, pos, pmNode, obj, nobj, initial) {
+function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 	var dom = obj.dom;
+	var initial = !obj._pcinit;
+	if (initial) obj._pcinit = true;
 	if (nobj.dom.nodeName != dom.nodeName) {
 		var emptyDom = dom.ownerDocument.createElement(nobj.dom.nodeName);
 		if (dom.parentNode) {
@@ -637,7 +643,7 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj, initial) {
 				return child.pmViewDesc && child.pmViewDesc.node == pmChild;
 			});
 			if (viewDom) {
-				mutateNodeView(tr, curpos, pmChild, viewDom.pmViewDesc, childObj, initial);
+				mutateNodeView(tr, curpos, pmChild, viewDom.pmViewDesc, childObj);
 			}
 			curpos += pmChild.nodeSize;
 		}, this);
@@ -647,12 +653,12 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj, initial) {
 	// then upgrade descendants
 	var parent, node;
 	if (!obj.contentDOM) {
-		// remove all elementRendered
+		// remove all _pcElt
 		parent = obj.dom;
 		node = parent.firstChild;
 		var cur;
 		while (node) {
-			if (node.elementRendered || initial) {
+			if (node._pcElt || initial) {
 				cur = node;
 			} else {
 				cur = null;
@@ -662,7 +668,7 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj, initial) {
 		}
 		node = nobj.dom.firstChild;
 		while (node) {
-			node.elementRendered = true;
+			node._pcElt = true;
 			cur = node;
 			node = node.nextSibling;
 			parent.appendChild(cur);
@@ -681,7 +687,7 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj, initial) {
 		parent = cont.parentNode;
 		node = cont;
 		while (node.previousSibling) {
-			if (node.previousSibling.elementRendered || initial) {
+			if (node.previousSibling._pcElt || initial) {
 				parent.removeChild(node.previousSibling);
 			} else {
 				node = node.previousSibling;
@@ -689,19 +695,19 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj, initial) {
 		}
 		node = cont;
 		while (node.nextSibling) {
-			if (node.nextSibling.elementRendered || initial) {
+			if (node.nextSibling._pcElt || initial) {
 				parent.removeChild(node.nextSibling);
 			} else {
 				node = node.nextSibling;
 			}
 		}
 		while ((node = ncont.parentNode.firstChild) != ncont) {
-			node.elementRendered = true;
+			node._pcElt = true;
 			parent.insertBefore(node, cont);
 		}
 		node = ncont;
 		while (node.nextSibling) {
-			node.nextSibling.elementRendered = true;
+			node.nextSibling._pcElt = true;
 			parent.appendChild(node.nextSibling);
 		}
 		cont = parent;
@@ -710,19 +716,36 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj, initial) {
 }
 
 function mutateAttributes(dom, ndom) {
-	// TODO remove only spec-defined attributes that are not in ndom
-	var attr, val;
+	// TODO all changes go through here, except maybe block-* related ones
+	// SO, store into dom._pcAttrs the last copy, and compare
+	var attr, name, val, oval;
 	var natts = ndom.attributes;
+	var iatts = dom._pcAttrs;
+	if (!iatts) iatts = dom._pcAttrs = {};
 	for (var k=0; k < natts.length; k++) {
 		attr = natts[k];
-		val = ndom.getAttribute(attr.name);
-		dom.setAttribute(attr.name, val);
+		name = attr.name;
+		oval = dom.getAttribute(name);
+		val = attr.value;
+		if (iatts[name] == null || iatts[name] == oval) {
+			if (val != oval) dom.setAttribute(name, val);
+		} else if (name == "class") {
+			// TODO apply diff between iatts[name] and oval, to val
+		} else {
+			// TODO what ?
+			dom.setAttribute(name, val);
+		}
+		iatts[name] = val;
 	}
+
 	var atts = dom.attributes;
 	for (var j=0; j < atts.length; j++) {
-		attr = atts[j]
-		if (attr.name.startsWith('block-') && !ndom.hasAttribute(attr.name)) {
-			dom.removeAttribute(attr.name);
+		attr = atts[j];
+		name = attr.name;
+		if (name == "block-content") continue;
+		if ((name.startsWith('block-') || (iatts[name] != null && iatts[name] == attr.value)) && !ndom.hasAttribute(name)) {
+			dom.removeAttribute(name);
+			delete iatts[name];
 		}
 	}
 }
@@ -743,13 +766,27 @@ function restoreDomAttrs(json, dom) {
 	}
 	if (!map) return;
 	if (!dom) return map;
-	for (var k in map) {
-		dom.setAttribute(k, map[k]);
+	var iatts = dom._pcAttrs;
+	if (!iatts) iatts = dom._pcAttrs = {};
+	var oval, val, name;
+	for (name in map) {
+		oval = dom.getAttribute(name);
+		val = map[name];
+		if (iatts[name] == null || iatts[name] == oval) {
+			if (val != oval) dom.setAttribute(name, val);
+		} else if (name == "class") {
+			// TODO apply diff between iatts[name] and oval, to val
+		} else {
+			// TODO what ?
+			dom.setAttribute(name, val);
+		}
+		iatts[name] = val;
 	}
-	var atts = dom.attributes, att;
+
+	var atts = dom.attributes;
 	for (var i=0; i < atts.length; i++) {
-		att = atts[i].name;
-		if (!att.startsWith('block-') && att != "block-content" && map[att] === undefined) {
+		name = atts[i].name;
+		if (!name.startsWith('block-') && map[name] === undefined && iatts[name] == null) {
 			dom.removeAttribute(att);
 		}
 	}
