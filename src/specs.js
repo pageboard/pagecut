@@ -304,6 +304,10 @@ function createRootSpec(view, elt, obj) {
 function createWrapSpec(view, elt, obj) {
 	var defaultAttrs = attrsFrom(obj.dom);
 	defaultAttrs._json = null;
+	if (obj._default != null) {
+		console.warn("untested, wrapper has _default");
+		defaultAttrs._default = obj._default;
+	}
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	var parseRule = {
@@ -335,6 +339,7 @@ function createWrapSpec(view, elt, obj) {
 function createContainerSpec(view, elt, obj) {
 	var defaultAttrs = attrsFrom(obj.dom);
 	defaultAttrs._json = null;
+	if (obj._default != null) defaultAttrs._default = obj._default;
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 	var tag;
 	if (obj.dom == obj.contentDOM) {
