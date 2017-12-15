@@ -720,6 +720,33 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 	}
 }
 
+function mapOfClass(att) {
+	var map = {};
+	att.split(' ').forEach(function(str) {
+		str = str.trim();
+		if (str) map[str] = true;
+	});
+	return map;
+}
+
+function applyDiffClass(src, dst, tar) {
+	var srcMap = mapOfClass(src);
+	var dstMap = mapOfClass(dst);
+	var tarMap = mapOfClass(tar);
+
+	Object.keys(dstMap).forEach(function(str) {
+		if (!srcMap[str]) {
+			tarMap[str] = true;
+		}
+	});
+	for (var str in srcMap) {
+		if (!dstMap[str]) {
+			delete tarMap[str];
+		}
+	}
+	return Object.keys(tarMap).join(' ');
+}
+
 function mutateAttributes(dom, ndom) {
 	// TODO all changes go through here, except maybe block-* related ones
 	// SO, store into dom._pcAttrs the last copy, and compare
@@ -735,7 +762,7 @@ function mutateAttributes(dom, ndom) {
 		if (iatts[name] == null || iatts[name] == oval) {
 			if (val != oval) dom.setAttribute(name, val);
 		} else if (name == "class") {
-			// TODO apply diff between iatts[name] and oval, to val
+			dom.setAttribute(name, applyDiffClass(iatts[name], oval, val));
 		} else {
 			// TODO what ?
 			dom.setAttribute(name, val);
@@ -780,7 +807,7 @@ function restoreDomAttrs(json, dom) {
 		if (iatts[name] == null || iatts[name] == oval) {
 			if (val != oval) dom.setAttribute(name, val);
 		} else if (name == "class") {
-			// TODO apply diff between iatts[name] and oval, to val
+			dom.setAttribute(name, applyDiffClass(iatts[name], oval, val));
 		} else {
 			// TODO what ?
 			dom.setAttribute(name, val);
