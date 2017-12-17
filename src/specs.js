@@ -338,6 +338,9 @@ function createWrapSpec(view, elt, obj) {
 
 function createContainerSpec(view, elt, obj) {
 	var defaultAttrs = attrsFrom(obj.dom);
+	if (obj.contentDOM != obj.dom) {
+		defaultAttrs.content = obj.contentDOM.getAttribute("block-content");
+	}
 	defaultAttrs._json = null;
 	if (obj._default != null) defaultAttrs._default = obj._default;
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
