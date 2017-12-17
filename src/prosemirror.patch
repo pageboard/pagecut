@@ -1,17 +1,15 @@
-This patch does not apply right now. It is supposed to be used in conjonction with
+This patch is supposed to be used in conjonction with
 document.execCommand("enableObjectResizing", false, false);
 However it is either fixed, or is only needed when dragging two consecutive images,
 see https://github.com/ProseMirror/prosemirror/issues/692 for link to upstream chrome issue.
-
---- node_modules/prosemirror-view/dist/index.js	2017-09-25 10:29:03.000000000 +0200
-+++ node_modules.new/prosemirror-view/dist/index.js	2017-09-25 14:42:54.841108621 +0200
-@@ -1001,7 +1001,7 @@
+--- node_modules/prosemirror-view/dist/index.js	2017-12-15 22:02:14.981764871 +0100
++++ node_modules.new/prosemirror-view/dist/index.js	2017-12-18 00:38:17.760292981 +0100
+@@ -997,7 +997,7 @@
        var assign;
        ((assign = prosemirrorModel.DOMSerializer.renderSpec(document, node.type.spec.toDOM(node)), dom = assign.dom, contentDOM = assign.contentDOM));
      }
--    if (!contentDOM && !node.isText) { dom.contentEditable = false; }
-+    if (!contentDOM && !node.isText && dom.nodeName != "IMG") { dom.contentEditable = false; }
- 
-     var nodeDOM = dom;
-     dom = applyOuterDeco(dom, outerDeco, node);
-
+-    if (!contentDOM && !node.isText) {
++    if (!contentDOM && !node.isText && dom.nodeName != "IMG") {
+       dom.contentEditable = false;
+       if (node.type.spec.draggable) { dom.draggable = true; }
+     }
