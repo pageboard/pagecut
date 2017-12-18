@@ -586,14 +586,21 @@ function ContainerNodeView(node, view, getPos, decorations) {
 	this.view = view;
 	this.element = node.type.spec.element;
 	this.domModel = node.type.spec.domModel;
+	this.id = node.attrs.root_id;
 	setupView(this);
+	this.contentName = node.type.spec.contentName;
 	this.update(node);
 }
 
 ContainerNodeView.prototype.update = function(node, decorations) {
+	var contentName = node.type.spec.contentName;
+	if (contentName != this.contentName) {
+		console.warn("cannot update to a different content name", contentName, this.contentName);
+		return false;
+	}
 	restoreDomAttrs(node.attrs._json, this.dom);
 	var id = node.attrs.root_id;
-	if (!id) {
+	if (!id || id != this.id) {
 		return false;
 	}
 	var block = this.view.blocks.get(id);
@@ -601,11 +608,10 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 		console.warn("container has no root node id", this, node);
 		return false;
 	}
-	if (node.type.spec.contentName) {
-		if (!block.content) block.content = {};
-		if (block.content[node.type.spec.contentName] != this.contentDOM) {
-			block.content[node.type.spec.contentName] = this.contentDOM;
-		}
+
+	if (!block.content) block.content = {};
+	if (block.content[contentName] != this.contentDOM) {
+		block.content[contentName] = this.contentDOM;
 	}
 	return true;
 };
