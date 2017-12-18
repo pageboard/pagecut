@@ -822,7 +822,7 @@ function restoreDomAttrs(json, dom) {
 	for (var i=0; i < atts.length; i++) {
 		name = atts[i].name;
 		if (!name.startsWith('block-') && map[name] === undefined && iatts[name] == null) {
-			dom.removeAttribute(att);
+			dom.removeAttribute(name);
 		}
 	}
 }
