@@ -269,7 +269,7 @@ function createRootSpec(view, elt, obj) {
 		element: elt,
 		domModel: obj.dom,
 		inline: !!elt.inline,
-		defining: obj.dom == obj.contentDOM,
+		defining: obj.dom != obj.contentDOM,
 		isolating: elt.isolating !== undefined ? elt.isolating : !elt.inline,
 		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [parseRule],
@@ -366,7 +366,7 @@ function createContainerSpec(view, elt, obj) {
 		element: elt,
 		domModel: obj.dom,
 		attrs: defaultSpecAttrs,
-		defining: obj.dom == obj.contentDOM,
+		defining: obj.dom != obj.contentDOM,
 		parseDOM: [parseRule],
 		toDOM: function(node) {
 			return toDOMOutputSpec(obj, node);
