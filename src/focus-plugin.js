@@ -77,7 +77,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		return;
 	}
 	// now find if dom is in view.dom or view.contentDOM
-	if (!hasParent(nodeView.dom, dom) || nodeView.contentDOM && hasParent(nodeView.contentDOM, dom)) {
+	if (!hasParent(nodeView.dom, dom) || nodeView.contentDOM && !hasParent(nodeView.contentDOM, dom)) {
 		return;
 	}
 	if (this.focus(tr, State.TextSelection.create(tr.doc, pos))) {
