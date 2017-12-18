@@ -471,7 +471,11 @@ RootNodeView.prototype.update = function(node, decorations) {
 		var dom = this.view.render(block, node.attrs.type);
 		var tr = this.view.state.tr;
 		var curpos = this.getPos && this.getPos() || undefined;
-		mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom));
+		if (sameData) {
+			mutateAttributes(this.dom, dom);
+		} else {
+			mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom));
+		}
 		// this is completely crazy to do that
 		if (oldBlock && curpos !== undefined) this.view.dispatch(tr);
 		if (this.selected) {
