@@ -379,7 +379,7 @@ function createContainerSpec(view, elt, obj) {
 function setupView(me) {
 	me.dom = me.domModel.cloneNode(true);
 	me.contentDOM = findContent(me.element, me.dom);
-	if (me.contentDOM == me.dom || !this.contentName) return;
+	if (me.contentDOM == me.dom) return;
 	if (['span'].indexOf(me.contentDOM.nodeName.toLowerCase()) < 0) return;
 
 	me.contentDOM.setAttribute("contenteditable", "true");
