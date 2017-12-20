@@ -22,6 +22,7 @@ predist:
 
 dist/pagecut-editor.js: src/*.js
 	#-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
+	-patch --backup --forward --strip 0 --quiet --reject-file - < src/inline-editable.patch
 	$(BROWSERIFY) --standalone Pagecut --outfile $@ src/editor.js
 
 dist/pagecut-viewer.js: src/*.js
