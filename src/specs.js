@@ -379,6 +379,21 @@ function createContainerSpec(view, elt, obj) {
 function setupView(me) {
 	me.dom = me.domModel.cloneNode(true);
 	me.contentDOM = findContent(me.element, me.dom);
+	if (me.contentDOM == me.dom || !this.contentName) return;
+	if (['span'].indexOf(me.contentDOM.nodeName.toLowerCase()) < 0) return;
+
+	me.contentDOM.setAttribute("contenteditable", "true");
+	me.dom.setAttribute("contenteditable", "false");
+
+	[
+		'focus',
+		'selectionchange',
+		// 'DOMCharacterDataModified'
+	].forEach(function(type) {
+		me.contentDOM.addEventListener(type, function(e) {
+			me.view.dom.dispatchEvent(new e.constructor(e.type, e));
+		}, false);
+	});
 }
 
 function RootNodeView(node, view, getPos, decorations) {
@@ -770,6 +785,7 @@ function mutateAttributes(dom, ndom) {
 	for (var k=0; k < natts.length; k++) {
 		attr = natts[k];
 		name = attr.name;
+		if (name == "contenteditable") continue;
 		oval = dom.getAttribute(name);
 		val = attr.value;
 		if (iatts[name] == null || iatts[name] == oval) {
@@ -787,7 +803,7 @@ function mutateAttributes(dom, ndom) {
 	for (var j=0; j < atts.length; j++) {
 		attr = atts[j];
 		name = attr.name;
-		if (name == "block-content") continue;
+		if (name == "block-content" || name == "contenteditable") continue;
 		if ((name.startsWith('block-') || (iatts[name] != null && iatts[name] == attr.value)) && !ndom.hasAttribute(name)) {
 			dom.removeAttribute(name);
 			delete iatts[name];
@@ -815,6 +831,7 @@ function restoreDomAttrs(json, dom) {
 	if (!iatts) iatts = dom._pcAttrs = {};
 	var oval, val, name;
 	for (name in map) {
+		if (name == "contenteditable") continue;
 		oval = dom.getAttribute(name);
 		val = map[name];
 		if (iatts[name] == null || iatts[name] == oval) {
@@ -831,6 +848,7 @@ function restoreDomAttrs(json, dom) {
 	var atts = dom.attributes;
 	for (var i=0; i < atts.length; i++) {
 		name = atts[i].name;
+		if (name == "contenteditable") continue;
 		if (!name.startsWith('block-') && map[name] === undefined && iatts[name] == null) {
 			dom.removeAttribute(name);
 		}
