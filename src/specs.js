@@ -442,22 +442,26 @@ RootNodeView.prototype.deselectNode = function() {
 	this.dom.classList.remove('ProseMirror-selectednode');
 };
 
+function updateContainerId(node, id) {
+	node.forEach(function(child, offset, index) {
+		var tn = child.type.spec.typeName;
+		if (tn == "container") {
+			child.attrs.root_id = id;
+		} else if (tn == "wrap") {
+			updateContainerId(child, id);
+		}
+	});
+}
+
 RootNodeView.prototype.update = function(node, decorations) {
 	if (this.element.name != node.attrs.type) {
 		return false;
 	}
 	var oldBlock = this.oldBlock;
-	var id = this.id;
-	if (node.attrs.id != id) {
+	if (node.attrs.id != this.id) {
 		return false;
 	}
-	if (node.forEach) {
-		node.forEach(function(child, offset, index) {
-			if (child.type.spec.typeName == "container") {
-				if (!child.attrs.root_id) child.attrs.root_id = id;
-			}
-		});
-	}
+	updateContainerId(node, this.id);
 	var uBlock = this.view.blocks.fromAttrs(node.attrs);
 	var block;
 	if (this.element.inplace) {
