@@ -443,7 +443,7 @@ RootNodeView.prototype.deselectNode = function() {
 };
 
 function updateContainerId(node, id) {
-	node.forEach(function(child, offset, index) {
+	if (node.forEach) node.forEach(function(child, offset, index) {
 		var tn = child.type.spec.typeName;
 		if (tn == "container") {
 			child.attrs.root_id = id;
