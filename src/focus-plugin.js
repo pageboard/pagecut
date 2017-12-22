@@ -102,7 +102,7 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	}
 	if (focus) attrs.focused = focus;
 	else delete attrs.focused;
-	if (node.type.spec.inline) {
+	if (node.type.spec.inline && node.type.spec.element.contents) {
 		var sel = this.view.utils.selectTr(tr, pos);
 		tr.removeMark(sel.from, sel.to, node.type);
 		tr.addMark(sel.from, sel.to, node.type.create(attrs));
@@ -184,7 +184,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 
 	if (selectedRoot) {
 		var el = this.view.element((root.mark || root.node).attrs.type);
-		if (!el.inline) {
+		if (!el.inline || !el.contents) {
 			sel = new State.NodeSelection(tr.doc.resolve(rootPos));
 			tr.setSelection(sel);
 		}

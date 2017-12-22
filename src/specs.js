@@ -101,7 +101,7 @@ function define(view, elt, schema, views) {
 
 		if (type == "root") {
 			var existingName = elt.replaces || elt.name;
-			if (elt.inline) {
+			if (elt.inline && elt.contents) {
 				if (schema.marks.get(existingName)) {
 					schema.marks = schema.marks.remove(existingName);
 				}
@@ -111,7 +111,7 @@ function define(view, elt, schema, views) {
 				}
 			}
 		}
-		if (spec.inline) {
+		if (spec.inline && elt.contents) {
 			schema.marks = schema.marks.addToStart(obj.name, spec);
 		} else {
 			schema.nodes = schema.nodes.addToStart(obj.name, spec);
@@ -133,6 +133,7 @@ function getImmediateContents(root, list) {
 }
 
 function findContent(elt, dom) {
+	if (elt.contents == null) return;
 	if (elt.inline || typeof elt.contents == "string") return dom;
 	var list = [];
 	getImmediateContents(dom, list);
