@@ -497,7 +497,9 @@ RootNodeView.prototype.update = function(node, decorations) {
 			mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom));
 		}
 		// this is completely crazy to do that
-		if (oldBlock && curpos !== undefined) this.view.dispatch(tr);
+		if (oldBlock && curpos !== undefined && tr.docChanged) {
+			this.view.dispatch(tr);
+		}
 		if (this.selected) {
 			this.selectNode();
 		}
