@@ -212,7 +212,7 @@ function createRootSpec(view, elt, obj) {
 	};
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
-	if (elt.inline) obj.contentDOM = obj.dom;
+	if (elt.inline && elt.contents) obj.contentDOM = obj.dom;
 
 	var parseRule = {
 		getAttrs: function(dom) {

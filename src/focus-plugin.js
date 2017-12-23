@@ -184,7 +184,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 
 	if (selectedRoot) {
 		var el = this.view.element((root.mark || root.node).attrs.type);
-		if (!el.inline || !el.contents) {
+		if (!el.inline) {
 			sel = new State.NodeSelection(tr.doc.resolve(rootPos));
 			tr.setSelection(sel);
 		}
