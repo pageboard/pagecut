@@ -376,7 +376,21 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 		mark = null;
 		if (!obj) obj = {};
 		if (level == depth) {
-			node = before ? rpos.nodeBefore || rpos.nodeAfter : rpos.nodeAfter || rpos.nodeBefore;
+			var prevPos = false;
+			if (before) {
+				node = rpos.nodeBefore;
+				if (node) prevPos = true;
+				else node = rpos.nodeAfter;
+			} else {
+				node = rpos.nodeAfter;
+				if (!node) {
+					node = rpos.nodeBefore;
+					if (node) prevPos = true;
+				}
+			}
+			if (prevPos) {
+				rpos = tr.doc.resolve(pos - node.nodeSize);
+			}
 			type = node && node.type.spec.typeName;
 			if (!type) {
 				// let's see if we have an inline block
