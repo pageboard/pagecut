@@ -371,7 +371,6 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 	var rpos = tr.doc.resolve(pos);
 	var depth = rpos.depth + 1;
 	var mark, node, type, obj, level = depth, ret = [];
-	var jumped = false;
 	while (level >= 0) {
 		mark = null;
 		if (!obj) obj = {};
