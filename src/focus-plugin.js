@@ -53,7 +53,8 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 	if (root) {
 		if (root.container && root.container.node.isTextblock) root = root.container;
 		else root = root.root;
-		var rpos = root && root.rpos;
+		pos = root && root.level && root.rpos.before(root.level);
+		var rpos = tr.doc.resolve(pos);
 		if (tr.selection.node) {
 			tr.setSelection(new State.TextSelection(rpos));
 			view.dispatch(tr);
