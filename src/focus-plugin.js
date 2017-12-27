@@ -47,13 +47,11 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		top: e.clientY
 	});
 	pos = posObj.inside < 0 ? pos : posObj.inside;
-	var tr = view.state.tr;
 
-	var root = view.utils.parents(tr, pos, false, true);
+	var tr = view.state.tr;
+	/* this behavior poses more problems than it solves
+	var root = view.utils.parents(tr, pos);
 	if (root) {
-		if (root.container && root.container.node.isTextblock) root = root.container;
-		else root = root.root;
-		pos = root && root.level && root.rpos.before(root.level);
 		var rpos = tr.doc.resolve(pos);
 		if (tr.selection.node) {
 			tr.setSelection(new State.TextSelection(rpos));
@@ -61,6 +59,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		}
 	}
 	tr = view.state.tr;
+	*/
 
 	var dom = view.root.elementFromPoint(e.clientX, e.clientY);
 	if (!dom) {
