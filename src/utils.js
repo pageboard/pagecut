@@ -375,20 +375,15 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 		mark = null;
 		if (!obj) obj = {};
 		if (level == depth) {
+			node = rpos.node(level);
 			var prevPos = false;
-			if (before) {
-				node = rpos.nodeBefore;
-				if (node) prevPos = true;
-				else node = rpos.nodeAfter;
-			} else {
-				node = rpos.nodeAfter;
-				if (!node) {
+			if (!node) {
+				if (before) {
 					node = rpos.nodeBefore;
 					if (node) prevPos = true;
+				} else {
+					node = rpos.nodeAfter;
 				}
-			}
-			if (prevPos) {
-				rpos = tr.doc.resolve(pos - node.nodeSize);
 			}
 			type = node && node.type.spec.typeName;
 			if (!type) {
