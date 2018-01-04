@@ -287,7 +287,8 @@ function createRootSpec(view, elt, obj) {
 
 			var dom = view.render(block, node.attrs.type);
 			var uView = flagDom(elt, dom);
-			return toDOMOutputSpec(uView, node);
+			var out = toDOMOutputSpec(uView, node);
+			return out;
 		}
 	};
 	if (elt.marks) spec.marks = elt.marks;
