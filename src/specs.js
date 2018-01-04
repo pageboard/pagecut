@@ -208,7 +208,8 @@ function createRootSpec(view, elt, obj) {
 		data: null,
 		type: elt.name,
 		standalone: elt.standalone ? "true" : null,
-		_default: obj._default || null
+		_default: obj._default || null,
+		_json: saveDomAttrs(obj.dom)
 	};
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
