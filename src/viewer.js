@@ -62,7 +62,12 @@ Viewer.prototype.element = function(type) {
 };
 
 Viewer.prototype.render = function(block, overrideType) {
-	var dom = this.blocks.render(block, overrideType);
+	var dom;
+	try {
+		dom = this.blocks.render(block, overrideType);
+	} catch(ex) {
+		console.error(ex);
+	}
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return dom;
 
 	var type = overrideType || block.type;
