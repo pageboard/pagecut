@@ -287,6 +287,10 @@ function createRootSpec(view, elt, obj) {
 			else block.focused = node.attrs.focused;
 
 			var dom = view.render(block, node.attrs.type);
+			if (!dom) {
+				console.error("Rendering", block, "with", node.attrs.type, "returns no dom");
+				return "";
+			}
 			var uView = flagDom(elt, dom);
 			var out = toDOMOutputSpec(uView, node);
 			return out;
