@@ -455,17 +455,7 @@ Utils.prototype.canMark = function(sel, nodeType) {
 };
 
 Utils.prototype.canInsert = function($pos, nodeType, attrs) {
-	var context = nodeType.spec.element.context;
-	if (context) {
-		context = context.split('|').map(t => t.trim());
-		// TODO support parent/nested/ syntax
-		if (context.some(function(str) {
-			return /^\w+\/\w+\//.test(str);
-		})) {
-			console.warn("canInsert does not check this context", nodeType, context);
-			context = null;
-		}
-	}
+	var context = parseContext(nodeType.spec.element.context);
 	var contextOk = false;
 	var found = false;
 	for (var d = $pos.depth; d >= 0; d--) {
@@ -484,11 +474,7 @@ Utils.prototype.canInsert = function($pos, nodeType, attrs) {
 			}
 		}
 		if (found && context) {
-			if (context.some(function(str) {
-				if (node.type.name + "//" == str) return true;
-				else if (node.type.name + '/' == str && d >= $pos.depth - 1) return true;
-				return false;
-			})) {
+			if (checkContext(context, node.type.name, $pos, d)) {
 				contextOk = true;
 				break;
 			}
@@ -498,15 +484,52 @@ Utils.prototype.canInsert = function($pos, nodeType, attrs) {
 	return found;
 };
 
+function parseContext(context) {
+	if (!context) return;
+	var list = context.split('|').map(t => t.trim());
+	// TODO support parent/nested/ syntax
+	if (list.some(function(str) {
+		return /^\w+\/\w+\//.test(str);
+	})) {
+		console.warn("canInsert does not check this context", nodeType, context);
+		return;
+	}
+	return list;
+}
+
+function checkContext(list, typeName, $pos, d) {
+	return list.some(function(str) {
+		if (typeName + "//" == str) return true;
+		else if (typeName + '/' == str && d >= $pos.depth - 1) return true;
+		return false;
+	});
+}
 
 function canInsertAtPos($pos, nodeType, after) {
+	var context = parseContext(nodeType.spec.element.context);
+	var contextOk = false;
+	var found;
 	for (var d = $pos.depth; d >= 0; d--) {
 		var index = after ? $pos.indexAfter(d) : $pos.index(d);
 		var node = $pos.node(d);
-		if (node.canReplaceWith(index, index, nodeType)) {
-			return d;
+		if (!found) {
+			if (node.canReplaceWith(index, index, nodeType)) {
+				found = d;
+				if (!context) {
+					contextOk = true;
+					break;
+				}
+			}
+		}
+		if (found && context) {
+			if (checkContext(context, node.type.name, $pos, d)) {
+				contextOk = true;
+				break;
+			}
 		}
 	}
+	if (!contextOk) return;
+	return found;
 }
 
 Utils.prototype.insertPoint = function(doc, from, nodeType, dir) {
@@ -517,7 +540,7 @@ Utils.prototype.insertPoint = function(doc, from, nodeType, dir) {
 	while (from >= 0 && from <= docSize) {
 		$pos = doc.resolve(from);
 		depth = canInsertAtPos($pos, nodeType);
-		if (depth >= 0) break;
+		if (depth != null && depth >= 0) break;
 		from = from + dir;
 	}
 	if (depth == null) return;
