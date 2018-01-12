@@ -77,8 +77,9 @@ InputPlugin.prototype.cbParseSlice = function(view, dom, opts) {
 		if (pos == null) {
 			pos = view.utils.insertPoint(tr.doc, from, nodeType, -1);
 		}
-		if (pos == null) {
-			opts.context = sel.$from;
+		if (pos == null || Math.abs(pos - from) >= 2) {
+			// can't find a sensible position
+			return Model.Slice.empty;
 		} else if (pos != from) {
 			opts.context = tr.doc.resolve(pos);
 		}
