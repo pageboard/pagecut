@@ -455,16 +455,34 @@ Utils.prototype.canMark = function(sel, nodeType) {
 };
 
 Utils.prototype.canInsert = function($pos, nodeType, attrs) {
+	var context = nodeType.spec.element.context;
+	var contextOk = false;
+	var found = false;
 	for (var d = $pos.depth; d >= 0; d--) {
 		var index = $pos.index(d);
 		var node = $pos.node(d);
-		if (node.canReplaceWith(index, index, nodeType, attrs)) {
-			return node;
-		} else if (!node.isTextblock) {
-			if (node.type.spec.typeName) break; // we only check one parent block
+		if (!found) {
+			if (node.canReplaceWith(index, index, nodeType, attrs)) {
+				// check context
+				found = node;
+				if (!context) {
+					contextOk = true;
+					break;
+				}
+			} else if (!context && !node.isTextblock) {
+				if (node.type.spec.typeName) break; // we only check one parent block
+			}
+		}
+		if (found && context) {
+			// TODO support more context expressions
+			if (node.type.name + '//' == context) {
+				contextOk = true;
+				break;
+			}
 		}
 	}
-	return false;
+	if (!contextOk) found = false;
+	return found;
 };
 
 
