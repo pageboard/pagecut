@@ -456,6 +456,16 @@ Utils.prototype.canMark = function(sel, nodeType) {
 
 Utils.prototype.canInsert = function($pos, nodeType, attrs) {
 	var context = nodeType.spec.element.context;
+	if (context) {
+		context = context.split('|').map(t => t.trim());
+		// TODO support parent/nested/ syntax
+		if (context.some(function(str) {
+			return /^\w+\/\w+\//.test(str);
+		})) {
+			console.warn("canInsert does not check this context", nodeType, context);
+			context = null;
+		}
+	}
 	var contextOk = false;
 	var found = false;
 	for (var d = $pos.depth; d >= 0; d--) {
@@ -474,8 +484,11 @@ Utils.prototype.canInsert = function($pos, nodeType, attrs) {
 			}
 		}
 		if (found && context) {
-			// TODO support more context expressions
-			if (node.type.name + '//' == context) {
+			if (context.some(function(str) {
+				if (node.type.name + "//" == str) return true;
+				else if (node.type.name + '/' == str && d >= $pos.depth - 1) return true;
+				return false;
+			})) {
 				contextOk = true;
 				break;
 			}
