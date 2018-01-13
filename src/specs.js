@@ -18,7 +18,7 @@ var tags = {};
 
 function define(view, elt, schema, views) {
 	if (!elt.render) return; // some elements are not meant to be rendered
-	var dom = view.render(view.blocks.create(elt.name));
+	var dom = view.render(view.blocks.create(elt.name), {merge: false});
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) {
 		console.error(`ignoring ${elt.name} element - render does not return a DOM Node`);
 		return;
@@ -286,7 +286,7 @@ function createRootSpec(view, elt, obj) {
 			if (!block) block = view.blocks.fromAttrs(node.attrs);
 			else block.focused = node.attrs.focused;
 
-			var dom = view.render(block, {type: node.attrs.type});
+			var dom = view.render(block, {type: node.attrs.type, merge: false});
 			if (!dom) {
 				console.error("Rendering", block, "with", node.attrs.type, "returns no dom");
 				return "";
@@ -494,7 +494,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 		if (node.attrs.focused) block.focused = node.attrs.focused;
 		else delete block.focused;
 
-		var dom = this.view.render(block, {type: node.attrs.type});
+		var dom = this.view.render(block, {type: node.attrs.type, merge: false});
 		var tr = this.view.state.tr;
 		var curpos = this.getPos && this.getPos() || undefined;
 		if (sameData) {

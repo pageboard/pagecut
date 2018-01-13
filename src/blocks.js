@@ -57,11 +57,12 @@ Blocks.prototype.toAttrs = function(block) {
 };
 
 Blocks.prototype.render = function(block, opts) {
-	var type = (opts || {}).type || block.type;
+	if (!opts) opts = {};
+	var type = opts.type || block.type;
 	var el = this.view.element(type);
 	if (!el) throw new Error(`Unknown block.type ${type}`);
 	var dom = el.render(this.view.doc, block, this.view);
-	if (opts.merge && dom) this.merge(dom, block, type);
+	if (dom && opts.merge !== false) this.merge(dom, block, type);
 	return dom;
 };
 
@@ -138,14 +139,18 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 		if (!node) return;
 		var content = contents[name];
 		if (!content) return;
-		if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
-			if (node.childNodes.length == 1 && node.firstChild.nodeType == Node.TEXT_NODE) {
-				node.textContent = "";
-			}
-			node.appendChild(node.ownerDocument.importNode(content, true));
+		if (typeof content == "string") {
+			content = node.ownerDocument.createTextNode(content);
+		} else if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
+			content = node.ownerDocument.importNode(content, true);
 		} else {
 			console.warn("cannot merge content", content);
+			return;
 		}
+		if (node.childNodes.length == 1 && node.firstChild.nodeType == Node.TEXT_NODE) {
+			node.textContent = "";
+		}
+		node.appendChild(content);
 	});
 	else if (Object.keys(block.content).length) {
 		console.warn("Cannot mount block", block);
@@ -223,8 +228,7 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 		var fragment;
 		try {
 			fragment = view.render(block, {
-				type: overrideType,
-				merge: true
+				type: overrideType
 			});
 		} catch(ex) {
 			console.error(ex);

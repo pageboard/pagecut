@@ -70,7 +70,7 @@ Viewer.prototype.render = function(block, opts) {
 	}
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return dom;
 
-	var type = opts.type || block.type;
+	var type = (opts || {}).type || block.type;
 	var el = this.element(type);
 	if (!el.inplace) {
 		dom.setAttribute('block-type', type);
