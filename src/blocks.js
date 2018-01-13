@@ -409,9 +409,10 @@ Blocks.prototype.set = function(data) {
 	return data;
 };
 
-Blocks.prototype.genId = function() {
+Blocks.prototype.genId = function(len) {
+	if (!len) len = 8;
 	// weak and simple unique id generator
-	return Date.now() + Math.round(Math.random() * 1e4) + '';
+	return (Date.now() * Math.round(Math.random() * 1e4) + '').substring(0, len);
 };
 
 Blocks.prototype.domQuery = function(id, opts) {
