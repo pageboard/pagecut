@@ -61,16 +61,16 @@ Viewer.prototype.element = function(type) {
 	return this.elementsMap[type];
 };
 
-Viewer.prototype.render = function(block, overrideType) {
+Viewer.prototype.render = function(block, opts) {
 	var dom;
 	try {
-		dom = this.blocks.render(block, overrideType);
+		dom = this.blocks.render(block, opts);
 	} catch(ex) {
 		console.error(ex);
 	}
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return dom;
 
-	var type = overrideType || block.type;
+	var type = opts.type || block.type;
 	var el = this.element(type);
 	if (!el.inplace) {
 		dom.setAttribute('block-type', type);

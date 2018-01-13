@@ -56,11 +56,13 @@ Blocks.prototype.toAttrs = function(block) {
 	return attrs;
 };
 
-Blocks.prototype.render = function(block, overrideType) {
-	var type = overrideType || block.type;
+Blocks.prototype.render = function(block, opts) {
+	var type = (opts || {}).type || block.type;
 	var el = this.view.element(type);
 	if (!el) throw new Error(`Unknown block.type ${type}`);
-	return el.render(this.view.doc, block, this.view);
+	var dom = el.render(this.view.doc, block, this.view);
+	if (opts.merge && dom) this.merge(dom, block, type);
+	return dom;
 };
 
 Blocks.prototype.mount = function(block, blocks) {
@@ -220,13 +222,15 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 		}
 		var fragment;
 		try {
-			fragment = view.render(block, overrideType);
+			fragment = view.render(block, {
+				type: overrideType,
+				merge: true
+			});
 		} catch(ex) {
 			console.error(ex);
 			return;
 		}
 		if (!fragment) return;
-		self.merge(fragment, block, overrideType);
 		return Promise.all(Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
 			var id = node.getAttribute('block-id');
 			if (id === block.id) return;
