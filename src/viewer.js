@@ -63,6 +63,10 @@ Viewer.prototype.element = function(type) {
 
 Viewer.prototype.render = function(block, opts) {
 	var dom;
+	if (typeof opts == "string") {
+		opts = {type: opts};
+		console.warn("view.render now expects opts.type, not string");
+	}
 	try {
 		dom = this.blocks.render(block, opts);
 	} catch(ex) {
