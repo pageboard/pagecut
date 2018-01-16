@@ -461,12 +461,12 @@ Utils.prototype.canMark = function(sel, nodeType) {
 
 Utils.prototype.canInsert = function($pos, nodeType, attrs) {
 	var context = parseContext(nodeType.spec.element && nodeType.spec.element.context);
-	var contextOk = false;
+	var contextOk = !context;
 	var found = false;
 	for (var d = $pos.depth; d >= 0; d--) {
 		var index = $pos.index(d);
 		var node = $pos.node(d);
-		if (!found) {
+		if (found === false) {
 			if (node.canReplaceWith(index, index, nodeType, attrs)) {
 				// check context
 				found = node;
@@ -478,7 +478,7 @@ Utils.prototype.canInsert = function($pos, nodeType, attrs) {
 				if (node.type.spec.typeName) break; // we only check one parent block
 			}
 		}
-		if (found && context) {
+		if (found !== false && context) {
 			if (checkContext(context, node.type.name, $pos, d)) {
 				contextOk = true;
 				break;
@@ -512,12 +512,12 @@ function checkContext(list, typeName, $pos, d) {
 
 function canInsertAtPos($pos, nodeType, after) {
 	var context = parseContext(nodeType.spec.element && nodeType.spec.element.context);
-	var contextOk = false;
-	var found;
+	var contextOk = !context;
+	var found = false;
 	for (var d = $pos.depth; d >= 0; d--) {
 		var index = after ? $pos.indexAfter(d) : $pos.index(d);
 		var node = $pos.node(d);
-		if (!found) {
+		if (found === false) {
 			if (node.canReplaceWith(index, index, nodeType)) {
 				found = d;
 				if (!context) {
@@ -526,7 +526,7 @@ function canInsertAtPos($pos, nodeType, after) {
 				}
 			}
 		}
-		if (found && context) {
+		if (found !== false && context) {
 			if (checkContext(context, node.type.name, $pos, d)) {
 				contextOk = true;
 				break;
