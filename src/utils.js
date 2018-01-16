@@ -455,7 +455,7 @@ Utils.prototype.canMark = function(sel, nodeType) {
 };
 
 Utils.prototype.canInsert = function($pos, nodeType, attrs) {
-	var context = parseContext(nodeType.spec.element.context);
+	var context = parseContext(nodeType.spec.element && nodeType.spec.element.context);
 	var contextOk = false;
 	var found = false;
 	for (var d = $pos.depth; d >= 0; d--) {
@@ -506,7 +506,7 @@ function checkContext(list, typeName, $pos, d) {
 }
 
 function canInsertAtPos($pos, nodeType, after) {
-	var context = parseContext(nodeType.spec.element.context);
+	var context = parseContext(nodeType.spec.element && nodeType.spec.element.context);
 	var contextOk = false;
 	var found;
 	for (var d = $pos.depth; d >= 0; d--) {
