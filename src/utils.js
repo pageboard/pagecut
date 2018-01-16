@@ -191,18 +191,23 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 	var type = dom.getAttribute('block-type');
 	if (type) attrs.type = type; // dom can override block.type
 	else type = block.type;
+
 	if (root.mark) {
 		var sel = this.selectTr(tr, parent);
 		if (!sel) return tr;
+		if (!attrs.id && root.mark.attrs.focused) {
+			// block.focused cannot be stored here since it is inplace
+			attrs.focused = root.mark.attrs.focused;
+		}
 		tr.removeMark(sel.from, sel.to, root.mark);
 		tr.addMark(sel.from, sel.to, root.mark.type.create(attrs));
 	} else {
-		var sel = tr.selection;
-		var selectedNode = sel.from === pos && sel.node;
 		if (!attrs.id && root.node.attrs.focused) {
 			// block.focused cannot be stored here since it is inplace
 			attrs.focused = root.node.attrs.focused;
 		}
+		var sel = tr.selection;
+		var selectedNode = sel.from === pos && sel.node;
 		tr.setNodeMarkup(pos, null, attrs);
 		if (selectedNode) {
 			tr.setSelection(new State.NodeSelection(tr.doc.resolve(pos)));
