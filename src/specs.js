@@ -186,7 +186,7 @@ function flagDom(elt, dom, iterate) {
 function toDOMOutputSpec(obj, node) {
 	var out = 0;
 	var dom = obj.contentDOM || obj.dom;
-	var attrs = Object.assign(attrsTo(node.attrs), restoreDomAttrs(node.attrs._json));
+	var attrs = Object.assign(attrsTo(node.attrs), restoreDomAttrs(node.attrs._json), domAttrsMap(obj.dom));
 	while (dom) {
 		if (!obj.contentDOM || node instanceof Model.Mark) return [dom.nodeName, attrs];
 		if (dom != obj.dom) {
