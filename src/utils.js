@@ -546,6 +546,8 @@ Utils.prototype.insertPoint = function(doc, from, nodeType, dir) {
 		$pos = doc.resolve(from);
 		depth = canInsertAtPos($pos, nodeType);
 		if (depth != null && depth >= 0) break;
+		if (dir == 1 && $pos.nodeAfter) break;
+		else if (dir == -1 && $pos.nodeBefore) break;
 		from = from + dir;
 	}
 	if (depth == null) return;
