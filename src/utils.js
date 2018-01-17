@@ -98,7 +98,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	if (slice.content.childCount == 1 && (from == to || sel.node)) {
 		var node = fillNode(slice.content.firstChild, this.view);
 		var $pos = sel.$to;
-		var atEnd = sel.node || $pos.parentOffset == $pos.parent.nodeSize - 2;
+		var atEnd = !!sel.node || $pos.parentOffset == $pos.parent.nodeSize - 2;
 		var atStart = !sel.node && $pos.parentOffset == 0;
 		var depthStart = atStart ? canInsertAtPos($pos, node.type) : null;
 		var depthEnd = atEnd ? canInsertAtPos($pos, node.type, true) : null;
@@ -467,7 +467,7 @@ Utils.prototype.canInsert = function($pos, nodeType, attrs) {
 		var index = $pos.index(d);
 		var node = $pos.node(d);
 		if (found === false) {
-			if (node.canReplaceWith(index, index, nodeType, attrs)) {
+			if (node.canReplaceWith(index, index + 1, nodeType, attrs)) {
 				// check context
 				found = node;
 				if (!context) {
@@ -518,7 +518,7 @@ function canInsertAtPos($pos, nodeType, after) {
 		var index = after ? $pos.indexAfter(d) : $pos.index(d);
 		var node = $pos.node(d);
 		if (found === false) {
-			if (node.canReplaceWith(index, index, nodeType)) {
+			if (node.canReplaceWith(index, index + 1, nodeType)) {
 				found = d;
 				if (!context) {
 					contextOk = true;
