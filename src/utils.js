@@ -513,7 +513,7 @@ function checkContext(list, typeName, $pos, d) {
 	});
 }
 
-Utils.prototype.insertPoint = function(doc, from, nodeType, dir) {
+Utils.prototype.insertPoint = function(doc, from, nodeType, dir, jump) {
 	from = from + dir;
 	var depth;
 	var $pos;
@@ -522,8 +522,10 @@ Utils.prototype.insertPoint = function(doc, from, nodeType, dir) {
 		$pos = doc.resolve(from);
 		depth = this.canInsert($pos, nodeType, true).depth;
 		if (depth != null && depth >= 0) break;
-		if (dir == 1 && $pos.nodeAfter) break;
-		else if (dir == -1 && $pos.nodeBefore) break;
+		if (!jump) {
+			if (dir == 1 && $pos.nodeAfter) break;
+			else if (dir == -1 && $pos.nodeBefore) break;
+		}
 		from = from + dir;
 	}
 	if (depth == null) return;
@@ -536,7 +538,7 @@ Utils.prototype.move = function(tr, dir) {
 	var node = sel.node;
 	if (!node) return;
 	tr.delete(sel.from, sel.to);
-	var npos = this.insertPoint(tr.doc, sel.from, node.type, dir);
+	var npos = this.insertPoint(tr.doc, sel.from, node.type, dir, true);
 	if (npos == null) return;
 	node = node.cut(0);
 	tr.insert(npos, node);
