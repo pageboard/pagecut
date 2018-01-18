@@ -65,8 +65,8 @@ Utils.prototype.splitTr = function(tr) {
 	var type = sel.$from.parent.type;
 	var atEnd = $pos.parentOffset == $pos.parent.nodeSize - 2;
 	var atStart = $pos.parentOffset == 0;
-	var depthStart = canInsertAtPos($pos, type);
-	var depthEnd = atEnd ? canInsertAtPos($pos, type, true) : null;
+	var depthStart = this.canInsert($pos, type, true, false).depth;
+	var depthEnd = atEnd ? this.canInsert($pos, type, true, true).depth : null;
 	var fromto = sel.from;
 	var splitto = sel.from;
 	if (atStart && depthStart != null) {
@@ -100,8 +100,8 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		var $pos = sel.$to;
 		var atEnd = !!sel.node || $pos.parentOffset == $pos.parent.nodeSize - 2;
 		var atStart = !sel.node && $pos.parentOffset == 0;
-		var depthStart = atStart ? canInsertAtPos($pos, node.type) : null;
-		var depthEnd = atEnd ? canInsertAtPos($pos, node.type, true) : null;
+		var depthStart = atStart ? this.canInsert($pos, node.type, true, false).depth : null;
+		var depthEnd = atEnd ? this.canInsert($pos, node.type, true, true).depth : null;
 
 		if (depthStart != null) {
 			fromto = $pos.before(depthStart + 1);
@@ -459,34 +459,37 @@ Utils.prototype.canMark = function(sel, nodeType) {
 	return can;
 };
 
-Utils.prototype.canInsert = function($pos, nodeType, attrs) {
+Utils.prototype.canInsert = function($pos, nodeType, all, after) {
 	var context = parseContext(nodeType.spec.element && nodeType.spec.element.context);
 	var contextOk = !context;
 	var found = false;
+	var ret = {};
 	for (var d = $pos.depth; d >= 0; d--) {
-		var index = $pos.index(d);
+		var index = after ? $pos.indexAfter(d) : $pos.index(d);
 		var node = $pos.node(d);
-		if (found === false) {
-			if (node.canReplaceWith(index, index + 1, nodeType, attrs)) {
+		if (!found) {
+			if (node.canReplaceWith(index, index + 1, nodeType)) {
 				// check context
-				found = node;
+				found = true;
+				ret.node = node;
+				ret.depth = d;
 				if (!context) {
 					contextOk = true;
 					break;
 				}
-			} else if (!context && !node.isTextblock) {
+			} else if (!all && !context && !node.isTextblock) {
 				if (node.type.spec.typeName) break; // we only check one parent block
 			}
 		}
-		if (found !== false && context) {
+		if (found && context) {
 			if (checkContext(context, node.type.name, $pos, d)) {
 				contextOk = true;
 				break;
 			}
 		}
 	}
-	if (!contextOk) found = false;
-	return found;
+	if (!contextOk || !found) return {};
+	return ret;
 };
 
 function parseContext(context) {
@@ -510,33 +513,6 @@ function checkContext(list, typeName, $pos, d) {
 	});
 }
 
-function canInsertAtPos($pos, nodeType, after) {
-	var context = parseContext(nodeType.spec.element && nodeType.spec.element.context);
-	var contextOk = !context;
-	var found = false;
-	for (var d = $pos.depth; d >= 0; d--) {
-		var index = after ? $pos.indexAfter(d) : $pos.index(d);
-		var node = $pos.node(d);
-		if (found === false) {
-			if (node.canReplaceWith(index, index + 1, nodeType)) {
-				found = d;
-				if (!context) {
-					contextOk = true;
-					break;
-				}
-			}
-		}
-		if (found !== false && context) {
-			if (checkContext(context, node.type.name, $pos, d)) {
-				contextOk = true;
-				break;
-			}
-		}
-	}
-	if (!contextOk) return;
-	return found;
-}
-
 Utils.prototype.insertPoint = function(doc, from, nodeType, dir) {
 	from = from + dir;
 	var depth;
@@ -544,7 +520,7 @@ Utils.prototype.insertPoint = function(doc, from, nodeType, dir) {
 	var docSize = doc.content.size;
 	while (from >= 0 && from <= docSize) {
 		$pos = doc.resolve(from);
-		depth = canInsertAtPos($pos, nodeType);
+		depth = this.canInsert($pos, nodeType, true).depth;
 		if (depth != null && depth >= 0) break;
 		if (dir == 1 && $pos.nodeAfter) break;
 		else if (dir == -1 && $pos.nodeBefore) break;

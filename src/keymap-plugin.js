@@ -37,7 +37,7 @@ function breakCommand(state, dispatch, view) {
 	} else {
 		var hard_break = state.schema.nodes.hard_break;
 		handled = true;
-		if (view.utils.canInsert(sel.$from, hard_break) && dispatch) {
+		if (view.utils.canInsert(sel.$from, hard_break).node && dispatch) {
 			tr.replaceSelectionWith(hard_break.create()).scrollIntoView()
 		}
 	}
