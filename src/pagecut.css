@@ -8,20 +8,6 @@
 	outline: none;
 }
 
-[contenteditable="true"] > p:before {
-	display: block;
-	position: relative;
-	font-size: 0.8em;
-	color: black;
-	left: -0.8em;
-	content: '\00b6';
-	opacity: 0.3;
-	top: 0.1em;
-	width:0;
-	height:0;
-	overflow:visible;
-}
-
 [contenteditable="true"]:focus {
 	outline: none;
 }
