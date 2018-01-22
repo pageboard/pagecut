@@ -71,9 +71,12 @@ InputPlugin.prototype.cbParseSlice = function(view, dom, opts) {
 	var nodeType = type && state.schema.nodes[type]; // TODO should search schema.marks too ?
 	var sel = state.selection;
 	var tr = opts.tr || state.tr;
+	if (!sel.empty) {
+		tr.delete(sel.from, sel.to);
+	}
 	if (nodeType) {
 		var from = sel.from;
-		var pos = view.utils.insertPoint(tr.doc, from, nodeType, 1);
+		var pos = view.utils.insertPoint(tr.doc, from - 1, nodeType, 1);
 		if (pos == null) {
 			pos = view.utils.insertPoint(tr.doc, from, nodeType, -1);
 		}
