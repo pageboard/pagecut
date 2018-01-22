@@ -100,18 +100,23 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		var $pos = sel.$to;
 		var atEnd = !!sel.node || $pos.parentOffset == $pos.parent.nodeSize - 2;
 		var atStart = !sel.node && $pos.parentOffset == 0;
-		var depthStart = atStart ? this.canInsert($pos, node.type, true, false).depth : null;
-		var depthEnd = atEnd ? this.canInsert($pos, node.type, true, true).depth : null;
+		var point;
 
-		if (depthStart != null) {
-			fromto = $pos.before(depthStart + 1);
-			tr.insert(fromto, node);
-			return fromto;
-		} else if (depthEnd != null) {
-			fromto = $pos.after(depthEnd + 1);
-			tr.insert(fromto, node);
-			return fromto;
-		} else if (parent.isTextblock) {
+		if (sel.node) {
+			point = this.canInsert(sel.$to, node.type, true, false);
+			if (point.depth != null) {
+				fromto = sel.$to.after(point.depth + 1);
+				tr.insert(fromto, node);
+				return fromto;
+			}
+			point = this.canInsert(sel.$from, node.type, true, true);
+			if (point.depth != null) {
+				fromto = sel.$from.before(point.depth + 1);
+				tr.insert(fromto, node);
+				return fromto;
+			}
+		}
+		if (parent.isTextblock) {
 			tr.split(from);
 			fromto = from + 1;
 		}
@@ -468,7 +473,7 @@ Utils.prototype.canInsert = function($pos, nodeType, all, after) {
 		var index = after ? $pos.indexAfter(d) : $pos.index(d);
 		var node = $pos.node(d);
 		if (!found) {
-			if (node.canReplaceWith(index, index + 1, nodeType)) {
+			if (node.canReplaceWith(index, index, nodeType)) {
 				// check context
 				found = true;
 				ret.node = node;
@@ -477,7 +482,7 @@ Utils.prototype.canInsert = function($pos, nodeType, all, after) {
 					contextOk = true;
 					break;
 				}
-			} else if (!all && !context && !node.isTextblock) {
+			} else if (!all && !node.isTextblock) {
 				if (node.type.spec.typeName) break; // we only check one parent block
 			}
 		}
