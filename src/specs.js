@@ -216,6 +216,7 @@ function createRootSpec(view, elt, obj) {
 	if (elt.inline && elt.contents) obj.contentDOM = obj.dom;
 
 	var parseRule = {
+		priority: 1000 - (elt.priority || 0),
 		getAttrs: function(dom) {
 			var type = dom.getAttribute('block-type') || elt.name;
 			var id = dom.getAttribute('block-id');
