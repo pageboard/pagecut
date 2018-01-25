@@ -47,8 +47,8 @@
     "prosemirror-model": "^1.1.0",
     "prosemirror-schema-basic": "^1.0.0",
     "prosemirror-schema-list": "^1.0.0",
-    "prosemirror-state": "^1.0.2",
-    "prosemirror-transform": "^1.0.1",
+    "prosemirror-state": "^1.1.0",
+    "prosemirror-transform": "^1.0.2",
     "url-regex": "^3.2.0",
     "window-agent": "^1.2.0"
   },
@@ -62,6 +62,6 @@
   "dependencies": {
     "postinstall-links": "^0.3.1",
     "prosemirror-menu": "^1.0.1",
-    "prosemirror-view": "^1.0.9"
+    "prosemirror-view": "^1.0.10"
   }
 }
