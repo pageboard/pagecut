@@ -73,11 +73,7 @@ Blocks.prototype.mount = function(block, blocks) {
 	if (contents) for (var name in contents) {
 		content = contents[name];
 		if (!(content instanceof Node)) {
-			div = view.doc.createElement("div");
-			div.innerHTML = content;
-			frag = view.doc.createDocumentFragment();
-			while (div.firstChild) frag.appendChild(div.firstChild);
-			copy.content[name] = frag;
+			copy.content[name] = htmlToFrag(view.doc, content);
 		}
 	}
 	var el = view.element(copy.type);
@@ -91,6 +87,42 @@ Blocks.prototype.mount = function(block, blocks) {
 		return copy;
 	});
 };
+
+function htmlToFrag(doc, str) {
+	var frag = doc.createDocumentFragment();
+	var wtag = "div";
+	var tag;
+	var matchTag = /^\s*<\s*([^\s>]+)[\s>]/i.exec(str);
+	if (matchTag && matchTag.length == 2) {
+		tag = matchTag[1].toLowerCase();
+		switch (tag) {
+			case "th":
+			case "td":
+				str = `<tr>${str}</tr>`;
+				wtag = "table";
+				tag = "tr";
+			break;
+			case "tr":
+				str = `<tbody>${str}</tbody>`;
+				tag = "tbody";
+				wtag = "table";
+			break;
+			case "tbody":
+			case "thead":
+			case "tfoot":
+				tag = wtag = "table";
+			break;
+			default:
+				tag = null;
+			break;
+		}
+	}
+	var wrapper = doc.createElement(wtag);
+	wrapper.innerHTML = str;
+	if (tag && tag != wtag) wrapper = wrapper.querySelector(tag);
+	while (wrapper.firstChild) frag.appendChild(wrapper.firstChild);
+	return frag;
+}
 
 function nodeToHtml(node) {
 	var html;
