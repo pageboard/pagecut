@@ -116,7 +116,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 				return fromto;
 			}
 		}
-		if (parent.isTextblock) {
+		if (parent.isTextblock && !node.isInline) {
 			tr.split(from);
 			fromto = from + 1;
 		}
