@@ -139,7 +139,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	if (root) {
 		changes.push({
 			pos: rootPos,
-			node: root.mark || root.node,
+			node: root.node,
 			focus: "last"
 		});
 		var parent, cur;
@@ -149,7 +149,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 			if (!cur.level) continue;
 			changes.push({
 				pos: cur.rpos.before(cur.level),
-				node: cur.mark || cur.node,
+				node: cur.node,
 				focus: i == parents.length - 1 ? "first" : "middle"
 			});
 		}
@@ -157,8 +157,8 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	function hasChanged(node, pos) {
 		if (node.type.spec.typeName == "root") {
 			// node is good
-		} else if (node.marks.length && node.marks[0].type.spec.typeName == "root") {
-			node = node.marks[0];
+//	} else if (node.marks.length && node.marks[0].type.spec.typeName == "root") {
+//			node = node.marks[0]; // disabled for now
 		} else {
 			return;
 		}
@@ -185,7 +185,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	}
 
 	if (selectedRoot) {
-		var el = this.view.element((root.mark || root.node).attrs.type);
+		var el = this.view.element(root.node.attrs.type);
 		if (!el.inline) {
 			sel = new State.NodeSelection(tr.doc.resolve(rootPos));
 			tr.setSelection(sel);

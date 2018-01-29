@@ -21,7 +21,7 @@ InputPlugin.prototype.handleTextInput = function(view, from, to, text) {
 	var parents = view.utils.selectionParents(tr, {from: from, to: to});
 	if (!parents.length) return true;
 	var parent = parents[0];
-	parent = parent.container || parent.root;
+	var root = parent.container || parent.root;
 	if (tr.selection.node && tr.selection.node.isTextblock) {
 		// change selection to be inside that node
 		view.dispatch(
@@ -31,7 +31,7 @@ InputPlugin.prototype.handleTextInput = function(view, from, to, text) {
 		);
 		return false;
 	}
-	if (parent && (parent.node && parent.node.isTextblock || parent.mark)) {
+	if (root && root.node && root.node.isTextblock || parent.inline) {
 		// it should be all right then
 		return false;
 	}

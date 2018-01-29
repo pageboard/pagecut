@@ -181,31 +181,44 @@ Utils.prototype.refresh = function(dom, block) {
 };
 
 Utils.prototype.refreshTr = function(tr, dom, block) {
-	var pos = this.posFromDOM(dom);
+	var pos;
+	if (dom instanceof Model.ResolvedPos) {
+		pos = dom.pos;
+		dom = null;
+	} else {
+		pos = this.posFromDOM(dom);
+	}
 	if (pos === false) return;
 	var parent = this.parents(tr, pos);
 	if (!parent) return;
 	var root = parent.root;
 	if (!block) {
-		var id = (root.mark || root.node).attrs.id;
+		var id = (parent.inline && parent.inline.node.marks.find(function(mark) {
+			return mark.attrs.id != null;
+		}) || root.node).attrs.id;
 		if (!id) return;
 		block = this.view.blocks.get(id);
 		if (!block) return; // nothing to refresh
 	}
 	var attrs = this.view.blocks.toAttrs(block);
-	var type = dom.getAttribute('block-type');
+	var type = dom && dom.getAttribute('block-type');
 	if (type) attrs.type = type; // dom can override block.type
 	else type = block.type;
 
-	if (root.mark) {
-		var sel = this.selectTr(tr, parent);
+	if (parent.inline) {
+		var sel = this.selectTr(tr, pos);
 		if (!sel) return tr;
-		if (!attrs.id && root.mark.attrs.focused) {
-			// block.focused cannot be stored here since it is inplace
-			attrs.focused = root.mark.attrs.focused;
-		}
-		tr.removeMark(sel.from, sel.to, root.mark);
-		tr.addMark(sel.from, sel.to, root.mark.type.create(attrs));
+		parent.inline.node.marks.forEach(function(mark) {
+			if (attrs.id && attrs.id != mark.attrs.id) return;
+			var markType = mark.attrs.type;
+			if (!markType || type != markType) return;
+			if (mark.attrs.focused) {
+				// block.focused cannot be stored here since it is inplace
+				attrs.focused = mark.attrs.focused;
+			}
+			tr.removeMark(sel.from, sel.to, mark);
+			tr.addMark(sel.from, sel.to, mark.type.create(attrs));
+		});
 	} else {
 		if (!attrs.id && root.node.attrs.focused) {
 			// block.focused cannot be stored here since it is inplace
@@ -244,11 +257,11 @@ Utils.prototype.select = function(obj, textSelection) {
 };
 
 Utils.prototype.selectTr = function(tr, obj, textSelection) {
-	var info, pos;
+	var parent, pos;
 	if (obj.root && obj.root.rpos) {
-		info = obj;
+		parent = obj;
 	} else if (obj instanceof State.Selection) {
-		info = this.selectionParents(tr, obj).shift();
+		parent = this.selectionParents(tr, obj).shift();
 	} else {
 		if (obj instanceof Model.ResolvedPos) {
 			pos = obj.pos;
@@ -270,12 +283,12 @@ Utils.prototype.selectTr = function(tr, obj, textSelection) {
 			}
 		}
 		if (typeof pos != "number") return;
-		info = this.parents(tr, pos);
+		parent = this.parents(tr, pos);
 	}
-	if (!info) {
+	if (!parent) {
 		return false;
 	}
-	var root = info.root;
+	var root = parent.root;
 	if (!root) {
 		return false;
 	}
@@ -284,16 +297,16 @@ Utils.prototype.selectTr = function(tr, obj, textSelection) {
 
 	var sel;
 	if (!$pos.nodeAfter) textSelection = true;
-	if (root.mark) {
+	if (parent.inline) {
 		var nodeBefore = root.rpos.nodeBefore;
 		var nodeAfter = root.rpos.nodeAfter;
 
 		var start = root.rpos.pos;
-		if (nodeBefore && Model.Mark.sameSet(nodeBefore.marks, [root.mark])) {
+		if (nodeBefore && Model.Mark.sameSet(nodeBefore.marks, parent.inline.node.marks)) {
 			start = start - root.rpos.nodeBefore.nodeSize;
 		}
 		var end = root.rpos.pos;
-		if (nodeAfter && Model.Mark.sameSet(nodeAfter.marks, [root.mark])) {
+		if (nodeAfter && Model.Mark.sameSet(nodeAfter.marks, parent.inline.node.marks)) {
 			end = end + root.rpos.nodeAfter.nodeSize;
 		}
 		return State.TextSelection.create(tr.doc, start, end);
@@ -380,9 +393,8 @@ Utils.prototype.posToDOM = function(pos) {
 Utils.prototype.parents = function(tr, pos, all, before) {
 	var rpos = tr.doc.resolve(pos);
 	var depth = rpos.depth + 1;
-	var mark, node, type, obj, level = depth, ret = [];
+	var node, type, obj, level = depth, ret = [];
 	while (level >= 0) {
-		mark = null;
 		if (!obj) obj = {};
 		if (level == depth) {
 			node = rpos.node(level);
@@ -396,25 +408,17 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 				}
 			}
 			type = node && node.type.spec.typeName;
-			if (!type) {
-				// let's see if we have an inline block
-				if (node && node.marks.length) {
-					for (var k=0; k < node.marks.length; k++) {
-						type = node.marks[k].type && node.marks[k].type.spec.typeName;
-						if (type) {
-							mark = node.marks[k];
-							break;
-						}
-					}
-				}
-			}
 		} else {
 			node = rpos.node(level);
 			type = node.type && node.type.spec.typeName;
 		}
 		if (type) {
 			obj[type] = {rpos: rpos, level: level, node: node};
-			if (mark) obj[type].mark = mark;
+		} else if (node && node.marks && node.marks.length) {
+			obj.inline = {
+				node: node,
+				rpos: rpos
+			};
 		}
 		if ((type == "container" || level != depth) && node && node.attrs.content) {
 			if (!obj.container) obj.container = obj.root || {};
