@@ -205,9 +205,9 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 	if (type) attrs.type = type; // dom can override block.type
 	else type = block.type;
 
+	var sel = tr.selection;
+
 	if (parent.inline) {
-		var sel = this.selectTr(tr, pos);
-		if (!sel) return tr;
 		parent.inline.node.marks.forEach(function(mark) {
 			if (attrs.id && attrs.id != mark.attrs.id) return;
 			var markType = mark.attrs.type;
@@ -224,7 +224,6 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 			// block.focused cannot be stored here since it is inplace
 			attrs.focused = root.node.attrs.focused;
 		}
-		var sel = tr.selection;
 		var selectedNode = sel.from === pos && sel.node;
 		tr.setNodeMarkup(pos, null, attrs);
 		if (selectedNode) {
