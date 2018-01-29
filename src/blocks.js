@@ -128,10 +128,10 @@ function nodeToHtml(node) {
 	var html;
 	if (node instanceof Node) {
 		html = "";
+		Array.from(node.querySelectorAll('br')).forEach(function(br) {
+			if (!br.previousSibling && !br.nextSibling) br.remove();
+		});
 		var child;
-		while (child = node.querySelector('br:not([contenteditable])')) {
-			child.remove();
-		}
 		for (var i=0; i < node.childNodes.length; i++) {
 			child = node.childNodes[i];
 			if (child.nodeType == Node.TEXT_NODE) html += child.nodeValue;
