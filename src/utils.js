@@ -208,6 +208,11 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 	var sel = tr.selection;
 
 	if (parent.inline) {
+		if (block.id && sel.empty) {
+			var startPos = parent.inline.rpos.pos;
+			var endPos = startPos + parent.inline.node.nodeSize;
+			sel = State.TextSelection.create(tr.doc, startPos, endPos);
+		}
 		parent.inline.node.marks.forEach(function(mark) {
 			if (attrs.id && attrs.id != mark.attrs.id) return;
 			var markType = mark.attrs.type;
