@@ -129,7 +129,7 @@ function nodeToHtml(node) {
 	if (node instanceof Node) {
 		html = "";
 		Array.from(node.querySelectorAll('br')).forEach(function(br) {
-			if (!br.previousSibling && !br.nextSibling) br.remove();
+			if (!br.previousSibling || !br.nextSibling) br.remove();
 		});
 		var child;
 		for (var i=0; i < node.childNodes.length; i++) {
