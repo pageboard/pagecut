@@ -4,7 +4,7 @@ FONT_DIR      ?= ./font
 FONTELLO_HOST ?= http://fontello.com
 
 .PHONY: build
-build: predist dist/pagecut-menu.js dist/pagecut-editor.js dist/pagecut-viewer.js
+build: predist dist/menu.js dist/editor.js dist/viewer.js
 
 .PHONY: all
 
@@ -20,15 +20,15 @@ predist:
 	mkdir -p dist/
 	cp -f src/*.css dist/
 
-dist/pagecut-editor.js: src/*.js
+dist/editor.js: src/*.js
 	#-patch --backup --forward --strip 0 --quiet --reject-file - < src/prosemirror.patch
 	-patch --backup --forward --strip 0 --quiet --reject-file - < src/inline-editable.patch
 	$(BROWSERIFY) --standalone Pagecut --outfile $@ src/editor.js
 
-dist/pagecut-viewer.js: src/*.js
+dist/viewer.js: src/*.js
 	$(BROWSERIFY) --standalone Pagecut.Viewer --outfile $@ src/viewer.js
 
-dist/pagecut-menu.js: src/menubar.js
+dist/menu.js: src/menubar.js
 	$(BROWSERIFY) --standalone Pagecut.Menubar --outfile $@ src/menubar.js
 
 fontopen:

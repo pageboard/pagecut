@@ -48,9 +48,9 @@ Basic setup
 -----------
 
 Bunbled files are available as
-- dist/pagecut-editor.js (already containing the viewer)
-- dist/pagecut-viewer.js (for view-only purpose)
-- dist/pagecut.css (for editor)
+- dist/editor.js (already containing the viewer)
+- dist/viewer.js (for view-only purpose)
+- dist/editor.css (for editor)
 
 A basic editor setup without anything interesting:
 
