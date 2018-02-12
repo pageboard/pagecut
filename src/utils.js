@@ -238,12 +238,12 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 	return tr;
 };
 
-Utils.prototype.selectDom = function(node) {
+Utils.prototype.selectDom = function(node, textSelection) {
 	var pos = this.posFromDOM(node);
 	var tr = this.view.state.tr;
 	var $pos = tr.doc.resolve(pos);
 	var sel;
-	if (node.nodeType != Node.ELEMENT_NODE) {
+	if (node.nodeType != Node.ELEMENT_NODE || textSelection) {
 		sel = new State.TextSelection($pos);
 	} else {
 		if (!$pos.nodeAfter) {
