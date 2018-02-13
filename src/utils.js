@@ -89,7 +89,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		dom = this.view.render(dom);
 	}
 	var parent = sel.$from.parent;
-	var slice = this.parse(dom, {context: sel.$to, tr: tr});
+	var slice = this.parseTr(tr, dom, sel.$to);
 
 	var from = sel.from;
 	var to = sel.to;
@@ -162,16 +162,25 @@ Utils.prototype.deleteTr = function(tr, sel) {
 	return true;
 };
 
-Utils.prototype.parse = function(dom, opts) {
+Utils.prototype.parseTr = function(tr, dom, $pos) {
 	if (!dom) return;
 	if (dom.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {
 		var parent = dom.ownerDocument.createDocumentFragment();
 		parent.appendChild(dom);
 		dom = parent;
 	}
+	var opts = {
+		context: $pos
+	};
+	if (tr) opts.tr = tr;
+
 	var slice = this.view.parser.parseSlice(dom, opts);
 	// parseFromClipboard calls clipboardTextParser which returns the slice untouched
-	return View.__parseFromClipboard(this.view, slice, null, null, opts.context);
+	return View.__parseFromClipboard(this.view, slice, null, null, $pos);
+};
+
+Utils.prototype.parse = function(dom, $pos) {
+	return this.parseTr(null, dom, $pos);
 };
 
 Utils.prototype.refresh = function(dom, block) {
