@@ -24,8 +24,8 @@ Blocks.fill = function(schema, data) {
 	if (data === undefined || typeof data == "string") data = {};
 	Object.keys(schema.properties).forEach(function(key) {
 		var prop = schema.properties[key];
-		if (prop.default !== undefined && data[k] === undefined) data[k] = prop.default;
-		if (prop.properties) data[k] = Blocks.fill(prop, data[k]);
+		if (prop.default !== undefined && data[key] === undefined) data[key] = prop.default;
+		if (prop.properties) data[key] = Blocks.fill(prop, data[key]);
 	});
 	return data;
 };
