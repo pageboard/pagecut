@@ -1,6 +1,11 @@
 pagecut -- Extensible web content editor
 ========================================
 
+Warning: this is a work in progress. Documentation is out of date.
+
+It is mostly meant to be used by [pageboard](https://github.com/pageboard),
+with a lot of elements already [defined here](https://github.com/pageboard/elements-semantic-ui/tree/master/elements).
+
 [Demo](https://kapouer.github.io/pagecut/demo/index.html)
 
 An easy to setup and easy to extend html content editor built upon
