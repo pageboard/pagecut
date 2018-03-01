@@ -1,6 +1,6 @@
 {
   "name": "pagecut",
-  "version": "1.0.0-beta.58",
+  "version": "1.0.0-beta.59",
   "description": "Extensible web content editor",
   "main": "index.js",
   "scripts": {
@@ -62,6 +62,6 @@
   "dependencies": {
     "postinstall-links": "^0.3.99",
     "prosemirror-menu": "^1.0.1",
-    "prosemirror-view": "^1.0.11"
+    "prosemirror-view": "^1.1.0"
   }
 }
