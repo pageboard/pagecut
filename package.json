@@ -41,14 +41,14 @@
     "esequal": "^0.1.15",
     "prosemirror-commands": "^1.0.5",
     "prosemirror-example-setup": "^1.0.1",
-    "prosemirror-history": "^1.0.0",
+    "prosemirror-history": "^1.0.2",
     "prosemirror-inputrules": "^1.0.1",
     "prosemirror-keymap": "^1.0.1",
-    "prosemirror-model": "^1.1.0",
+    "prosemirror-model": "^1.2.1",
     "prosemirror-schema-basic": "^1.0.0",
     "prosemirror-schema-list": "^1.0.0",
     "prosemirror-state": "^1.1.0",
-    "prosemirror-transform": "^1.0.4",
+    "prosemirror-transform": "^1.0.5",
     "url-regex": "^3.2.0",
     "window-agent": "^1.2.0"
   },
@@ -62,6 +62,6 @@
   "dependencies": {
     "postinstall-links": "^0.3.99",
     "prosemirror-menu": "^1.0.1",
-    "prosemirror-view": "^1.1.1"
+    "prosemirror-view": "^1.2.0"
   }
 }
