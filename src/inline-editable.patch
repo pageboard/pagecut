@@ -1,6 +1,6 @@
---- node_modules/prosemirror-view/dist/index.js	2017-12-20 19:05:09.527945328 +0100
-+++ node_modules/prosemirror-view/dist/index.js.new	2017-12-20 19:13:11.594074223 +0100
-@@ -1940,7 +1940,7 @@
+--- node_modules/prosemirror-view/dist/index.js.orig	2018-03-14 11:46:29.000000000 +0100
++++ node_modules/prosemirror-view/dist/index.js	2018-03-15 13:30:11.964539414 +0100
+@@ -1954,7 +1954,7 @@
  // When the DOM selection changes in a notable manner, modify the
  // current selection state to match.
  SelectionReader.prototype.readFromDOM = function readFromDOM (origin) {
@@ -9,16 +9,16 @@
    if (!this.view.inDOMChange) { this.view.domObserver.flush(); }
    if (this.view.inDOMChange) { return }
  
-@@ -2173,7 +2173,7 @@
+@@ -2193,7 +2193,7 @@
  }
  
  function hasFocusAndSelection(view) {
--  if (view.editable && !view.dom.contains(view.root.activeElement)) { return false }
+-  if (view.editable && view.root.activeElement != view.dom) { return false }
 +  if (view.editable && !view.hasFocus()) { return false }
-   var sel = view.root.getSelection();
-   if (!sel.anchorNode) { return false }
-   try {
-@@ -4249,7 +4249,7 @@
+   return hasSelection(view)
+ }
+ 
+@@ -4261,7 +4261,7 @@
  // :: () → bool
  // Query whether the view has focus.
  EditorView.prototype.hasFocus = function hasFocus () {
