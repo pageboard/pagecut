@@ -517,22 +517,28 @@ Utils.prototype.canInsert = function($pos, nodeType, all, after) {
 
 function parseContext(context) {
 	if (!context) return;
-	var list = context.split('|').map(t => t.trim());
-	// TODO support parent/nested/ syntax
-	if (list.some(function(str) {
-		return /^\w+\/\w+\//.test(str);
-	})) {
-		console.warn("canInsert does not check this context", nodeType, context);
-		return;
-	}
+	var list = context.split('|').map(function(str) {
+		var pc = str.trim().split('/');
+		pc.pop();
+		return pc;
+	});
 	return list;
 }
 
-function checkContext(list, typeName, $pos, d) {
-	return list.some(function(str) {
-		if (typeName + "//" == str) return true;
-		else if (typeName + '/' == str && d >= $pos.depth - 1) return true;
-		return false;
+function checkContext(list, name, $pos, d) {
+	// does not check nested contexts
+	return list.some(function(pc) {
+		var last = pc[pc.length - 1];
+		if (!last) {
+			if (pc.length == 2 && pc[0] == name) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			if (last == name && d >= $pos.depth - 1) return true;
+			else return false;
+		}
 	});
 }
 
