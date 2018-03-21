@@ -362,6 +362,10 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 		while (node = content.querySelector('[block-focused]')) {
 			node.removeAttribute('block-focused');
 		}
+		while (node = content.querySelector('.ProseMirror-selectednode')) {
+			node.classList.remove('ProseMirror-selectednode');
+			node.removeAttribute('draggable');
+		}
 		list.forEach(function(item) {
 			item.node.setAttribute('block-id', item.block.id);
 			if (item.type) {
