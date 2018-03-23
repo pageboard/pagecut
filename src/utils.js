@@ -46,8 +46,8 @@ Utils.prototype.setDom = function(dom) {
 
 Utils.prototype.getDom = function() {
 	// in an offline document
-	return this.view.serializer.serializeFragment(this.view.state.doc.content, {
-		document: this.view.doc
+	return this.view.viewSerializer.serializeFragment(this.view.state.doc.content, {
+		document: this.view.doc.cloneNode(false) // offline
 	});
 };
 
