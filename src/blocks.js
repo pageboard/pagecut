@@ -344,6 +344,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 			parentNode = node.parentNode;
 			parentNode.replaceChild(div, node);
 			block = this.copy(block);
+			reassignContent(blockEl, block, node);
 
 			if (this.serializeTo(block, blockEl, ancestor)) {
 				if (el.contents[name].virtual) {
@@ -355,13 +356,6 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 				parentNode.removeChild(div);
 				delete ancestor.blocks[block.id];
 			}
-		}
-		while (node = content.querySelector('[block-focused]')) {
-			node.removeAttribute('block-focused');
-		}
-		while (node = content.querySelector('.ProseMirror-selectednode')) {
-			node.classList.remove('ProseMirror-selectednode');
-			node.removeAttribute('draggable');
 		}
 		list.forEach(function(item) {
 			item.node.setAttribute('block-id', item.block.id);
@@ -404,6 +398,31 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 		delete parent.blocks;
 	}
 	return parent;
+}
+
+function reassignContent(elt, block, dom) {
+	if (elt.contents == null || typeof elt.contents == "string") return;
+	var rootContentName = dom.getAttribute('block-content');
+	var content = block.content;
+	var once = !rootContentName && elt.inline;
+	var times = 0;
+	Object.keys(elt.contents).forEach(function(name) {
+		if (rootContentName == name || once) {
+			times++;
+			if (once && times > 1) {
+				console.error("inline content found too many times", times, name, elt, block, dom);
+			} else {
+				block.content[name] = dom;
+			}
+		} else {
+			var node = dom.querySelector(`[block-content="${name}"]`);
+			if (node && node.closest('[block-id]') == dom) {
+				content[name] = node;
+			} else if (content[name]) {
+				console.error("block has content but it was not found", name, elt, block, dom);
+			}
+		}
+	});
 }
 
 Blocks.prototype.to = function() {

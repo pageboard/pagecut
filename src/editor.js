@@ -87,30 +87,27 @@ function Editor(opts) {
 	this.serializer = Model.DOMSerializer.fromSchema(this.schema);
 	this.parser = Model.DOMParser.fromSchema(this.schema);
 
-	var cbSerializer = Model.DOMSerializer.fromSchema(new Model.Schema(spec));
-	var cbParserRules = Model.DOMParser.schemaRules(this.schema);
-
-	function replaceOutputSpec(fun) {
-		return function(node) {
-			var out = fun(node);
-			Object.assign(out[1], {
-				'block-data': node.attrs.data
-			});
-			delete out[1]['block-focused'];
-			if (node.attrs.standalone) out[1]['block-standalone'] = 'true';
-			return out;
-		};
-	}
-	Object.keys(cbSerializer.nodes).forEach(function(name) {
-		if (spec.nodes.get(name).typeName != "root") return;
-		cbSerializer.nodes[name] = replaceOutputSpec(cbSerializer.nodes[name]);
-	});
-	Object.keys(cbSerializer.marks).forEach(function(name) {
-		if (spec.marks.get(name).typeName != "root") return;
-		cbSerializer.marks[name] = replaceOutputSpec(cbSerializer.marks[name]);
+	this.clipboardSerializer = filteredSerializer(spec, function(node, out) {
+		Object.assign(out[1], {
+			'block-data': node.attrs.data
+		});
+		delete out[1]['block-focused'];
+		if (node.attrs.standalone) out[1]['block-standalone'] = 'true';
 	});
 
-	this.clipboardParser = new Model.DOMParser(this.schema, cbParserRules);
+	this.clipboardParser = new Model.DOMParser(
+		this.schema,
+		Model.DOMParser.schemaRules(this.schema)
+	);
+
+	this.viewSerializer = filteredSerializer(spec, function(node, out) {
+		var obj = out[1];
+		if (typeof obj != "object") return;
+		delete obj['block-focused'];
+		delete obj['block-root_id'];
+		delete obj['block-data'];
+		delete obj['style'];
+	});
 
 	this.plugins.push(
 		IdPlugin,
@@ -168,7 +165,7 @@ function Editor(opts) {
 		}),
 		domParser: this.parser,
 		clipboardParser: this.clipboardParser,
-		clipboardSerializer: cbSerializer,
+		clipboardSerializer: this.clipboardSerializer,
 		dispatchTransaction: function(tr) {
 			editor.updateState(editor.state.apply(tr));
 		},
@@ -194,4 +191,25 @@ Object.assign(Editor.prototype, Viewer.prototype, View.EditorView);
 Editor.prototype.getPlugin = function(key) {
 	return new State.PluginKey(key).get(this.state);
 };
+
+function filteredSerializer(spec, obj) {
+	if (typeof obj == "function") obj = {filter: obj};
+	var ser = Model.DOMSerializer.fromSchema(new Model.Schema(spec));
+	function replaceOutputSpec(fun) {
+		return function(node) {
+			var out = fun(node);
+			obj.filter(node, out);
+			return out;
+		};
+	}
+	Object.keys(ser.nodes).forEach(function(name) {
+		if (spec.nodes.get(name).typeName == null) return;
+		ser.nodes[name] = replaceOutputSpec(ser.nodes[name]);
+	});
+	Object.keys(ser.marks).forEach(function(name) {
+		if (spec.marks.get(name).typeName == null) return;
+		ser.marks[name] = replaceOutputSpec(ser.marks[name]);
+	});
+	return ser;
+}
 
