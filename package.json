@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "prepare": "make all",
-    "postinstall": "postinstall-links",
+    "postinstall": "postinstall",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -52,15 +52,15 @@
     "url-regex": "^3.2.0",
     "window-agent": "^1.2.0"
   },
-  "links": {
-    "window-agent/agent.js": "sample/",
-    "diff-dom/diffDOM.js": "sample/",
-    "dom-template-strings/dist/dom-template-strings.js": "sample/",
-    "prosemirror-view/style/prosemirror.css": "src/prosemirror.css",
-    "prosemirror-menu/style/menu.css": "src/prosemirror-menu.css"
+  "postinstall": {
+    "window-agent/agent.js": "link sample/",
+    "diff-dom/diffDOM.js": "link sample/",
+    "dom-template-strings/dist/dom-template-strings.js": "link sample/",
+    "prosemirror-view/style/prosemirror.css": "link src/prosemirror.css",
+    "prosemirror-menu/style/menu.css": "link src/prosemirror-menu.css"
   },
   "dependencies": {
-    "postinstall-links": "^0.3.99",
+    "postinstall": "^0.1.0",
     "prosemirror-menu": "^1.0.1",
     "prosemirror-view": "^1.2.0"
   }
