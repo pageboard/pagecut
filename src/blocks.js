@@ -344,7 +344,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 			parentNode = node.parentNode;
 			parentNode.replaceChild(div, node);
 			block = this.copy(block);
-			reassignContent(blockEl, block, node);
+			reassignContent(block, blockEl, node);
 
 			if (this.serializeTo(block, blockEl, ancestor)) {
 				if (el.contents[name].virtual) {
@@ -400,7 +400,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 	return parent;
 }
 
-function reassignContent(elt, block, dom) {
+function reassignContent(block, elt, dom) {
 	if (elt.contents == null || typeof elt.contents == "string") return;
 	var rootContentName = dom.getAttribute('block-content');
 	var content = block.content;
