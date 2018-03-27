@@ -187,13 +187,18 @@ function toDOMOutputSpec(obj, node) {
 	var out = 0;
 	var dom = obj.contentDOM || obj.dom;
 	var attrs = Object.assign(attrsTo(node.attrs), restoreDomAttrs(node.attrs._json), domAttrsMap(obj.dom));
+	var contentName = node.type.spec.contentName;
+	var rootContainer = contentName && (!obj.contentDOM || obj.dom == obj.contentDOM);
 	while (dom) {
 		if (!obj.contentDOM || node instanceof Model.Mark) return [dom.nodeName, attrs];
 		if (dom != obj.dom) {
-			out = [dom.nodeName, {}, out];
+			out = [dom.nodeName, {
+				'class': dom.className || undefined,
+				'block-content': dom.getAttribute('block-content') || undefined
+			}, out];
 		} else {
 			out = [dom.nodeName, attrs, out];
-			if (node.type.spec.contentName) out[1]['block-content'] = node.type.spec.contentName;
+			if (rootContainer) out[1]['block-content'] = contentName;
 			break;
 		}
 		dom = dom.parentNode;
