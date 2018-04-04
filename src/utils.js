@@ -170,12 +170,18 @@ Utils.prototype.parseTr = function(tr, dom, $pos) {
 		parent.appendChild(dom);
 		dom = parent;
 	}
-	var opts = {
-		context: $pos
-	};
+	var opts = {};
+	var slice;
+	if ($pos.parent.isTextblock) {
+		opts.context = $pos;
+		slice = this.view.parser.parseSlice(dom, opts).content;
+	} else {
+		opts.topNode = $pos.parent;
+		slice = this.view.parser.parse(dom, opts).content;
+	}
 	if (tr) opts.tr = tr;
 
-	var slice = this.view.parser.parseSlice(dom, opts);
+	slice = new Model.Slice(slice, 0, 0);
 	// parseFromClipboard calls clipboardTextParser which returns the slice untouched
 	return View.__parseFromClipboard(this.view, slice, null, null, $pos);
 };
