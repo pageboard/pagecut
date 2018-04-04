@@ -24,9 +24,13 @@ pagecut-placeholder:after {
 	content:'+';
 	color:black;
 	text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
-	padding: 0.3em;
-	font-size: 1.4em;
+	padding: 0 8px;
 	cursor:pointer;
+	font-family: monospace;
+	font-size: 23px;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
 }
 .ProseMirror-focused pagecut-placeholder {
 	visibility:visible;
