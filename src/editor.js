@@ -71,6 +71,7 @@ function Editor(opts) {
 
 	opts.elements._ = {
 		priority: -Infinity,
+		title: "Empty",
 		group: "block",
 		inplace: true,
 		render: function(doc) {
