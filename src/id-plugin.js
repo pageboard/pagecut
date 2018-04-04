@@ -21,8 +21,14 @@ module.exports = function(view) {
 		var modified = false;
 		var ids = {};
 		root.descendants(function(node, pos, parent) {
-			var attrs = node.attrs;
 			pos += offset;
+			if (node.type.name == "_" && parent.childCount > 1) {
+				tr.delete(pos, pos + 1);
+				offset += -1;
+				modified = true;
+				return false;
+			}
+			var attrs = node.attrs;
 			var id = attrs.id;
 			var type = attrs.type;
 			if (!type) return;

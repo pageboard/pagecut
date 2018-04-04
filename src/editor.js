@@ -69,6 +69,15 @@ function Editor(opts) {
 		plugins: []
 	}, Editor.defaults, opts);
 
+	opts.elements._ = {
+		priority: -Infinity,
+		group: "block",
+		inplace: true,
+		render: function(doc) {
+			return doc.createElement('pagecut-placeholder');
+		}
+	};
+
 	Viewer.call(this, opts);
 
 	var spec = {
@@ -88,6 +97,7 @@ function Editor(opts) {
 	this.parser = Model.DOMParser.fromSchema(this.schema);
 
 	this.clipboardSerializer = filteredSerializer(spec, function(node, out) {
+		if (node.type.name == "_") return "";
 		Object.assign(out[1], {
 			'block-data': node.attrs.data
 		});
@@ -101,6 +111,7 @@ function Editor(opts) {
 	);
 
 	this.viewSerializer = filteredSerializer(spec, function(node, out) {
+		if (node.type.name == "_") return "";
 		var obj = out[1];
 		if (typeof obj != "object") return;
 		delete obj['block-focused'];
@@ -198,7 +209,8 @@ function filteredSerializer(spec, obj) {
 	function replaceOutputSpec(fun) {
 		return function(node) {
 			var out = fun(node);
-			obj.filter(node, out);
+			var mod = obj.filter(node, out);
+			if (mod !== undefined) out = mod;
 			return out;
 		};
 	}

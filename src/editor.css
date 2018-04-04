@@ -11,3 +11,34 @@
 [contenteditable="true"]:focus {
 	outline: none;
 }
+pagecut-placeholder {
+	display:inline-block;
+	position:relative;
+	width:0px;
+	height:0px;
+	visibility:hidden;
+	overflow:visible;
+	z-index:10000;
+}
+pagecut-placeholder:after {
+	content:'+';
+	color:black;
+	text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
+	padding: 0.3em;
+	font-size: 1.4em;
+	cursor:pointer;
+}
+.ProseMirror-focused pagecut-placeholder {
+	visibility:visible;
+	width:auto;
+	height:auto;
+}
+.ProseMirror pagecut-placeholder.ProseMirror-selectednode {
+	visibility:visible;
+	outline:none !important;
+	box-shadow:none !important;
+}
+pagecut-placeholder.ProseMirror-selectednode:after {
+	color:white;
+	text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+}
