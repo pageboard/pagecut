@@ -31,7 +31,7 @@ InputPlugin.prototype.handleTextInput = function(view, from, to, text) {
 		);
 		return false;
 	}
-	if (root && root.node && root.node.isTextblock || parent.inline) {
+	if (root && root.node && (root.node.isTextblock || root.node.type.name == "_") || parent.inline) {
 		// it should be all right then
 		return false;
 	}
