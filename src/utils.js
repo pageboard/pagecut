@@ -98,23 +98,17 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	if (slice.content.childCount == 1 && (from == to || sel.node)) {
 		var node = this.fill(slice.content.firstChild);
 		var $pos = sel.$to;
-		var atEnd = !!sel.node || $pos.parentOffset == $pos.parent.nodeSize - 2;
-		var atStart = !sel.node && $pos.parentOffset == 0;
-		var point;
-
-		if (sel.node) {
-			point = this.canInsert(sel.$to, node.type, true, false);
-			if (point.depth != null) {
-				fromto = sel.$to.after(point.depth + 1);
-				tr.insert(fromto, node);
-				return fromto;
-			}
-			point = this.canInsert(sel.$from, node.type, true, true);
-			if (point.depth != null) {
-				fromto = sel.$from.before(point.depth + 1);
-				tr.insert(fromto, node);
-				return fromto;
-			}
+		var atStart = !sel.node && sel.$from.parentOffset == 0;
+		var insertPos;
+		if (atStart) {
+			insertPos = this.insertPoint(tr.doc, from+1, node.type, -1, true);
+		}
+		if (insertPos == null) {
+			insertPos = this.insertPoint(tr.doc, to-1, node.type, 1, true);
+		}
+		if (insertPos != null) {
+			tr.insert(insertPos, node);
+			return insertPos;
 		}
 		if (parent.isTextblock && !node.isInline) {
 			tr.split(from);
@@ -122,8 +116,6 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		}
 		slice = new Model.Slice(Model.Fragment.from(node), 0, 0);
 		to = from = fromto;
-	} else {
-		slice = new Model.Slice(slice.content, 0, 0);
 	}
 	tr.replaceRange(from, to, slice);
 	return fromto;
@@ -165,14 +157,16 @@ Utils.prototype.deleteTr = function(tr, sel) {
 
 Utils.prototype.parseTr = function(tr, dom, $pos) {
 	if (!dom) return;
+	var wasFragment = true;
 	if (dom.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {
 		var parent = dom.ownerDocument.createDocumentFragment();
 		parent.appendChild(dom);
 		dom = parent;
+		wasFragment = false;
 	}
 	var opts = {};
 	var slice;
-	if ($pos.parent.isTextblock) {
+	if ($pos.parent.type.name != tr.doc.type.name || !wasFragment) {
 		opts.context = $pos;
 		slice = this.view.parser.parseSlice(dom, opts).content;
 	} else {
