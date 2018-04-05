@@ -1,6 +1,6 @@
 {
   "name": "pagecut",
-  "version": "1.0.0-beta.66",
+  "version": "1.0.0-beta.67",
   "description": "Extensible web content editor",
   "main": "index.js",
   "scripts": {
@@ -48,7 +48,7 @@
     "prosemirror-schema-basic": "^1.0.0",
     "prosemirror-schema-list": "^1.0.0",
     "prosemirror-state": "^1.1.1",
-    "prosemirror-transform": "^1.0.8",
+    "prosemirror-transform": "^1.0.9",
     "url-regex": "^3.2.0",
     "window-agent": "^1.2.0"
   },
