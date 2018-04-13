@@ -404,6 +404,12 @@ function reassignContent(block, elt, dom) {
 	if (elt.contents == null || typeof elt.contents == "string") return;
 	var rootContentName = dom.getAttribute('block-content');
 	var content = block.content;
+	if (!content) {
+		if (!block.standalone) {
+			console.warn("block without content", block, dom);
+		}
+		return;
+	}
 	var once = !rootContentName && elt.inline;
 	var times = 0;
 	Object.keys(elt.contents).forEach(function(name) {
