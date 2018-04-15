@@ -305,7 +305,9 @@ function createRootSpec(view, elt, obj) {
 	if (elt.marks) spec.marks = elt.marks;
 	if (!elt.inline || !elt.inplace) spec.nodeView = RootNodeView;
 	// explicitely allow dragging for nodes without contentDOM
-	if (!obj.contentDOM) {
+	if (elt.draggable !== undefined) {
+		spec.draggable = elt.draggable;
+	} else if (!obj.contentDOM) {
 		spec.draggable = true;
 		spec.atom = true;
 	}

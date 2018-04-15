@@ -74,6 +74,7 @@ function Editor(opts) {
 		title: "Empty",
 		group: "block",
 		inplace: true,
+		draggable: false,
 		render: function(doc) {
 			return doc.createElement('pagecut-placeholder');
 		}
