@@ -149,6 +149,7 @@ Utils.prototype.delete = function(sel) {
 Utils.prototype.deleteTr = function(tr, sel) {
 	if (!sel) sel = tr.selection;
 	if (sel.empty) return;
+	if (sel.node && sel.node.type.name == "_") return;
 	var start = sel.anchor !== undefined ? sel.anchor : sel.from;
 	var end = sel.head !== undefined ? sel.head : sel.to;
 	tr.delete(start, end);
@@ -566,6 +567,7 @@ Utils.prototype.move = function(tr, dir) {
 	var sel = tr.selection;
 	var node = sel.node;
 	if (!node) return;
+	if (node.type.name == "_") return;
 	tr.delete(sel.from, sel.to);
 	var npos = this.insertPoint(tr.doc, sel.from, node.type, dir, true);
 	if (npos == null) return;
