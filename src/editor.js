@@ -186,8 +186,6 @@ function Editor(opts) {
 		genId: opts.genId
 	});
 
-	place.ownerDocument.execCommand("enableObjectResizing", false, false);
-
 	var rootId = this.dom.getAttribute('block-id');
 	if (rootId) {
 		this.state.doc.attrs.id = rootId;
