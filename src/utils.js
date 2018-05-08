@@ -380,7 +380,7 @@ Utils.prototype.posFromDOM = function(dom) {
 	}
 	var pos;
 	try {
-		pos = this.view.docView.posFromDOM(dom, offset, 0);
+		pos = this.view.posAtDOM(dom, offset, 0);
 	} catch(ex) {
 		console.info(ex);
 		pos = false;
@@ -391,15 +391,7 @@ Utils.prototype.posFromDOM = function(dom) {
 Utils.prototype.posToDOM = function(pos) {
 	if (pos == null) return;
 	try {
-		var fromPos = this.view.docView.domFromPos(pos);
-		if (fromPos) {
-			var dom = fromPos.node;
-			var offset = fromPos.offset;
-			if (dom.nodeType == 1 && offset < dom.childNodes.length) {
-				dom = dom.childNodes.item(offset);
-			}
-			return dom;
-		}
+		return this.view.nodeDOM(pos);
 	} catch(ex) {
 		return false;
 	}
