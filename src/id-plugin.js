@@ -28,6 +28,37 @@ module.exports = function(view) {
 				modified = true;
 				return false;
 			}
+			node.marks.forEach(function(mark) {
+				var attrs = mark.attrs;
+				var type = attrs.type;
+				if (!type) return mark;
+				var el = view.element(type);
+				if (!el) return mark;
+				var id = attrs.id;
+				if (id && ids[id]) {
+					var newId = view.blocks.genId();
+					var block = view.blocks.fromAttrs(attrs);
+					block.id = newId;
+					view.blocks.set(block);
+					tr.removeMark(pos, pos + node.nodeSize, mark);
+					tr.addMark(pos, pos + node.nodeSize, mark.type.create(Object.assign({}, attrs, {
+						id: newId
+					})));
+					modified = true;
+				} else if (id && el.inplace) {
+					var copy = Object.assign({}, attrs);
+					delete copy.id;
+					tr.removeMark(pos, pos + node.nodeSize, mark);
+					tr.addMark(pos, pos + node.nodeSize, mark.type.create(copy));
+					modified = true;
+				} else if (id) {
+					ids[id] = true;
+					return mark;
+				} else {
+					return mark;
+				}
+			});
+
 			var attrs = node.attrs;
 			var id = attrs.id;
 			var type = attrs.type;
