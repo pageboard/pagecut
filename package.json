@@ -52,10 +52,12 @@
     "url-regex": "^3.2.0",
     "window-agent": "^1.2.0"
   },
-  "postinstall": {
+  "devPostinstall": {
     "window-agent/agent.js": "link sample/",
     "diff-dom/diffDOM.js": "link sample/",
-    "dom-template-strings/dist/dom-template-strings.js": "link sample/",
+    "dom-template-strings/dist/dom-template-strings.js": "link sample/"
+  },
+  "postinstall": {
     "prosemirror-view/style/prosemirror.css": "link src/prosemirror.css",
     "prosemirror-menu/style/menu.css": "link src/prosemirror-menu.css"
   },
