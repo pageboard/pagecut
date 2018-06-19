@@ -189,7 +189,7 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 	}
 };
 
-Blocks.prototype.from = function(block, blocks) {
+Blocks.prototype.from = function(block, blocks, overrideType) {
 	// blocks can be a block or a map of blocks
 	// if it's a block, it can have a 'children' property
 	var self = this;
@@ -228,7 +228,7 @@ Blocks.prototype.from = function(block, blocks) {
 			block.content[contentName] = frag;
 		}
 	}
-	return this.parseFrom(block, blocks, store).then(function(result) {
+	return this.parseFrom(block, blocks, store, overrideType).then(function(result) {
 		self.store = store;
 		return result;
 	});

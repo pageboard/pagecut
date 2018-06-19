@@ -47,9 +47,9 @@ function Viewer(opts) {
 	});
 }
 
-Viewer.prototype.from = function(block, blocks) {
+Viewer.prototype.from = function(block, blocks, overrideType) {
 	this.block = block;
-	return this.blocks.from(block, blocks);
+	return this.blocks.from(block, blocks, overrideType);
 };
 
 Viewer.prototype.to = function(blocks) {
