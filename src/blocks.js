@@ -69,7 +69,7 @@ Blocks.prototype.render = function(block, opts) {
 	return dom;
 };
 
-Blocks.prototype.mount = function(block, blocks) {
+Blocks.prototype.mount = function(block, blocks, overrideType) {
 	var contents = block.content;
 	var copy = this.copy(block);
 	var content, div, frag, view = this.view;
@@ -79,9 +79,10 @@ Blocks.prototype.mount = function(block, blocks) {
 			copy.content[name] = htmlToFrag(view.doc, content);
 		}
 	}
-	var el = view.element(copy.type);
+	if (!overrideType) overrideType = copy.type;
+	var el = view.element(overrideType);
 	if (!el) {
-		console.error("Cannot find element for block", block);
+		console.error("Cannot find element for block type", overrideType);
 		return copy;
 	}
 	return Promise.resolve().then(function() {
@@ -244,7 +245,7 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 		overrideType = block.type;
 	}
 	return Promise.resolve().then(function() {
-		return self.mount(block, blocks);
+		return self.mount(block, blocks, overrideType);
 	}).then(function(block) {
 		if (block.children) {
 			block.children.forEach(function(child) {
