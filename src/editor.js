@@ -48,6 +48,23 @@ Editor.defaults.mapKeys = {
 };
 if (!mac) Editor.defaults.mapKeys["Mod-y"] = History.redo;
 
+Editor.defaults.elements = {
+	_: {
+		priority: -Infinity,
+		title: "Empty",
+		group: "block",
+		inplace: true,
+		draggable: false,
+		render: function(doc) {
+			return doc.createElement('pagecut-placeholder');
+		}
+	},
+	text: {
+		inline: true,
+		group: 'inline'
+	}
+};
+
 module.exports = {
 	Editor: Editor,
 	View: View,
@@ -69,16 +86,9 @@ function Editor(opts) {
 		plugins: []
 	}, Editor.defaults, opts);
 
-	opts.elements._ = {
-		priority: -Infinity,
-		title: "Empty",
-		group: "block",
-		inplace: true,
-		draggable: false,
-		render: function(doc) {
-			return doc.createElement('pagecut-placeholder');
-		}
-	};
+	for (var name in opts.elements) {
+		opts.elements[name] = Object.assign({}, Editor.defaults[name], opts.elements[name]);
+	}
 
 	Viewer.call(this, opts);
 
