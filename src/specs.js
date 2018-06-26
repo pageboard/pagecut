@@ -17,6 +17,11 @@ var index;
 var tags = {};
 
 function define(view, elt, schema, views) {
+	if (elt.name == "text") {
+		schema.nodes = schema.nodes.remove(elt.name);
+		schema.nodes = schema.nodes.addToStart(elt.name, elt);
+		return;
+	}
 	if (!elt.render) return; // some elements are not meant to be rendered
 	var dom = view.render(view.blocks.create(elt.name), {merge: false});
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) {
