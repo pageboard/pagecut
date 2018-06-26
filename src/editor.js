@@ -36,9 +36,6 @@ Editor.defaults = {
 	),
 	marks: baseSchema.spec.marks
 };
-// Editor.defaults.nodes = tableSchema.addTableNodes(
-// 	Editor.defaults.nodes, "inline<_>*", "block"
-// );
 
 const mac = typeof navigator != "undefined" ? /Mac/.test(navigator.platform) : false
 
