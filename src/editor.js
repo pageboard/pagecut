@@ -83,8 +83,8 @@ function Editor(opts) {
 		plugins: []
 	}, Editor.defaults, opts);
 
-	for (var name in opts.elements) {
-		opts.elements[name] = Object.assign({}, Editor.defaults[name], opts.elements[name]);
+	for (var name in Editor.defaults.elements) {
+		opts.elements[name] = Object.assign({}, Editor.defaults.elements[name], opts.elements[name]);
 	}
 
 	Viewer.call(this, opts);
