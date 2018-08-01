@@ -64,7 +64,7 @@ Blocks.prototype.render = function(block, opts) {
 	var type = opts.type || block.type;
 	var el = this.view.element(type);
 	if (!el) throw new Error(`Unknown block.type ${type}`);
-	var dom = el.render(this.view.doc, block, this.view);
+	var dom = el.render.call(el, this.view.doc, block, this.view);
 	if (dom && opts.merge !== false) this.merge(dom, block, type);
 	return dom;
 };

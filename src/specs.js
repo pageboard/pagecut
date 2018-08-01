@@ -238,7 +238,7 @@ function createRootSpec(view, elt, obj) {
 			if (data) {
 				attrs.data = data;
 			} else if (elt.parse) {
-				attrs.data = JSON.stringify(elt.parse(dom));
+				attrs.data = JSON.stringify(elt.parse.call(elt, dom));
 			}
 			if (elt.inplace) {
 				return attrs;
