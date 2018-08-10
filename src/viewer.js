@@ -26,17 +26,6 @@ function Viewer(opts) {
 	this.blocks = new BlocksView(this, opts);
 	this.block = {data:{}, content:{}};
 	var viewer = this;
-	viewer.modules = {};
-
-	var modules = Object.assign({}, global.Pagecut && global.Pagecut.modules, opts.modules);
-	Object.keys(modules).forEach(function(k) {
-		var mod = modules[k];
-		if (typeof mod == "function") {
-			viewer.modules[k] = new modules[k](viewer);
-		} else {
-			map[k] = mod;
-		}
-	});
 
 	this.elements = Object.keys(map).map(function(key) {
 		var el = map[key];

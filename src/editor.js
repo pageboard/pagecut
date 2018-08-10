@@ -71,8 +71,7 @@ module.exports = {
 	Transform: Transform,
 	Commands: Commands,
 	keymap: keymap,
-	Viewer: Viewer,
-	modules: global.Pagecut && global.Pagecut.modules || {}
+	Viewer: Viewer
 };
 
 Editor.prototype.to = function(blocks) {
