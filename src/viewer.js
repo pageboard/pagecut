@@ -22,7 +22,6 @@ function Viewer(opts) {
 		}
 	};
 
-	this.plugins = opts.plugins || [];
 	this.blocks = new BlocksView(this, opts);
 	this.block = {data:{}, content:{}};
 	var viewer = this;

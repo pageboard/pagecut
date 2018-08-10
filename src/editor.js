@@ -83,15 +83,15 @@ function Editor(opts) {
 
 	this.utils = new Utils(this);
 
-	opts = Object.assign({
-		plugins: []
-	}, Editor.defaults, opts);
+	opts = Object.assign(Editor.defaults, opts);
 
 	for (var name in Editor.defaults.elements) {
 		opts.elements[name] = Object.assign({}, Editor.defaults.elements[name], opts.elements[name]);
 	}
 
 	Viewer.call(this, opts);
+
+	var plugins = opts.plugins || [];
 
 	Object.assign(this.blocks.prototype, BlocksEdit);
 
@@ -135,7 +135,7 @@ function Editor(opts) {
 		delete obj['style'];
 	});
 
-	this.plugins.push(
+	plugins.push(
 		IdPlugin,
 		KeymapPlugin,
 		FocusPlugin,
@@ -165,7 +165,7 @@ function Editor(opts) {
 		});
 	});
 
-	var plugins = opts.plugins.map(function(plugin) {
+	plugins = plugins.map(function(plugin) {
 		if (plugin instanceof State.Plugin) return plugin;
 		if (typeof plugin == "function") {
 			plugin = plugin(editor, opts);
