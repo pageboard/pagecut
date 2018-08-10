@@ -4,11 +4,15 @@ var BlocksView = require('./blocks-view');
 
 function Viewer(opts) {
 	if (!opts) opts = {};
+	this.blocks = new BlocksView(this, opts);
+
 	this.doc = opts.document || document.cloneNode();
 	if (!this.doc.documentElement) {
 		this.doc.appendChild(this.doc.createElement('html'));
 	}
-	var map = this.elementsMap = opts.elements || {};
+
+	// TODO remove this probably useless part
+	var map = this.elements = opts.elements || {};
 	if (!map.fragment) map.fragment = {
 		contents: {
 			fragment: {
@@ -19,28 +23,15 @@ function Viewer(opts) {
 			return block.content.fragment || doc.createElement("div");
 		}
 	};
-
-	this.blocks = new BlocksView(this, opts);
-	this.block = {data:{}, content:{}};
-	var viewer = this;
-
-	this.elements = Object.keys(map).map(function(key) {
-		var el = map[key];
-		if (!el.name) el.name = key;
-		return el;
-	}).sort(function(a, b) {
-		return (a.priority || 0) - (b.priority || 0);
-	});
 }
 
 Viewer.prototype.from = function(block, blocks, overrideType) {
-	this.block = block;
 	return this.blocks.from(block, blocks, overrideType);
 };
 
 Viewer.prototype.element = function(type) {
 	if (!type) return;
-	return this.elementsMap[type];
+	return this.elements[type];
 };
 
 Viewer.prototype.render = function(block, opts) {

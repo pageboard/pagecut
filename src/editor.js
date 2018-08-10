@@ -102,8 +102,17 @@ function Editor(opts) {
 	};
 	var views = {};
 
-	for (var i=this.elements.length - 1; i >= 0; i--) {
-		Specs.define(editor, this.elements[i], spec, views);
+	var elements = this.elements;
+	var elemsList = Object.keys(elements).map(function(key) {
+		var el = elements[key];
+		if (!el.name) el.name = key;
+		return el;
+	}).sort(function(a, b) {
+		return (a.priority || 0) - (b.priority || 0);
+	});
+
+	for (var i = elemsList.length - 1; i >= 0; i--) {
+		Specs.define(editor, elemsList[i], spec, views);
 	}
 
 	this.schema = new Model.Schema(spec);
