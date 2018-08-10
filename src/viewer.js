@@ -7,8 +7,6 @@ function Viewer(opts) {
 	this.doc = opts.document || document.cloneNode();
 	if (!this.doc.documentElement) {
 		this.doc.appendChild(this.doc.createElement('html'));
-		this.doc.documentElement.appendChild(this.doc.createElement('head'));
-		this.doc.documentElement.appendChild(this.doc.createElement('body'));
 	}
 	var map = this.elementsMap = opts.elements || {};
 	if (!map.fragment) map.fragment = {
