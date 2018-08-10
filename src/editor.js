@@ -22,6 +22,7 @@ var InputPlugin = require("./input-plugin");
 
 var Utils = require("./utils");
 var Specs = require("./specs");
+var BlocksEdit = require('./blocks-edit');
 
 var Viewer = global.Pagecut && global.Pagecut.Viewer || require("./viewer");
 
@@ -74,6 +75,10 @@ module.exports = {
 	modules: global.Pagecut && global.Pagecut.modules || {}
 };
 
+Editor.prototype.to = function(blocks) {
+	return this.blocks.to(blocks);
+};
+
 function Editor(opts) {
 	var editor = this;
 
@@ -88,6 +93,8 @@ function Editor(opts) {
 	}
 
 	Viewer.call(this, opts);
+
+	Object.assign(this.blocks.prototype, BlocksEdit);
 
 	var spec = {
 		nodes: opts.nodes,
@@ -189,8 +196,7 @@ function Editor(opts) {
 		dispatchTransaction: function(tr) {
 			editor.updateState(editor.state.apply(tr));
 		},
-		nodeViews: views,
-		genId: opts.genId
+		nodeViews: views
 	});
 
 	var rootId = this.dom.getAttribute('block-id');

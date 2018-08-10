@@ -442,8 +442,8 @@ function RootNodeView(node, view, getPos, decorations) {
 		block = view.blocks.fromAttrs(node.attrs);
 	}
 	if (!this.element.inplace && !this.id) {
-		this.id = block.id = node.attrs.id = view.blocks.genId();
 		view.blocks.set(block);
+		this.id = node.attrs.id = block.id;
 	}
 
 	if (block.focused) delete block.focused;

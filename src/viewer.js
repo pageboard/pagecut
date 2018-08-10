@@ -1,6 +1,6 @@
 module.exports = Viewer;
 
-var Blocks = require('./blocks');
+var BlocksView = require('./blocks-view');
 
 function Viewer(opts) {
 	if (!opts) opts = {};
@@ -23,7 +23,7 @@ function Viewer(opts) {
 	};
 
 	this.plugins = opts.plugins || [];
-	this.blocks = new Blocks(this, opts.genId);
+	this.blocks = new BlocksView(this, opts);
 	this.block = {data:{}, content:{}};
 	var viewer = this;
 	viewer.modules = {};
@@ -50,10 +50,6 @@ function Viewer(opts) {
 Viewer.prototype.from = function(block, blocks, overrideType) {
 	this.block = block;
 	return this.blocks.from(block, blocks, overrideType);
-};
-
-Viewer.prototype.to = function(blocks) {
-	return this.blocks.to(blocks);
 };
 
 Viewer.prototype.element = function(type) {

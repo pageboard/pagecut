@@ -36,13 +36,12 @@ module.exports = function(view) {
 				if (!el) return mark;
 				var id = attrs.id;
 				if (id && ids[id]) {
-					var newId = view.blocks.genId();
 					var block = view.blocks.fromAttrs(attrs);
-					block.id = newId;
+					delete block.id;
 					view.blocks.set(block);
 					tr.removeMark(pos, pos + node.nodeSize, mark);
 					tr.addMark(pos, pos + node.nodeSize, mark.type.create(Object.assign({}, attrs, {
-						id: newId
+						id: block.id
 					})));
 					modified = true;
 				} else if (id && el.inplace) {
@@ -81,19 +80,18 @@ module.exports = function(view) {
 			var gen = id && forceGen || !standalone && !el.inplace && (!id || ids[id]);
 			var rem = id && el.inplace;
 			if (gen) {
-				var newId = view.blocks.genId();
 				var block = view.blocks.fromAttrs(attrs);
-				block.id = newId;
+				delete block.id;
 				view.blocks.set(block);
 				var newAttrs = Object.assign({}, attrs, {
-					id: newId
+					id: block.id
 				});
 				if (!standalone) {
 					delete newAttrs.standalone;
 					block.standalone = false;
 				}
 				tr.setNodeMarkup(pos, null, newAttrs);
-				ids[newId] = true;
+				ids[block.id] = true;
 				modified = true;
 			} else if (rem) {
 				var copy = Object.assign({}, attrs);
