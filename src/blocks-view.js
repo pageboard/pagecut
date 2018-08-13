@@ -1,6 +1,14 @@
 module.exports = Blocks;
-
-var htmlToFrag = require('domify');
+var domify = require('domify');
+function htmlToFrag(str, doc) {
+	var node = domify(str, doc);
+	if (node && node.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {
+		var frag = doc.createDocumentFragment();
+		frag.appendChild(node);
+		node = frag;
+	}
+	return node;
+}
 
 function Blocks(view, opts) {
 	this.view = view;
@@ -14,7 +22,7 @@ Blocks.prototype.render = function(block, opts) {
 	var type = opts.type || block.type;
 	var el = this.view.element(type);
 	if (!el) throw new Error(`Unknown block.type ${type}`);
-	var dom = el.render.call(el, this.view.doc, block, this.view);
+	var dom = el.render.call(el, this.view.doc, block, this.view, opts.scope);
 	if (dom && opts.merge !== false) this.merge(dom, block, type);
 	return dom;
 };
@@ -88,7 +96,7 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 	}
 };
 
-Blocks.prototype.from = function(block, blocks, overrideType) {
+Blocks.prototype.from = function(block, blocks, overrideType, scope) {
 	// blocks can be a block or a map of blocks
 	// if it's a block, it can have a 'children' property
 	var self = this;
@@ -128,13 +136,13 @@ Blocks.prototype.from = function(block, blocks, overrideType) {
 			block.content[contentName] = frag;
 		}
 	}
-	return this.parseFrom(block, blocks, store, overrideType).then(function(result) {
+	return this.parseFrom(block, blocks, store, overrideType, scope).then(function(result) {
 		self.store = store;
 		return result;
 	});
 };
 
-Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
+Blocks.prototype.parseFrom = function(block, blocks, store, overrideType, scope) {
 	var view = this.view;
 	var self = this;
 	if (!store) store = this.store;
@@ -144,7 +152,7 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 		overrideType = block.type;
 	}
 	return Promise.resolve().then(function() {
-		return self.mount(block, blocks, overrideType);
+		return self.mount(block, blocks, overrideType, scope);
 	}).then(function(block) {
 		if (block.children) {
 			block.children.forEach(function(child) {
@@ -160,7 +168,8 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 		var fragment;
 		try {
 			fragment = view.render(block, {
-				type: overrideType
+				type: overrideType,
+				scope: scope
 			});
 		} catch(ex) {
 			console.error(ex);
@@ -177,7 +186,7 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType) {
 				node.remove();
 				return;
 			}
-			return self.parseFrom(child, blocks, store, type).then(function(child) {
+			return self.parseFrom(child, blocks, store, type, scope).then(function(child) {
 				if (child) node.parentNode.replaceChild(child, node);
 			});
 		}, this)).then(function() {

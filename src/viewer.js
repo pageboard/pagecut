@@ -10,6 +10,7 @@ function Viewer(opts) {
 	if (!this.doc.documentElement) {
 		this.doc.appendChild(this.doc.createElement('html'));
 	}
+	this.elements = opts.elements || {};
 
 	// TODO remove this probably useless part
 	var map = this.elements = opts.elements || {};
@@ -25,8 +26,8 @@ function Viewer(opts) {
 	};
 }
 
-Viewer.prototype.from = function(block, blocks, overrideType) {
-	return this.blocks.from(block, blocks, overrideType);
+Viewer.prototype.from = function(block, blocks, overrideType, scope) {
+	return this.blocks.from(block, blocks, overrideType, scope);
 };
 
 Viewer.prototype.element = function(type) {
