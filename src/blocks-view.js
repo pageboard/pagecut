@@ -156,14 +156,16 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType, scope)
 	}).then(function(block) {
 		if (block.children) {
 			block.children.forEach(function(child) {
-				blocks[child.id] = child;
+				if (!blocks[child.id]) {
+					blocks[child.id] = child;
+				} else {
+					console.warn("child already exists", child);
+				}
 			});
-			// children can be consumed once only
-			delete block.children;
 		}
-		if (block.id && !store[block.id]) {
+		if (block.id) {
 			// overwrite can happen with virtual blocks
-			store[block.id] = block;
+			if (!store[block.id]) store[block.id] = block;
 		}
 		var fragment;
 		try {
@@ -173,8 +175,9 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType, scope)
 			});
 		} catch(ex) {
 			console.error(ex);
-			return;
 		}
+		// children can be consumed once only
+		delete block.children;
 		if (!fragment) return;
 		return Promise.all(Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
 			var id = node.getAttribute('block-id');
