@@ -91,9 +91,11 @@ function Editor(opts) {
 
 	Viewer.call(this, opts);
 
-	var plugins = opts.plugins || [];
+	var BlocksViewProto = Object.getPrototypeOf(this.blocks);
+	Object.assign(BlocksViewProto.constructor, BlocksEdit);
+	Object.assign(BlocksViewProto, BlocksEdit.prototype);
 
-	Object.assign(this.blocks.prototype, BlocksEdit);
+	var plugins = opts.plugins || [];
 
 	var spec = {
 		nodes: opts.nodes,

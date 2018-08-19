@@ -1,4 +1,4 @@
-module.exports = BlocksEdit;
+module.exports = Blocks;
 
 function Blocks() {}
 
