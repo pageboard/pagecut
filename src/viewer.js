@@ -46,6 +46,14 @@ Viewer.prototype.render = function(block, opts) {
 	} catch(ex) {
 		console.error(ex);
 	}
+	if (!dom) return;
+	if (dom.nodeName == "HTML") {
+		// documentElement is not editable
+		dom = dom.querySelector('body');
+		if (!dom) {
+			console.error(`${elt.name} returns a document element but does not contain a body`);
+		}
+	}
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return dom;
 
 	var type = (opts || {}).type || block.type;
