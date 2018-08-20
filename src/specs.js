@@ -53,7 +53,7 @@ function define(view, elt, schema, views) {
 		} else if (elt.contents) {
 			var contentName = (obj.contentDOM || obj.dom).getAttribute('block-content');
 			var contents = elt.contents;
-			if (typeof contents != "string") {
+			if (typeof contents != "string" && typeof contents.spec != "string") {
 				if (!contentName) {
 					var contentKeys = Object.keys(contents);
 					if (contentKeys.length == 1) {
@@ -85,7 +85,16 @@ function define(view, elt, schema, views) {
 				if (!elt.inplace) {
 					console.error("contents can be a string spec only for inplace element", elt);
 				} else {
-					spec.content = contents;
+					if (typeof contents == "string") {
+						spec.content = contents;
+					} else {
+						if (contents.spec) {
+							spec.content = contents.spec;
+						}
+						if (contents.marks) {
+							spec.marks = contents.marks
+						}
+					}
 				}
 			}
 		}
