@@ -105,6 +105,7 @@ function define(view, elt, schema, views) {
 		var parseTag = spec.parseDOM && spec.parseDOM[0].tag;
 		if (parseTag) {
 			var parseTagKey = spec.typeName == "root" ? parseTag : `${elt.name}_${parseTag}`;
+			if (elt.context) parseTagKey += elt.context;
 			var oldName = tags[parseTagKey];
 			if (oldName) {
 				console.info(`Two elements with same tag "${parseTag}" - ${oldName} and ${obj.name}`);
