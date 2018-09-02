@@ -154,15 +154,6 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType, scope)
 	return Promise.resolve().then(function() {
 		return self.mount(block, blocks, overrideType, scope);
 	}).then(function(block) {
-		if (block.children) {
-			block.children.forEach(function(child) {
-				if (!blocks[child.id]) {
-					blocks[child.id] = child;
-				} else {
-					console.warn("child already exists", child);
-				}
-			});
-		}
 		if (block.id) {
 			// overwrite can happen with virtual blocks
 			if (!store[block.id]) store[block.id] = block;
@@ -176,8 +167,16 @@ Blocks.prototype.parseFrom = function(block, blocks, store, overrideType, scope)
 		} catch(ex) {
 			console.error(ex);
 		}
-		// children can be consumed once only
-		delete block.children;
+		if (block.children) {
+			block.children.forEach(function(child) {
+				if (!blocks[child.id]) {
+					blocks[child.id] = child;
+				} else {
+					console.warn("child already exists", child);
+				}
+			});
+			delete block.children;
+		}
 		if (!fragment) return;
 		return Promise.all(Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
 			var id = node.getAttribute('block-id');
