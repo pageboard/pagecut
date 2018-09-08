@@ -433,7 +433,7 @@ function RootNodeView(node, view, getPos, decorations) {
 	this.view = view;
 	this.element = node.type.spec.element;
 	this.domModel = node.type.spec.domModel;
-	this.getPos = getPos;
+	this.getPos = typeof getPos == "function" ? getPos : null;
 	this.id = node.attrs.id;
 	var block;
 	if (this.id) {
