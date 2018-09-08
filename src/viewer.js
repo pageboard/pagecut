@@ -7,9 +7,6 @@ function Viewer(opts) {
 	this.blocks = new BlocksView(this, opts);
 
 	this.doc = opts.document || document.cloneNode();
-	if (!this.doc.documentElement) {
-		this.doc.appendChild(this.doc.createElement('html'));
-	}
 	this.elements = opts.elements || {};
 
 	// TODO remove this probably useless part
@@ -49,6 +46,10 @@ Viewer.prototype.render = function(block, opts) {
 	if (!dom) return;
 	if (dom.nodeName == "HTML") {
 		// documentElement is not editable
+		if (this.doc.documentElement) {
+			this.doc.removeChild(this.doc.documentElement);
+		}
+		this.doc.appendChild(dom);
 		dom = dom.querySelector('body');
 		if (!dom) {
 			console.error(`${elt.name} returns a document element but does not contain a body`);
