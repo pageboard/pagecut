@@ -82,7 +82,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 		parent.blocks = {};
 	}
 
-	var contentKeys = (!el.contents || typeof el.contents == "string")
+	var contentKeys = (!el.contents || typeof el.contents.spec == "string")
 		? null : Object.keys(el.contents);
 
 	if (!contentKeys) {
@@ -178,7 +178,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 }
 
 function reassignContent(block, elt, dom) {
-	if (elt.contents == null || typeof elt.contents == "string") return;
+	if (elt.contents == null || typeof elt.contents.spec == "string") return;
 	var rootContentName = dom.getAttribute('block-content');
 	var content = block.content;
 	if (!content) {

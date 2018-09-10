@@ -17,6 +17,9 @@ var index;
 var tags = {};
 
 function define(view, elt, schema, views) {
+	if (typeof elt.contents == "string") elt.contents = {
+		spec: elt.contents
+	};
 	if (elt.name == "text") {
 		schema.nodes = schema.nodes.remove(elt.name);
 		schema.nodes = schema.nodes.addToStart(elt.name, elt);
@@ -43,6 +46,7 @@ function define(view, elt, schema, views) {
 		} else {
 			throw new Error("Missing type in flagDom iterator", type, obj);
 		}
+		var contents = elt.contents;
 
 		if (obj.children && obj.children.length) {
 			// this type of node has content that is wrap or container type nodes
@@ -50,10 +54,9 @@ function define(view, elt, schema, views) {
 				if (!child.name) console.warn(obj, "has no name for child", child);
 				return child.name;
 			}).join(" ");
-		} else if (elt.contents) {
+		} else if (contents) {
 			var contentName = (obj.contentDOM || obj.dom).getAttribute('block-content');
-			var contents = elt.contents;
-			if (typeof contents != "string" && typeof contents.spec != "string") {
+			if (typeof contents.spec != "string") {
 				if (!contentName) {
 					var contentKeys = Object.keys(contents);
 					if (contentKeys.length == 1) {
@@ -85,15 +88,11 @@ function define(view, elt, schema, views) {
 				if (!elt.inplace) {
 					console.error("contents can be a string spec only for inplace element", elt);
 				} else {
-					if (typeof contents == "string") {
-						spec.content = contents;
-					} else {
-						if (contents.spec) {
-							spec.content = contents.spec;
-						}
-						if (contents.marks) {
-							spec.marks = contents.marks
-						}
+					if (contents.spec) {
+						spec.content = contents.spec;
+					}
+					if (contents.marks) {
+						spec.marks = contents.marks
 					}
 				}
 			}
@@ -149,7 +148,7 @@ function getImmediateContents(root, list) {
 
 function findContent(elt, dom) {
 	if (elt.contents == null) return;
-	if (elt.inline || typeof elt.contents == "string") return dom;
+	if (elt.inline || typeof elt.contents.spec == "string") return dom;
 	var list = [];
 	getImmediateContents(dom, list);
 	if (!list.length) return;

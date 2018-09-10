@@ -65,7 +65,7 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 	if (!contents) return;
 	if (!el.contents) return;
 	if (el.inplace) return;
-	if (typeof el.contents != "string") Object.keys(el.contents).forEach(function(name) {
+	if (typeof el.contents.spec != "string") Object.keys(el.contents).forEach(function(name) {
 		var blockContent = dom.getAttribute('block-content');
 		var node;
 		if (blockContent) {
