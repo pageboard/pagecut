@@ -175,7 +175,7 @@ function flagDom(elt, dom, iterate) {
 			if (!child) continue;
 			if (child.text) {
 				if (childCount == 1) {
-					obj._default = child.text;
+					obj._default = child.text.trim() || undefined;
 				}
 			}	else {
 				obj.children.push(child);
