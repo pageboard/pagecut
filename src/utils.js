@@ -498,7 +498,7 @@ Utils.prototype.canInsert = function($pos, nodeType, all, after) {
 			}
 		}
 		if (found && context) {
-			if (checkContext(context, node.type.name, $pos, d)) {
+			if (checkContext(context, node.type, $pos, d)) {
 				contextOk = true;
 				break;
 			}
@@ -518,18 +518,20 @@ function parseContext(context) {
 	return list;
 }
 
-function checkContext(list, name, $pos, d) {
+function checkContext(list, type, $pos, d) {
 	// does not check nested contexts
+	var cands = type.spec.group ? type.spec.group.split(' ') : [];
+	cands.push(type.name);
 	return list.some(function(pc) {
 		var last = pc[pc.length - 1];
 		if (!last) {
-			if (pc.length == 2 && pc[0] == name) {
+			if (pc.length == 2 && cands.includes(pc[0])) {
 				return true;
 			} else {
 				return false;
 			}
 		} else {
-			if (last == name && d >= $pos.depth - 1) return true;
+			if (cands.includes(last) && d >= $pos.depth - 1) return true;
 			else return false;
 		}
 	});
