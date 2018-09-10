@@ -518,7 +518,8 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 		var dom = this.view.render(block, {type: node.attrs.type, merge: false});
 		var tr = this.view.state.tr;
-		var curpos = this.getPos && this.getPos() || undefined;
+		var curpos = this.getPos ? this.getPos() : undefined;
+		if (isNaN(curpos)) curpos = undefined;
 		if (sameData) {
 			mutateAttributes(this.dom, dom);
 		} else {
@@ -700,12 +701,12 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 		while (dom.firstChild) emptyDom.appendChild(dom.firstChild);
 		obj.contentDOM = obj.dom;
 	}
-	if (nobj.children.length && pos !== undefined) {
+	if (nobj.children.length) {
 		var curpos = pos + 1;
 		nobj.children.forEach(function(childObj, i) {
 			var pmChild = pmNode.child(i);
 			var newAttrs = Object.assign({}, pmChild.attrs, {_json: saveDomAttrs(childObj.dom)});
-			tr.setNodeMarkup(curpos, null, newAttrs);
+			if (pos !== undefined) tr.setNodeMarkup(curpos, null, newAttrs);
 			pmChild.attrs = newAttrs; // because we want the modification NOW
 			var viewDom = Array.prototype.find.call(obj.contentDOM.childNodes, function(child, i) {
 				return child.pmViewDesc && child.pmViewDesc.node == pmChild;
