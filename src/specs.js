@@ -56,7 +56,7 @@ function define(view, elt, schema, views) {
 			}).join(" ");
 		} else if (contents) {
 			var contentName = (obj.contentDOM || obj.dom).getAttribute('block-content');
-			if (typeof contents.spec != "string") {
+			if (contents.spec == null || typeof contents.spec != "string") {
 				if (!contentName) {
 					var contentKeys = Object.keys(contents);
 					if (contentKeys.length == 1) {
@@ -82,6 +82,9 @@ function define(view, elt, schema, views) {
 							}
 						}
 						spec.content = contentSpec;
+						if (contentSpec.marks) {
+							spec.marks = contentSpec.marks;
+						}
 					}
 				}
 			} else {
