@@ -63,7 +63,7 @@
     "prosemirror-menu/style/menu.css": "link src/prosemirror-menu.css"
   },
   "dependencies": {
-    "postinstall": "^0.1.0",
+    "postinstall": "^0.4.2",
     "prosemirror-menu": "^1.0.1",
     "prosemirror-view": "^1.5.2"
   }
