@@ -19,7 +19,7 @@ function breakCommand(state, dispatch, view) {
 	var handled = false;
 	if (bef && bef.type.name == "hard_break" && isRoot && parent.isTextblock) {
 		if (dispatch) {
-			tr.delete(sel.$from.pos - bef.nodeSize, sel.$from.pos).scrollIntoView()
+			tr.delete(sel.$from.pos - bef.nodeSize, sel.$from.pos).scrollIntoView();
 		}
 		// ok let's handle the split ourselves
 		var elt = view.element(parent.type.name);
@@ -38,7 +38,7 @@ function breakCommand(state, dispatch, view) {
 		var hard_break = state.schema.nodes.hard_break;
 		handled = true;
 		if (view.utils.canInsert(sel.$from, hard_break).node && dispatch) {
-			tr.replaceSelectionWith(hard_break.create()).scrollIntoView()
+			tr.replaceSelectionWith(hard_break.create()).scrollIntoView();
 		}
 	}
 	if (dispatch) dispatch(tr);
@@ -69,9 +69,9 @@ function deleteCommand(back, state, dispatch, view) {
 		}
 		return true;
 	} else if (!back) {
-		var $pos = sel.$to;
-		if ($pos.parentOffset == $pos.parent.nodeSize - 2) {
-			var nextNode = $pos.doc.resolve($pos.after()).nodeAfter;
+		var $to = sel.$to;
+		if ($to.parentOffset == $to.parent.nodeSize - 2) {
+			var nextNode = $to.doc.resolve($to.after()).nodeAfter;
 			if (nextNode && nextNode.isTextblock) {
 				if (dispatch) {
 					dispatch(state.tr.join(sel.to + 1));
@@ -80,9 +80,9 @@ function deleteCommand(back, state, dispatch, view) {
 			}
 		}
 	} else {
-		var $pos = sel.$from;
-		if ($pos.parentOffset == 0) {
-			var prevNode = $pos.doc.resolve($pos.before()).nodeBefore;
+		var $from = sel.$from;
+		if ($from.parentOffset == 0) {
+			var prevNode = $from.doc.resolve($from.before()).nodeBefore;
 			if (prevNode && prevNode.isTextblock) {
 				if (dispatch) {
 					dispatch(state.tr.join(sel.from - 1));

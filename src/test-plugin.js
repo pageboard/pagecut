@@ -18,7 +18,7 @@ module.exports = function(editor, options) {
 			handleDOMEvents: {
 				mousedown: function(view, e) {
 					var dom = e.target.closest('[block-id],[block-content]');
-					if (!dom || dom.hasAttribute('block-content')) return;
+					if (!dom || dom.hasAttribute('block-content')) return;
 					var pos = view.utils.posFromDOM(dom);
 					if (pos === false) return;
 					if (dom != e.target) {
@@ -94,7 +94,7 @@ function fragmentReplace(fragment, regexp, replacer) {
 				end = start + m[0].length;
 				if (start > 0) list.push(child.copy(child.text.slice(pos, start)));
 				str = child.text.slice(start, end);
-				node = replacer(str, pos) || "";
+				node = replacer(str, pos) || "";
 				list.push(node);
 				pos = end;
 			}

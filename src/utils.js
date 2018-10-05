@@ -2,8 +2,6 @@ var State = require("prosemirror-state");
 var Model = require("prosemirror-model");
 var Commands = require("prosemirror-commands");
 var View = require("prosemirror-view");
-var Slice = Model.Slice;
-var Fragment = Model.Fragment;
 
 module.exports = Utils;
 
@@ -97,7 +95,6 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	var fromto = from;
 	if (slice.content.childCount == 1 && (from == to || sel.node)) {
 		var node = this.fill(slice.content.firstChild);
-		var $pos = sel.$to;
 		var atStart = !sel.node && sel.$from.parentOffset == 0;
 		var insertPos;
 		if (atStart) {
@@ -125,7 +122,7 @@ Utils.prototype.fill = function(node) {
 	var content = node.content;
 	if (content.size) {
 		var before = node.type.contentMatch.fillBefore(content);
-		if (before) content = before.append(content)
+		if (before) content = before.append(content);
 	}
 	var after = node.type.contentMatch.matchFragment(content).fillBefore(Model.Fragment.empty, true);
 	if (after) content = content.append(after);
@@ -138,7 +135,7 @@ Utils.prototype.fill = function(node) {
 		list.push(this.view.schema.text(node.attrs._default));
 	}
 	return node.copy(Model.Fragment.from(list));
-}
+};
 
 Utils.prototype.delete = function(sel) {
 	var tr = this.view.state.tr;
@@ -310,7 +307,6 @@ Utils.prototype.selectTr = function(tr, obj, textSelection) {
 	var $pos = root.rpos;
 	var $rootPos = root.level ? tr.doc.resolve(root.rpos.before(root.level)) : root.rpos;
 
-	var sel;
 	if (!$pos.nodeAfter) textSelection = true;
 	if (parent.inline) {
 		var nodeBefore = root.rpos.nodeBefore;
@@ -369,7 +365,7 @@ Utils.prototype.posFromDOM = function(dom) {
 	var offset = 0;
 	if (dom != this.view.dom) {
 		var sib = dom;
-		while (sib = sib.previousSibling) {
+		while ((sib = sib.previousSibling)) {
 			offset++;
 		}
 		dom = dom.parentNode;
@@ -405,11 +401,9 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 		if (!obj) obj = {};
 		if (level == depth) {
 			node = rpos.node(level);
-			var prevPos = false;
 			if (!node) {
 				if (before) {
 					node = rpos.nodeBefore;
-					if (node) prevPos = true;
 				} else {
 					node = rpos.nodeAfter;
 				}

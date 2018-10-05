@@ -30,7 +30,7 @@ Blocks.prototype.render = function(block, opts) {
 Blocks.prototype.mount = function(block, blocks, overrideType) {
 	var contents = block.content;
 	var copy = this.copy(block);
-	var content, div, frag, view = this.view;
+	var content, view = this.view;
 	if (contents) for (var name in contents) {
 		content = contents[name];
 		if (!(content instanceof Node)) {
@@ -124,8 +124,7 @@ Blocks.prototype.from = function(block, blocks, overrideType, scope) {
 			id = this.genId();
 			view.dom.setAttribute('block-id', id);
 		}
-		var contentName = view.dom.getAttribute('block-content') || 'fragment';
-		var frag = "";
+		var contentName = view.dom.getAttribute('block-content') || 'fragment';
 		block = blocks[id];
 		if (!block) {
 			block = {

@@ -1,6 +1,5 @@
 var State = require("prosemirror-state");
 var Model = require("prosemirror-model");
-var Transform = require("prosemirror-transform");
 
 module.exports = function(view, options) {
 	return {
@@ -40,7 +39,7 @@ InputPlugin.prototype.handleTextInput = function(view, from, to, text) {
 
 InputPlugin.prototype.transformPasted = function(pslice) {
 	var view = this.view;
-	var frag = view.utils.fragmentApply(pslice.content, function(node) {
+	view.utils.fragmentApply(pslice.content, function(node) {
 		delete node.attrs.focused;
 		var id = node.attrs.id;
 		if (!id) return;
@@ -109,7 +108,7 @@ var HTMLReader = {
 		var wrap;
 		var depth = 0;
 
-		if (wrap = firstTag && HTMLReader.wrapMap[firstTag[1].toLowerCase()]) {
+		if ((wrap = firstTag && HTMLReader.wrapMap[firstTag[1].toLowerCase()])) {
 			html = wrap.map(function(n) {
 				return "<" + n + ">";
 			}).join("") + html + wrap.map(function(n) {
@@ -123,5 +122,5 @@ var HTMLReader = {
 		}
 		return elt;
 	}
-}
+};
 

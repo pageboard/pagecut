@@ -6,8 +6,6 @@ module.exports = function(view) {
 	return {
 		appendTransaction: function(trs, oldState, newState) {
 			var tr = newState.tr;
-			var itr;
-			var standaloned = false;
 			if (count++ > 500) {
 				console.error("Loop in appendTransaction for id-plugin");
 				return;

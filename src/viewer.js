@@ -38,6 +38,7 @@ Viewer.prototype.render = function(block, opts) {
 		opts = {type: opts};
 		console.warn("view.render now expects opts.type, not string");
 	}
+	var type = (opts || {}).type || block.type;
 	try {
 		dom = this.blocks.render(block, opts);
 	} catch(ex) {
@@ -52,12 +53,11 @@ Viewer.prototype.render = function(block, opts) {
 		this.doc.appendChild(dom);
 		dom = dom.querySelector('body');
 		if (!dom) {
-			console.error(`${elt.name} returns a document element but does not contain a body`);
+			console.error(`${type} returns a document element but does not contain a body`);
 		}
 	}
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return dom;
 
-	var type = (opts || {}).type || block.type;
 	var el = this.element(type);
 	if (!el.inplace) {
 		dom.setAttribute('block-type', type);

@@ -13,8 +13,6 @@ var baseSchema = require("prosemirror-schema-basic").schema;
 var listSchema = require("prosemirror-schema-list");
 // var tableSchema = require("prosemirror-schema-table");
 
-var UrlRegex = require('url-regex');
-
 var IdPlugin = require("./id-plugin");
 var FocusPlugin = require("./focus-plugin");
 var KeymapPlugin = require("./keymap-plugin");
@@ -38,7 +36,7 @@ Editor.defaults = {
 	marks: baseSchema.spec.marks
 };
 
-const mac = typeof navigator != "undefined" ? /Mac/.test(navigator.platform) : false
+const mac = typeof navigator != "undefined" ? /Mac/.test(navigator.platform) : false;
 
 Editor.defaults.mapKeys = {
 	"Mod-z": History.undo,
@@ -151,30 +149,31 @@ function Editor(opts) {
 		KeymapPlugin,
 		FocusPlugin,
 		InputPlugin,
-//		require("./test-plugin"),
-	function(editor) {
-		return Input.inputRules({
-			rules: Setup.buildInputRules(editor.schema)
-		});
-	},
-	function(editor, opts) {
-		return keymap(opts.mapKeys);
-	}, function(editor) {
-		return keymap(Commands.baseKeymap);
-	}, function() {
-		return History.history({
-			preserveItems: true // or else cancel does not keep selected node
-		});
-	}, function(editor, opts) {
-		return DropCursor({
-			decorate: function($pos) {
-				var node = editor.root.createElement("span");
-				node.textContent = "\u200b";
-				node.style.cssText = "margin-left:-1px; margin-right:-1px; border-left:2px solid black; display: inline-block; pointer-events: none";
-				return View.Decoration.widget($pos.pos, node);
-			}
-		});
-	});
+		// require("./test-plugin"),
+		function(editor) {
+			return Input.inputRules({
+				rules: Setup.buildInputRules(editor.schema)
+			});
+		},
+		function(editor, opts) {
+			return keymap(opts.mapKeys);
+		}, function(editor) {
+			return keymap(Commands.baseKeymap);
+		}, function() {
+			return History.history({
+				preserveItems: true // or else cancel does not keep selected node
+			});
+		}, function(editor, opts) {
+			return DropCursor({
+				decorate: function($pos) {
+					var node = editor.root.createElement("span");
+					node.textContent = "\u200b";
+					node.style.cssText = "margin-left:-1px; margin-right:-1px; border-left:2px solid black; display: inline-block; pointer-events: none";
+					return View.Decoration.widget($pos.pos, node);
+				}
+			});
+		}
+	);
 
 	plugins = plugins.map(function(plugin) {
 		if (plugin instanceof State.Plugin) return plugin;
@@ -183,7 +182,6 @@ function Editor(opts) {
 		}
 		if (plugin instanceof State.Plugin) return plugin;
 		if (plugin.update || plugin.destroy) {
-			var obj = plugin;
 			plugin = {view: function() {
 				return this;
 			}.bind(plugin)};

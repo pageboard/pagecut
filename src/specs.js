@@ -13,7 +13,6 @@ var differ = new DiffDOM({
 
 exports.define = define;
 
-var index;
 var tags = {};
 
 function define(view, elt, schema, views) {
@@ -95,7 +94,7 @@ function define(view, elt, schema, views) {
 						spec.content = contents.spec;
 					}
 					if (contents.marks) {
-						spec.marks = contents.marks
+						spec.marks = contents.marks;
 					}
 				}
 			}
@@ -915,7 +914,7 @@ function attrsTo(attrs) {
 
 function attrsFrom(dom) {
 	var domAttrs = dom.attributes;
-	var att, attrs = {}, name;
+	var att, attrs = {};
 	for (var i=0; i < domAttrs.length; i++) {
 		att = domAttrs[i];
 		if (att.name.startsWith('block-')) {

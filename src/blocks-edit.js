@@ -36,7 +36,7 @@ Blocks.prototype.fromAttrs = function(attrs) {
 	else block.data = {};
 
 	var el = this.view.element(block.type);
-	var data = Blocks.fill(el, block.data);
+	Blocks.fill(el, block.data);
 	if (attrs.standalone == "true") block.standalone = true;
 	else delete block.standalone;
 	return block;
@@ -104,7 +104,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 			content = frag;
 		}
 		var list = [], blockEl;
-		while (node = content.querySelector('[block-id]')) {
+		while ((node = content.querySelector('[block-id]'))) {
 			id = node.getAttribute('block-id');
 			type = node.getAttribute('block-type');
 			block = this.store[id];
@@ -175,7 +175,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 		delete parent.blocks;
 	}
 	return parent;
-}
+};
 
 function reassignContent(block, elt, dom) {
 	if (elt.contents == null || typeof elt.contents.spec == "string") return;

@@ -157,8 +157,8 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	function hasChanged(node, pos) {
 		if (node.type.spec.typeName == "root") {
 			// node is good
-//	} else if (node.marks.length && node.marks[0].type.spec.typeName == "root") {
-//			node = node.marks[0]; // disabled for now
+		//	} else if (node.marks.length && node.marks[0].type.spec.typeName == "root") {
+		//node = node.marks[0]; // disabled for now
 		} else {
 			return;
 		}
@@ -175,8 +175,8 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	tr.doc.descendants(hasChanged);
 
 	var change;
-	for (var i=0; i < changes.length; i++) {
-		change = changes[i];
+	for (var j=0; j < changes.length; i++) {
+		change = changes[j];
 		try {
 			me.focusRoot(tr, change.pos, change.node, change.focus);
 		} catch(ex) {
@@ -193,13 +193,4 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	}
 	return tr.setMeta('focus-plugin', parents).setMeta('focus-selection', sel);
 };
-
-function isParentOf(parent, node) {
-	if (!node) return false;
-	while (node) {
-		if (parent == node) return true;
-		node = node.parentNode;
-	}
-	return false;
-}
 
