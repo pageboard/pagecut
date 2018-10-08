@@ -175,7 +175,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	tr.doc.descendants(hasChanged);
 
 	var change;
-	for (var j=0; j < changes.length; i++) {
+	for (var j=0; j < changes.length; j++) {
 		change = changes[j];
 		try {
 			me.focusRoot(tr, change.pos, change.node, change.focus);
