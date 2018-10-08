@@ -80,11 +80,12 @@ function Editor(opts) {
 	var editor = this;
 
 	this.utils = new Utils(this);
+	var defaultElts = Editor.defaults.elements;
 
-	opts = Object.assign(Editor.defaults, opts);
+	opts = Object.assign({}, Editor.defaults, opts);
 
-	for (var name in Editor.defaults.elements) {
-		opts.elements[name] = Object.assign({}, Editor.defaults.elements[name], opts.elements[name]);
+	for (var name in defaultElts) {
+		opts.elements[name] = Object.assign({}, defaultElts[name], opts.elements[name]);
 	}
 
 	Viewer.call(this, opts);
