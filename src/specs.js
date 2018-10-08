@@ -13,9 +13,8 @@ var differ = new DiffDOM({
 
 exports.define = define;
 
-var tags = {};
-
 function define(view, elt, schema, views) {
+	if (!view.tags) view.tags = {};
 	if (typeof elt.contents == "string") elt.contents = {
 		spec: elt.contents
 	};
@@ -107,11 +106,11 @@ function define(view, elt, schema, views) {
 		if (parseTag) {
 			var parseTagKey = spec.typeName == "root" ? parseTag : `${elt.name} ${parseTag}`;
 			if (elt.context) parseTagKey += " " + elt.context;
-			var oldName = tags[parseTagKey];
+			var oldName = view.tags[parseTagKey];
 			if (oldName) {
 				console.info(`Two elements with same tag "${parseTag}" - ${oldName} and ${obj.name}`);
 			} else {
-				tags[parseTagKey] = obj.name;
+				view.tags[parseTagKey] = obj.name;
 			}
 		}
 
