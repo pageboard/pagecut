@@ -42,7 +42,7 @@
     "esequal": "^0.1.15",
     "prosemirror-commands": "^1.0.6",
     "prosemirror-example-setup": "^1.0.1",
-    "prosemirror-history": "^1.0.2",
+    "prosemirror-history": "^1.0.3",
     "prosemirror-inputrules": "^1.0.1",
     "prosemirror-keymap": "^1.0.1",
     "prosemirror-model": "^1.6.2",
