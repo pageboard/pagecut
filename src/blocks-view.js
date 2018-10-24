@@ -43,11 +43,7 @@ Blocks.prototype.mount = function(block, blocks, overrideType) {
 		console.error("Cannot find element for block type", overrideType);
 		return copy;
 	}
-	return Promise.resolve().then(function() {
-		if (el.mount) return el.mount(copy, blocks, view);
-	}).then(function() {
-		return copy;
-	});
+	return copy;
 };
 
 Blocks.prototype.copy = function(block) {
@@ -99,7 +95,6 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 Blocks.prototype.from = function(block, blocks, overrideType, scope) {
 	// blocks can be a block or a map of blocks
 	// if it's a block, it can have a 'children' property
-	var self = this;
 	var view = this.view;
 	var store = {};
 
@@ -135,64 +130,56 @@ Blocks.prototype.from = function(block, blocks, overrideType, scope) {
 			block.content[contentName] = frag;
 		}
 	}
-	return this.parseFrom(block, blocks, store, overrideType, scope).then(function(result) {
-		self.store = store;
-		return result;
-	});
+	var result = this.renderFrom(block, blocks, store, overrideType, scope);
+	this.store = store;
+	return result;
 };
 
-Blocks.prototype.parseFrom = function(block, blocks, store, overrideType, scope) {
+Blocks.prototype.renderFrom = function(block, blocks, store, overrideType, scope) {
 	var view = this.view;
-	var self = this;
 	if (!store) store = this.store;
 	if (!blocks) blocks = {};
 	if (!overrideType) {
-		// mount() might change block.type, this ensures block will be rendered correctly
 		overrideType = block.type;
 	}
-	return Promise.resolve().then(function() {
-		return self.mount(block, blocks, overrideType, scope);
-	}).then(function(block) {
-		if (block.id) {
-			// overwrite can happen with virtual blocks
-			if (!store[block.id]) store[block.id] = block;
-		}
-		var fragment;
-		try {
-			fragment = view.render(block, {
-				type: overrideType,
-				scope: scope
-			});
-		} catch(ex) {
-			console.error(ex);
-		}
-		if (block.children) {
-			block.children.forEach(function(child) {
-				if (!blocks[child.id]) {
-					blocks[child.id] = child;
-				} else {
-					console.warn("child already exists", child);
-				}
-			});
-			delete block.children;
-		}
-		if (!fragment) return;
-		return Promise.all(Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
-			var id = node.getAttribute('block-id');
-			if (id === block.id) return;
-			var type = node.getAttribute('block-type');
-			var child = blocks[id];
-			if (!child) {
-				console.warn("Removing unknown block", id);
-				node.remove();
-				return;
-			}
-			return self.parseFrom(child, blocks, store, type, scope).then(function(child) {
-				if (child) node.parentNode.replaceChild(child, node);
-			});
-		}, this)).then(function() {
-			return fragment;
+	block = this.mount(block, blocks, overrideType, scope);
+	if (block.id) {
+		// overwrite can happen with virtual blocks
+		if (!store[block.id]) store[block.id] = block;
+	}
+	var fragment;
+	try {
+		fragment = view.render(block, {
+			type: overrideType,
+			scope: scope
 		});
-	});
+	} catch(ex) {
+		console.error(ex);
+	}
+	if (block.children) {
+		block.children.forEach(function(child) {
+			if (!blocks[child.id]) {
+				blocks[child.id] = child;
+			} else {
+				console.warn("child already exists", child);
+			}
+		});
+		delete block.children;
+	}
+	if (!fragment) return;
+	Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
+		var id = node.getAttribute('block-id');
+		if (id === block.id) return;
+		var type = node.getAttribute('block-type');
+		var child = blocks[id];
+		if (!child) {
+			console.warn("Removing unknown block", id);
+			node.remove();
+			return;
+		}
+		child = this.renderFrom(child, blocks, store, type, scope);
+		if (child) node.parentNode.replaceChild(child, node);
+	}, this);
+	return fragment;
 };
 
