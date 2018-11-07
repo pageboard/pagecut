@@ -691,7 +691,7 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 	var initial = !obj._pcinit;
 	if (initial) obj._pcinit = true;
 	if (nobj.dom.nodeName != dom.nodeName) {
-		var emptyDom = dom.ownerDocument.createElement(nobj.dom.nodeName);
+		var emptyDom = nobj.dom.cloneNode(false);
 		if (dom.parentNode) {
 			// workaround: nodeView cannot change their dom node
 			var desc = emptyDom.pmViewDesc = dom.pmViewDesc;
