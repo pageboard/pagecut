@@ -1,0 +1,15 @@
+See https://github.com/ProseMirror/prosemirror-view/pull/40 and
+https://discuss.prosemirror.net/t/could-topnode-get-a-nodeview-or-at-least-a-custom-ignoremutation/1632/2
+--- node_modules/prosemirror-view/dist/index.js.orig	2018-11-16 00:56:01.658588874 +0100
++++ node_modules/prosemirror-view/dist/index.js	2018-11-16 00:56:23.338171455 +0100
+@@ -1164,7 +1164,10 @@
+ // Create a view desc for the top-level document node, to be exported
+ // and used by the view class.
+ function docViewDesc(doc, outerDeco, innerDeco, dom, view) {
++  var custom = view.nodeViews[doc.type.name];
++  var spec = custom && custom(doc, view, () => { return 0; }, outerDeco);
+   applyOuterDeco(dom, outerDeco, doc);
++  if (spec) return new CustomNodeViewDesc(null, doc, outerDeco, innerDeco, dom, dom, dom, spec, view)
+   return new NodeViewDesc(null, doc, outerDeco, innerDeco, dom, dom, dom, view, 0)
+ }
+ 

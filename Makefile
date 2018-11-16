@@ -21,6 +21,7 @@ predist:
 	cp -f src/*.css dist/
 
 dist/editor.js: src/*.js
+	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-view-pull-40.patch
 	$(BROWSERIFY) --standalone Pagecut --outfile $@ src/editor.js
 
 dist/viewer.js: src/*.js
