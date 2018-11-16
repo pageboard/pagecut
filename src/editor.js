@@ -8,8 +8,9 @@ var Commands = require("prosemirror-commands");
 var Setup = require("prosemirror-example-setup");
 var DropCursor = require("@kapouer/prosemirror-dropcursor").dropCursor;
 var History = require("prosemirror-history");
+var OrderedMap = require("orderedmap");
 
-var baseSchema = require("prosemirror-schema-basic").schema;
+var baseSchema = require("prosemirror-schema-basic");
 var listSchema = require("prosemirror-schema-list");
 // var tableSchema = require("prosemirror-schema-table");
 
@@ -29,11 +30,9 @@ Object.assign(Editor.prototype, Viewer.prototype);
 
 Editor.defaults = {
 	nodes: listSchema.addListNodes(
-		baseSchema.spec.nodes,
-		"paragraph block*",
-		"block"
+		OrderedMap.from(baseSchema.nodes), "paragraph block*", "block"
 	),
-	marks: baseSchema.spec.marks
+	marks: OrderedMap.from(baseSchema.marks)
 };
 
 const mac = typeof navigator != "undefined" ? /Mac/.test(navigator.platform) : false;
