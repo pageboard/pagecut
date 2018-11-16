@@ -571,7 +571,11 @@ RootNodeView.prototype.update = function(node, decorations) {
 };
 
 RootNodeView.prototype.ignoreMutation = function(record) {
-	if (record.target == this.contentDOM && record.type == "childList") {
+	if (record.type == "childList" && record.addedNodes.length > 0 && !Array.prototype.some.call(record.addedNodes, function(node) {
+		return node.getAttribute('contenteditable') != "false";
+	})) {
+		return true;
+	} else if (record.target == this.contentDOM && record.type == "childList") {
 		return false;
 	} else if (record.target == this.dom && record.type == "attributes" && record.attributeName && record.attributeName.startsWith('data-')) {
 		var block = this.view.blocks.get(this.id);
