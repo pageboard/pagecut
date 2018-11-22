@@ -572,6 +572,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 RootNodeView.prototype.ignoreMutation = function(record) {
 	if (record.type == "childList" && record.addedNodes.length > 0 && !Array.prototype.some.call(record.addedNodes, function(node) {
+		if (node.nodeType != Node.ELEMENT_NODE) return true;
 		return node.getAttribute('contenteditable') != "false";
 	})) {
 		return true;
