@@ -34,6 +34,14 @@ Utils.prototype.setDom = function(dom) {
 	// TODO find a better place to set this
 	var id = this.view.dom.getAttribute('block-id');
 	var block = this.view.blocks.get(id);
+	if (!id) {
+		console.error("Missing block-id attribute on", this.view.dom);
+		return;
+	}
+	if (!block) {
+		console.error("Root block not found for", this.view.dom);
+		return;
+	}
 	if (!block.content) {
 		console.warn("unsupported case: setting a block dom node that has no content");
 		return;
