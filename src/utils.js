@@ -420,7 +420,8 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 		}
 		if (type) {
 			obj[type] = {rpos: rpos, level: level, node: node};
-		} else if (node && node.marks && node.marks.length) {
+		}
+		if (node && node.marks && node.marks.length) {
 			obj.inline = {
 				node: node,
 				rpos: rpos
