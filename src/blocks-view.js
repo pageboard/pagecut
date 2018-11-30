@@ -86,9 +86,7 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 			console.warn("cannot merge content", content);
 			return;
 		}
-		if (node.childNodes.length == 1 && node.firstChild.nodeType == Node.TEXT_NODE) {
-			node.textContent = "";
-		}
+		node.textContent = "";
 		node.appendChild(content);
 	});
 	else if (Object.keys(block.content).length) {

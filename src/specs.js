@@ -169,22 +169,19 @@ function flagDom(elt, dom, iterate) {
 	if (!obj.children) obj.children = [];
 	var wrapper = false;
 	if (obj.contentDOM) {
-		var child;
-		var childCount = obj.contentDOM.childNodes.length;
-		for (var i=0; i < childCount; i++) {
-			child = flagDom(elt, obj.contentDOM.childNodes[i], iterate, obj);
-			if (!child) continue;
-			if (child.text) {
-				if (childCount == 1) {
-					obj._default = child.text.trim() || undefined;
-				}
-			}	else {
+		var contentDOM = obj.contentDOM.cloneNode(true);
+		Array.prototype.forEach.call(obj.contentDOM.childNodes, function(node) {
+			var child = flagDom(elt, node, iterate, obj);
+			if (!child) return;
+			if (child.contentDOM) {
+				wrapper = true;
 				obj.children.push(child);
-				if (child.contentDOM) {
-					wrapper = true;
-				}
+				contentDOM.appendChild(node.cloneNode(true));
+			} else {
+				// ignore it, it is used as default content by viewer
 			}
-		}
+		});
+		obj.contentDOM = contentDOM;
 	}
 
 	if (iterate) {
@@ -228,7 +225,6 @@ function createRootSpec(view, elt, obj) {
 		data: null,
 		type: elt.name,
 		standalone: elt.standalone ? "true" : null,
-		_default: obj._default || null,
 		_json: saveDomAttrs(obj.dom)
 	};
 
@@ -334,10 +330,6 @@ function createRootSpec(view, elt, obj) {
 function createWrapSpec(view, elt, obj) {
 	var defaultAttrs = attrsFrom(obj.dom);
 	defaultAttrs._json = null;
-	if (obj._default != null) {
-		console.warn("untested, wrapper has _default");
-		defaultAttrs._default = obj._default;
-	}
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 
 	var parseRule = {
@@ -372,7 +364,6 @@ function createContainerSpec(view, elt, obj) {
 		defaultAttrs.content = obj.contentDOM.getAttribute("block-content");
 	}
 	defaultAttrs._json = null;
-	if (obj._default != null) defaultAttrs._default = obj._default;
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 	var tag;
 	if (obj.dom == obj.contentDOM) {

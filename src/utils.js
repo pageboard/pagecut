@@ -139,9 +139,6 @@ Utils.prototype.fill = function(node) {
 	content.forEach(function(child) {
 		list.push(me.fill(child));
 	});
-	if (node.attrs._default && list.length == 0) {
-		list.push(this.view.schema.text(node.attrs._default));
-	}
 	return node.copy(Model.Fragment.from(list));
 };
 
