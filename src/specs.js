@@ -294,7 +294,7 @@ function createRootSpec(view, elt, obj) {
 		element: elt,
 		domModel: obj.dom,
 		inline: !!elt.inline,
-		defining: obj.dom != obj.contentDOM,
+		defining: obj.contentDOM ? obj.dom != obj.contentDOM : false,
 		isolating: elt.isolating !== undefined ? elt.isolating : !elt.inline,
 		attrs: Object.assign({}, defaultSpecAttrs),
 		parseDOM: [parseRule],
