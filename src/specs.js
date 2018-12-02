@@ -315,7 +315,7 @@ function createRootSpec(view, elt, obj) {
 				return "";
 			}
 			var uView = flagDom(elt, dom);
-			var out = toDOMOutputSpec(uView, node);
+			var out = toDOMOutputSpec(uView, node, elt.inplace);
 			return out;
 		}
 	};
