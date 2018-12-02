@@ -692,6 +692,7 @@ untouched.
 */
 function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 	var dom = obj.dom;
+	if (!dom) return;
 	var initial = !obj._pcinit;
 	if (initial) obj._pcinit = true;
 	if (nobj.dom.nodeName != dom.nodeName) {
