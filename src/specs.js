@@ -181,6 +181,11 @@ function flagDom(elt, dom, iterate) {
 				// ignore it, it is used as default content by viewer
 			}
 		});
+		if (obj.contentDOM != obj.dom) {
+			obj.contentDOM.parentNode.replaceChild(contentDOM, obj.contentDOM);
+		} else {
+			obj.dom = contentDOM;
+		}
 		obj.contentDOM = contentDOM;
 	}
 
