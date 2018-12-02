@@ -223,11 +223,6 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 
 	if (parent.inline) {
 		node = parent.inline.node;
-		if (block.id && sel.empty) {
-			var startPos = parent.inline.rpos.pos;
-			var endPos = startPos + node.nodeSize;
-			sel = State.TextSelection.create(tr.doc, startPos, endPos);
-		}
 		node.marks.forEach(function(mark) {
 			if (attrs.id && attrs.id != mark.attrs.id) return;
 			var markType = mark.attrs.type;
@@ -236,10 +231,9 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 				// block.focused cannot be stored here since it is inplace
 				attrs.focused = mark.attrs.focused;
 			}
-			// this works because the right dom node is selected
-			tr.removeMark(sel.from, sel.to, mark);
-			tr.addMark(sel.from, sel.to, mark.type.create(attrs));
-		});
+			let [exFrom, exTo] = this.extendUpdateMark(tr, sel.from, sel.to, mark, attrs);
+			tr.setSelection(State.TextSelection.create(tr.doc, exFrom, exTo));
+		}, this);
 	}
 	node = parent.root.node;
 	if (!attrs.id && node.attrs.focused) {
@@ -606,7 +600,7 @@ Utils.prototype.extendUpdateMark = function(tr, from, to, mark, attrs) {
 		mark = mark.type.create(attrs);
 		tr.addMark(from, to, mark);
 	}
-	return mark;
+	return [from, to];
 };
 
 Utils.prototype.fragmentApply = fragmentApply;
