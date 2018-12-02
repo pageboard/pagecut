@@ -306,6 +306,7 @@ function createRootSpec(view, elt, obj) {
 			}
 			var block;
 			if (id) block = view.blocks.get(id);
+
 			if (!block) block = view.blocks.fromAttrs(node.attrs);
 			else block.focused = node.attrs.focused;
 
@@ -406,6 +407,7 @@ function createContainerSpec(view, elt, obj) {
 function setupView(me) {
 	me.dom = me.domModel.cloneNode(true);
 	me.contentDOM = findContent(me.element, me.dom);
+
 	if (!me.contentDOM || me.contentDOM == me.dom) return;
 	if (['span'].indexOf(me.contentDOM.nodeName.toLowerCase()) < 0) return;
 
