@@ -587,8 +587,8 @@ Utils.prototype.markActive = function(sel, nodeType) {
 	}
 };
 
-Utils.prototype.toggleMark = function(nodeType, attrs) {
-	return Commands.toggleMark(nodeType, attrs);
+Utils.prototype.toggleMark = function(type, attrs) {
+	return Commands.toggleMark(type, attrs);
 };
 
 Utils.prototype.fragmentApply = fragmentApply;
