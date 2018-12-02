@@ -28,7 +28,7 @@ module.exports = function(view) {
 				return false;
 			}
 			node.marks.forEach(function(mark) {
-				if (lastMark && mark.eq(lastMark)) {
+				if (lastMark && (mark.attrs.id == lastMark.attrs.id || mark.eq(lastMark))) {
 					return;
 				}
 				lastMark = mark;
