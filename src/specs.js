@@ -200,10 +200,11 @@ function flagDom(elt, dom, iterate) {
 	return obj;
 }
 
-function toDOMOutputSpec(obj, node) {
+function toDOMOutputSpec(obj, node, inplace) {
 	var out = 0;
 	var dom = obj.contentDOM || obj.dom;
 	var attrs = Object.assign(attrsTo(node.attrs), restoreDomAttrs(node.attrs._json), domAttrsMap(obj.dom));
+	if (!inplace) delete attrs['block-data'];
 	var contentName = node.type.spec.contentName;
 	var rootContainer = contentName && (!obj.contentDOM || obj.dom == obj.contentDOM);
 	while (dom) {
