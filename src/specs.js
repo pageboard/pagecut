@@ -327,7 +327,7 @@ function createRootSpec(view, elt, obj) {
 		spec.draggable = elt.draggable;
 	} else if (!obj.contentDOM) {
 		spec.draggable = true;
-		spec.atom = true;
+		if (!elt.inline) spec.atom = true;
 	}
 	if (elt.group) spec.group = elt.group;
 
