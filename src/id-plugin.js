@@ -18,6 +18,7 @@ module.exports = function(view) {
 	function processStandalone(tr, root, offset, regen) {
 		var modified = false;
 		var ids = {};
+		var lastMark;
 		root.descendants(function(node, pos, parent) {
 			pos += offset;
 			if (node.type.name == "_" && parent.childCount > 1) {
@@ -27,34 +28,37 @@ module.exports = function(view) {
 				return false;
 			}
 			node.marks.forEach(function(mark) {
+				if (lastMark && mark.eq(lastMark)) {
+					return;
+				}
+				lastMark = mark;
 				var attrs = mark.attrs;
 				var type = attrs.type;
-				if (!type) return mark;
+				if (!type) return;
 				var el = view.element(type);
-				if (!el) return mark;
+				if (!el) return;
 				var id = attrs.id;
-				if (id && ids[id]) {
+				if (id && ids[id] || !el.inplace && !id) {
+					// add id attribute to the extended mark
 					var block = view.blocks.fromAttrs(attrs);
 					delete block.id;
 					view.blocks.set(block);
-					tr.removeMark(pos, pos + node.nodeSize, mark);
-					tr.addMark(pos, pos + node.nodeSize, mark.type.create(Object.assign({}, attrs, {
+					ids[block.id] = true;
+					extendUpdateMark(tr, pos, mark, Object.assign({}, attrs, {
 						id: block.id
-					})));
+					}));
 					modified = true;
 				} else if (id && el.inplace) {
+					// remove id attribute from the extended mark
 					var copy = Object.assign({}, attrs);
 					delete copy.id;
-					tr.removeMark(pos, pos + node.nodeSize, mark);
-					tr.addMark(pos, pos + node.nodeSize, mark.type.create(copy));
+					extendUpdateMark(tr, pos, mark, copy);
 					modified = true;
 				} else if (id) {
 					ids[id] = true;
-					return mark;
-				} else {
-					return mark;
 				}
 			});
+			if (!node.marks.length) lastMark = null;
 
 			var attrs = node.attrs;
 			var id = attrs.id;
@@ -110,3 +114,22 @@ module.exports = function(view) {
 	}
 };
 
+function extendUpdateMark(tr, pos, mark, attrs) {
+	var from = pos;
+	var to = pos;
+	var hadIt = false;
+	while (tr.doc.rangeHasMark(from - 1, from, mark.type)) {
+		hadIt = true;
+		from--;
+	}
+	while (tr.doc.rangeHasMark(to, to + 1, mark.type)) {
+		hadIt = true;
+		to++;
+	}
+	if (hadIt) {
+		tr.removeMark(from, to, mark);
+		mark = mark.type.create(attrs);
+		tr.addMark(from, to, mark);
+	}
+	return mark;
+}
