@@ -591,6 +591,24 @@ Utils.prototype.toggleMark = function(type, attrs) {
 	return Commands.toggleMark(type, attrs);
 };
 
+Utils.prototype.extendUpdateMark = function(tr, from, to, mark, attrs) {
+	var hadIt = false;
+	while (tr.doc.rangeHasMark(from - 1, from, mark.type)) {
+		hadIt = true;
+		from--;
+	}
+	while (tr.doc.rangeHasMark(to, to + 1, mark.type)) {
+		hadIt = true;
+		to++;
+	}
+	if (hadIt) {
+		tr.removeMark(from, to, mark);
+		mark = mark.type.create(attrs);
+		tr.addMark(from, to, mark);
+	}
+	return mark;
+};
+
 Utils.prototype.fragmentApply = fragmentApply;
 
 function fragmentApply(frag, fun) {

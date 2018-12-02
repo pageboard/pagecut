@@ -44,7 +44,7 @@ module.exports = function(view) {
 					delete block.id;
 					view.blocks.set(block);
 					ids[block.id] = true;
-					extendUpdateMark(tr, pos, mark, Object.assign({}, attrs, {
+					view.utils.extendUpdateMark(tr, pos, pos, mark, Object.assign({}, attrs, {
 						id: block.id
 					}));
 					modified = true;
@@ -52,7 +52,7 @@ module.exports = function(view) {
 					// remove id attribute from the extended mark
 					var copy = Object.assign({}, attrs);
 					delete copy.id;
-					extendUpdateMark(tr, pos, mark, copy);
+					view.utils.extendUpdateMark(tr, pos, pos, mark, copy);
 					modified = true;
 				} else if (id) {
 					ids[id] = true;
@@ -114,22 +114,4 @@ module.exports = function(view) {
 	}
 };
 
-function extendUpdateMark(tr, pos, mark, attrs) {
-	var from = pos;
-	var to = pos;
-	var hadIt = false;
-	while (tr.doc.rangeHasMark(from - 1, from, mark.type)) {
-		hadIt = true;
-		from--;
-	}
-	while (tr.doc.rangeHasMark(to, to + 1, mark.type)) {
-		hadIt = true;
-		to++;
-	}
-	if (hadIt) {
-		tr.removeMark(from, to, mark);
-		mark = mark.type.create(attrs);
-		tr.addMark(from, to, mark);
-	}
-	return mark;
-}
+
