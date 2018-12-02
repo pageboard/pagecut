@@ -10,7 +10,7 @@ module.exports = function(view) {
 				console.error("Loop in appendTransaction for id-plugin");
 				return;
 			}
-			if (processStandalone(tr, newState.doc, 0, false)) {
+			if (trs.some(x => x.docChanged) && processStandalone(tr, newState.doc, 0, false)) {
 				return tr;
 			}
 		}
