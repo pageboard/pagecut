@@ -219,14 +219,16 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 	else type = block.type;
 
 	var sel = tr.selection;
+	var node;
 
 	if (parent.inline) {
+		node = parent.inline.node;
 		if (block.id && sel.empty) {
 			var startPos = parent.inline.rpos.pos;
-			var endPos = startPos + parent.inline.node.nodeSize;
+			var endPos = startPos + node.nodeSize;
 			sel = State.TextSelection.create(tr.doc, startPos, endPos);
 		}
-		parent.inline.node.marks.forEach(function(mark) {
+		node.marks.forEach(function(mark) {
 			if (attrs.id && attrs.id != mark.attrs.id) return;
 			var markType = mark.attrs.type;
 			if (!markType || type != markType) return;
@@ -234,19 +236,21 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 				// block.focused cannot be stored here since it is inplace
 				attrs.focused = mark.attrs.focused;
 			}
+			// this works because the right dom node is selected
 			tr.removeMark(sel.from, sel.to, mark);
 			tr.addMark(sel.from, sel.to, mark.type.create(attrs));
 		});
-	} else {
-		if (!attrs.id && root.node.attrs.focused) {
-			// block.focused cannot be stored here since it is inplace
-			attrs.focused = root.node.attrs.focused;
-		}
-		var selectedNode = sel.from === pos && sel.node;
-		tr.setNodeMarkup(pos, null, attrs);
-		if (selectedNode) {
-			tr.setSelection(new State.NodeSelection(tr.doc.resolve(pos)));
-		}
+	}
+	node = parent.root.node;
+	if (!attrs.id && node.attrs.focused) {
+		// block.focused cannot be stored here since it is inplace
+		attrs.focused = node.attrs.focused;
+	}
+	if (attrs.id && attrs.id != node.attrs.id) return tr;
+	var selectedNode = sel.from === pos && sel.node;
+	tr.setNodeMarkup(pos, null, attrs);
+	if (selectedNode) {
+		tr.setSelection(new State.NodeSelection(tr.doc.resolve(pos)));
 	}
 	return tr;
 };
