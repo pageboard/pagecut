@@ -178,7 +178,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 };
 
 function reassignContent(block, elt, dom) {
-	if (elt.contents == null || typeof elt.contents.spec == "string") return;
+	if (elt.contents == null || typeof elt.contents.spec == "string" || elt.inline) return;
 	var rootContentName = dom.getAttribute('block-content');
 	var content = block.content;
 	if (!content) {
