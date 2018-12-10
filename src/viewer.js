@@ -67,6 +67,9 @@ Viewer.prototype.render = function(block, opts) {
 		dom.removeAttribute('block-id');
 		if (Object.keys(block.data).length) dom.setAttribute('block-data', JSON.stringify(block.data));
 	}
+	if (block.template && Object.keys(block.template).length) {
+		dom.setAttribute('block-template', JSON.stringify(block.template));
+	}
 
 	if (block.focused) dom.setAttribute('block-focused', block.focused);
 	else dom.removeAttribute('block-focused');

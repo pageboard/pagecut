@@ -53,6 +53,7 @@ Blocks.prototype.mount = function(block, blocks, overrideType) {
 Blocks.prototype.copy = function(block) {
 	var copy = Object.assign({}, block);
 	copy.data = Object.assign({}, block.data);
+	if (block.template) copy.template = Object.assign({}, block.template);
 	if (block.content) copy.content = Object.assign({}, block.content);
 	delete copy.focused;
 	return copy;

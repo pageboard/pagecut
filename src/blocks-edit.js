@@ -34,6 +34,7 @@ Blocks.prototype.fromAttrs = function(attrs) {
 	}
 	if (block.data) block.data = JSON.parse(block.data);
 	else block.data = {};
+	if (block.template) block.template = JSON.parse(block.template);
 
 	var el = this.view.element(block.type);
 	Blocks.fill(el, block.data);
@@ -48,6 +49,7 @@ Blocks.prototype.toAttrs = function(block) {
 	if (block.id != null) attrs.id = block.id;
 	if (block.type != null) attrs.type = block.type;
 	if (block.data) attrs.data = JSON.stringify(block.data);
+	if (block.template) attrs.template = JSON.stringify(block.template);
 	if (block.focused) attrs.focused = block.focused;
 	if (block.standalone) attrs.standalone = "true";
 	if (attrs.data == "{}") delete attrs.data;
@@ -108,6 +110,8 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 			type = node.getAttribute('block-type');
 
 			div = content.ownerDocument.createElement(node.nodeName);
+			var template = node.getAttribute('block-template');
+			if (template) div.setAttribute('block-template', template);
 			var data = node.getAttribute('block-data');
 			if (data) div.setAttribute('block-data', data);
 			parentNode = node.parentNode;
@@ -127,6 +131,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 			} else {
 				block = {type: type};
 			}
+			if (block.template) delete block.template;
 			parentNode.replaceChild(div, node);
 			if (block.id) reassignContent(block, blockEl, node);
 
