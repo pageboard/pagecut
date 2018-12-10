@@ -59,10 +59,13 @@ Viewer.prototype.render = function(block, opts) {
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) return dom;
 
 	var el = this.element(type);
+	dom.setAttribute('block-type', type);
 	if (!el.inplace) {
-		dom.setAttribute('block-type', type);
 		if (block.id != null) dom.setAttribute('block-id', block.id);
 		else dom.removeAttribute('block-id');
+	} else {
+		dom.removeAttribute('block-id');
+		if (Object.keys(block.data).length) dom.setAttribute('block-data', JSON.stringify(block.data));
 	}
 
 	if (block.focused) dom.setAttribute('block-focused', block.focused);

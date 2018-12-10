@@ -73,7 +73,7 @@ function nodeToHtml(node) {
 
 Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 	if (!el || typeof el == "string") el = this.view.element(el || parent.type);
-	if (ancestor) ancestor.blocks[parent.id] = parent;
+	if (ancestor && parent.id) ancestor.blocks[parent.id] = parent;
 	if ((el.standalone || parent.standalone) && !parent.virtual) {
 		ancestor = parent;
 	}
@@ -104,40 +104,47 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 			content = frag;
 		}
 		var list = [], blockEl;
-		while ((node = content.querySelector('[block-id]'))) {
-			id = node.getAttribute('block-id');
+		while ((node = content.querySelector('[block-type]'))) {
 			type = node.getAttribute('block-type');
-			block = this.store[id];
-			if (!block) {
-				node.parentNode.removeChild(node);
-				console.warn("block", type, "not found", id, "while serializing");
-				continue;
-			}
-			blockEl = this.view.element(type || block.type);
-			if (blockEl.unmount) {
-				block = blockEl.unmount(block, node, this.view) || block;
-			}
+
 			div = content.ownerDocument.createElement(node.nodeName);
+			var data = node.getAttribute('block-data');
+			if (data) div.setAttribute('block-data', data);
 			parentNode = node.parentNode;
+			blockEl = this.view.element(type);
+			id = node.getAttribute('block-id');
+			if (id) {
+				block = this.store[id];
+				if (!block) {
+					parentNode.removeChild(node);
+					console.warn("block", type, "not found", id, "while serializing");
+					continue;
+				}
+				if (blockEl.unmount) {
+					block = blockEl.unmount(block, node, this.view) || block;
+				}
+				block = this.copy(block);
+			} else {
+				block = {type: type};
+			}
 			parentNode.replaceChild(div, node);
-			block = this.copy(block);
-			reassignContent(block, blockEl, node);
+			if (block.id) reassignContent(block, blockEl, node);
 
 			if (this.serializeTo(block, blockEl, ancestor)) {
 				if (el.contents[name].virtual) {
 					block.virtual = true;
 				}
-				if (type && type == block.type) type = null;
+				if (type == block.type) type = null;
 				list.push({node: div, block: block, type: type});
 			} else {
 				parentNode.removeChild(div);
-				delete ancestor.blocks[block.id];
+				if (block.id) delete ancestor.blocks[block.id];
 			}
 		}
 		list.forEach(function(item) {
-			item.node.setAttribute('block-id', item.block.id);
+			if (item.block.id) item.node.setAttribute('block-id', item.block.id);
 			if (item.type) {
-				// overrides block.type
+				// can override block.type
 				item.node.setAttribute('block-type', item.type);
 			}
 		});

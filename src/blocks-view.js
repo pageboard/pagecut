@@ -168,7 +168,7 @@ Blocks.prototype.renderFrom = function(block, blocks, store, overrideType, scope
 		});
 		delete block.children;
 	}
-	if (!fragment) return;
+	if (!fragment || !fragment.querySelectorAll) return;
 	Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
 		var id = node.getAttribute('block-id');
 		if (id === block.id) return;
@@ -179,8 +179,14 @@ Blocks.prototype.renderFrom = function(block, blocks, store, overrideType, scope
 			node.remove();
 			return;
 		}
-		child = this.renderFrom(child, blocks, store, type, scope);
-		if (child) node.parentNode.replaceChild(child, node);
+		var frag = this.renderFrom(child, blocks, store, type, scope);
+		if (!frag) return;
+		if (frag.attributes) {
+			for (var i=0, att; i < node.attributes.length, att = node.attributes[i]; i++) {
+				if (!frag.hasAttribute(att.name)) frag.setAttribute(att.name, att.value);
+			}
+		}
+		node.parentNode.replaceChild(frag, node);
 	}, this);
 	return fragment;
 };

@@ -138,10 +138,7 @@ function Editor(opts) {
 		if (node.type.name == "_") return "";
 		var obj = out[1];
 		if (typeof obj != "object") return;
-		delete obj['block-focused'];
 		delete obj['block-root_id'];
-		delete obj['block-data'];
-		delete obj['style'];
 	});
 
 	plugins.push(

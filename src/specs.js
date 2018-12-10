@@ -253,6 +253,7 @@ function createRootSpec(view, elt, obj) {
 				attrs.data = JSON.stringify(elt.parse.call(elt, dom));
 			}
 			if (elt.inplace) {
+				if (id) delete attrs.id;
 				return attrs;
 			}
 			var block;
@@ -503,11 +504,13 @@ RootNodeView.prototype.update = function(node, decorations) {
 			return true;
 		}
 	}
-
-	Object.assign(block.data, uBlock.data);
+	if (uBlock.data) block.data = uBlock.data;
 
 	// consider it's the same data when it's initializing
-	var sameData = oldBlock && this.view.utils.equal(oldBlock.data, block.data);
+	var sameData = false;
+	if (oldBlock) {
+		sameData = this.view.utils.equal(oldBlock.data, block.data);
+	}
 	var sameFocus = oldBlock && this.oldBlock.focused == node.attrs.focused;
 
 	if (!sameData || !sameFocus) {
