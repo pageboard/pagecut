@@ -21,7 +21,6 @@ Blocks.prototype.fromAttrs = function(attrs) {
 		}
 	}
 	if (block.data) block.data = JSON.parse(block.data);
-	else block.data = {};
 	if (block.template) block.template = JSON.parse(block.template);
 
 	if (attrs.standalone == "true") block.standalone = true;

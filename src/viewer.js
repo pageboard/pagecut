@@ -65,9 +65,9 @@ Viewer.prototype.render = function(block, opts) {
 		else dom.removeAttribute('block-id');
 	} else {
 		dom.removeAttribute('block-id');
-		if (Object.keys(block.data).length) dom.setAttribute('block-data', JSON.stringify(block.data));
+		if (block.data) dom.setAttribute('block-data', JSON.stringify(block.data));
 	}
-	if (block.template && Object.keys(block.template).length) {
+	if (block.template) {
 		dom.setAttribute('block-template', JSON.stringify(block.template));
 	}
 
