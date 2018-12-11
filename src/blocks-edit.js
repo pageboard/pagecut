@@ -133,7 +133,13 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 			}
 			if (block.template) delete block.template;
 			parentNode.replaceChild(div, node);
-			if (block.id) reassignContent(block, blockEl, node);
+			if (block.id) {
+				reassignContent(block, blockEl, node);
+			} else {
+				for (var k = 0; k < node.childNodes.length; k++) {
+					div.appendChild(node.childNodes[k].cloneNode(true));
+				}
+			}
 
 			if (this.serializeTo(block, blockEl, ancestor)) {
 				if (el.contents[name].virtual) {
