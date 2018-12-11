@@ -587,6 +587,9 @@ Utils.prototype.toggleMark = function(type, attrs) {
 
 Utils.prototype.extendUpdateMark = function(tr, from, to, mark, attrs) {
 	var hadIt = false;
+	if (from != to && tr.doc.rangeHasMark(from, to, mark.type)) {
+		hadIt = true;
+	}
 	while (tr.doc.rangeHasMark(from - 1, from, mark.type)) {
 		hadIt = true;
 		from--;
