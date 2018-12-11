@@ -180,6 +180,13 @@ Blocks.prototype.renderFrom = function(block, blocks, store, overrideType, scope
 			node.remove();
 			return;
 		}
+		if (node.hasAttribute('block-template')) {
+			try {
+				child.template = JSON.parse(node.getAttribute('block-template'));
+			} catch(ex) {
+				console.warn("Unparsable block-template attribute", node);
+			}
+		}
 		var frag = this.renderFrom(child, blocks, store, type, scope);
 		if (!frag) return;
 		if (frag.attributes) {
