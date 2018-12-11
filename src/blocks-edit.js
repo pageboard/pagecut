@@ -6,23 +6,11 @@ Blocks.prototype.create = function(type) {
 	var el = this.view.element(type);
 	var block = {
 		type: type,
-		data: Blocks.fill(el, {}),
+		data: {},
 		content: {}
 	};
 	if (el.standalone) block.standalone = true;
 	return block;
-};
-
-Blocks.fill = function(schema, data) {
-	if (!schema.properties) return data;
-	// sometimes data can carry an old odd value
-	if (data === undefined || typeof data == "string") data = {};
-	Object.keys(schema.properties).forEach(function(key) {
-		var prop = schema.properties[key];
-		if (prop.default !== undefined && data[key] === undefined) data[key] = prop.default;
-		if (prop.properties) data[key] = Blocks.fill(prop, data[key]);
-	});
-	return data;
 };
 
 Blocks.prototype.fromAttrs = function(attrs) {
@@ -36,8 +24,6 @@ Blocks.prototype.fromAttrs = function(attrs) {
 	else block.data = {};
 	if (block.template) block.template = JSON.parse(block.template);
 
-	var el = this.view.element(block.type);
-	Blocks.fill(el, block.data);
 	if (attrs.standalone == "true") block.standalone = true;
 	else delete block.standalone;
 	return block;

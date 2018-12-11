@@ -22,6 +22,8 @@ Blocks.prototype.render = function(block, opts) {
 	var type = opts.type || block.type;
 	var el = this.view.element(type);
 	if (!el) throw new Error(`Unknown block.type ${type}`);
+	block = Object.assign({}, block);
+	block.data = Blocks.fill(el, block.data);
 	var dom = el.render.call(el, block, opts.scope || {
 		$doc: this.view.doc,
 		$elements: this.view.elements,
@@ -48,6 +50,19 @@ Blocks.prototype.mount = function(block, blocks, overrideType) {
 		return copy;
 	}
 	return copy;
+};
+
+Blocks.fill = function(schema, data) {
+	if (!schema.properties) return data;
+	// sometimes data can carry an old odd value
+	if (data === undefined || typeof data == "string") data = {};
+	else data = Object.assign({}, data);
+	Object.keys(schema.properties).forEach(function(key) {
+		var prop = schema.properties[key];
+		if (prop.default !== undefined && data[key] === undefined) data[key] = prop.default;
+		if (prop.properties) data[key] = Blocks.fill(prop, data[key]);
+	});
+	return data;
 };
 
 Blocks.prototype.copy = function(block) {
