@@ -118,28 +118,27 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 				block = {type: type};
 			}
 			if (block.template) delete block.template;
-			parentNode.replaceChild(div, node);
-			if (block.id) {
+			if (id) {
+				parentNode.replaceChild(div, node);
 				reassignContent(block, blockEl, node);
 			} else {
-				for (var k = 0; k < node.childNodes.length; k++) {
-					div.appendChild(node.childNodes[k].cloneNode(true));
-				}
+				div = node;
+				div.removeAttribute('block-type');
 			}
 
-			if (this.serializeTo(block, blockEl, ancestor)) {
+			if (!id || this.serializeTo(block, blockEl, ancestor)) {
 				if (el.contents[name].virtual) {
 					block.virtual = true;
 				}
-				if (type == block.type) type = null;
-				list.push({node: div, block: block, type: type});
+				if (id && type == block.type) type = null;
+				list.push({node: div, id: id, type: type});
 			} else {
 				parentNode.removeChild(div);
-				if (block.id) delete ancestor.blocks[block.id];
+				if (id) delete ancestor.blocks[id];
 			}
 		}
 		list.forEach(function(item) {
-			if (item.block.id) item.node.setAttribute('block-id', item.block.id);
+			if (item.id) item.node.setAttribute('block-id', item.id);
 			if (item.type) {
 				// can override block.type
 				item.node.setAttribute('block-type', item.type);
