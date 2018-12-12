@@ -61,6 +61,7 @@ function nodeToHtml(node) {
 Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 	if (!el || typeof el == "string") el = this.view.element(el || parent.type);
 	if (ancestor && parent.id) ancestor.blocks[parent.id] = parent;
+	if (parent.template) delete parent.template;
 	if ((el.standalone || parent.standalone) && !parent.virtual) {
 		ancestor = parent;
 	}
