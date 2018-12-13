@@ -419,15 +419,27 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 		if (type) {
 			obj[type] = {rpos: rpos, level: level, node: node};
 		}
-		if (node && node.marks && node.marks.length) {
-			obj.inline = {
-				node: node,
-				rpos: rpos
-			};
-		}
-		if ((type == "container" || level != depth) && node && node.attrs.content) {
-			if (!obj.container) obj.container = obj.root || {};
-			obj.container.name = node.attrs.content;
+		if (node) {
+			if (node.marks && node.marks.length) {
+				obj.inline = {
+					node: node,
+					rpos: rpos
+				};
+			}
+			if ((type == "container" || level != depth) && node.attrs.content) {
+				if (!obj.container) obj.container = obj.root || {};
+				obj.container.name = node.attrs.content;
+			}
+			if (type == "root") {
+				var el = node.type.spec.element;
+				if (!el.inline && el.contents && !(el.contents.spec && typeof el.contents.spec == "string")) {
+					var list = Object.keys(el.contents);
+					if (list.length == 1) {
+						if (!obj.container) obj.container = obj.root || {};
+						obj.container.name = list[0];
+					}
+				}
+			}
 		}
 		if (type == "root") {
 			if (!all) break;
