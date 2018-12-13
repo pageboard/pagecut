@@ -21,7 +21,7 @@ Blocks.prototype.fromAttrs = function(attrs) {
 		}
 	}
 	if (block.data) block.data = JSON.parse(block.data);
-	if (block.template) block.template = JSON.parse(block.template);
+	if (block.expr) block.expr = JSON.parse(block.expr);
 
 	if (attrs.standalone == "true") block.standalone = true;
 	else delete block.standalone;
@@ -34,7 +34,7 @@ Blocks.prototype.toAttrs = function(block) {
 	if (block.id != null) attrs.id = block.id;
 	if (block.type != null) attrs.type = block.type;
 	if (block.data) attrs.data = JSON.stringify(block.data);
-	if (block.template) attrs.template = JSON.stringify(block.template);
+	if (block.expr) attrs.expr = JSON.stringify(block.expr);
 	if (block.focused) attrs.focused = block.focused;
 	if (block.standalone) attrs.standalone = "true";
 	if (attrs.data == "{}") delete attrs.data;
@@ -61,7 +61,6 @@ function nodeToHtml(node) {
 Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 	if (!el || typeof el == "string") el = this.view.element(el || parent.type);
 	if (ancestor && parent.id) ancestor.blocks[parent.id] = parent;
-	if (parent.template) delete parent.template;
 	if ((el.standalone || parent.standalone) && !parent.virtual) {
 		ancestor = parent;
 	}
@@ -94,12 +93,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 		var list = [], blockEl;
 		while ((node = content.querySelector('[block-type]'))) {
 			type = node.getAttribute('block-type');
-
 			div = content.ownerDocument.createElement(node.nodeName);
-			var template = node.getAttribute('block-template');
-			if (template) div.setAttribute('block-template', template);
-			var data = node.getAttribute('block-data');
-			if (data) div.setAttribute('block-data', data);
 			parentNode = node.parentNode;
 			blockEl = this.view.element(type);
 			id = node.getAttribute('block-id');
@@ -116,8 +110,11 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 				block = this.copy(block);
 			} else {
 				block = {type: type};
+				var expr = node.getAttribute('block-expr');
+				if (expr) div.setAttribute('block-expr', expr);
+				var data = node.getAttribute('block-data');
+				if (data) div.setAttribute('block-data', data);
 			}
-			if (block.template) delete block.template;
 			if (id) {
 				parentNode.replaceChild(div, node);
 				reassignContent(block, blockEl, node);

@@ -122,11 +122,11 @@ function Editor(opts) {
 
 	this.clipboardSerializer = filteredSerializer(spec, function(node, out) {
 		if (node.type.name == "_") return "";
-		Object.assign(out[1], {
-			'block-data': node.attrs.data
-		});
-		delete out[1]['block-focused'];
-		if (node.attrs.standalone) out[1]['block-standalone'] = 'true';
+		var attrs = out[1];
+		if (node.attrs.data) attrs['block-data'] = node.attrs.data;
+		if (node.attrs.expr) attrs['block-expr'] = node.attrs.expr;
+		if (node.attrs.standalone) attrs['block-standalone'] = 'true';
+		delete attrs['block-focused'];
 	});
 
 	this.clipboardParser = new Model.DOMParser(

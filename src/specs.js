@@ -227,7 +227,7 @@ function createRootSpec(view, elt, obj) {
 		id: null,
 		focused: null,
 		data: null,
-		template: null,
+		expr: null,
 		type: elt.name,
 		standalone: elt.standalone ? "true" : null,
 		_json: saveDomAttrs(obj.dom)
@@ -243,12 +243,12 @@ function createRootSpec(view, elt, obj) {
 			var id = dom.getAttribute('block-id');
 			var standalone = dom.getAttribute('block-standalone') == "true";
 			var data = dom.getAttribute('block-data');
-			var template = dom.getAttribute('block-template');
+			var expr = dom.getAttribute('block-expr');
 			var attrs = {
 				type: type
 			};
-			if (template) {
-				attrs.template = template;
+			if (expr) {
+				attrs.expr = expr;
 			}
 			if (data) {
 				attrs.data = data;
@@ -276,14 +276,6 @@ function createRootSpec(view, elt, obj) {
 					// attrs does not contain id so it's like setting a new id
 				}
 				view.blocks.set(block);
-			} else {
-				if (template) {
-					try {
-						block.template = JSON.parse(template);
-					} catch(ex) {
-						console.warn("Ignoring block-template attribute", dom);
-					}
-				}
 			}
 			attrs = view.blocks.toAttrs(block);
 			attrs.type = type;
@@ -518,14 +510,14 @@ RootNodeView.prototype.update = function(node, decorations) {
 		}
 	}
 	if (uBlock.data) block.data = uBlock.data;
-	if (uBlock.template) block.template = uBlock.template;
+	if (uBlock.expr) block.expr = uBlock.expr;
 
 	// consider it's the same data when it's initializing
 	var sameData = false;
 	if (oldBlock) {
 		sameData = this.view.utils.equal(oldBlock.data, block.data);
-		if (sameData && block.template) {
-			sameData = this.view.utils.equal(oldBlock.template, block.template);
+		if (sameData && block.expr) {
+			sameData = this.view.utils.equal(oldBlock.expr, block.expr);
 		}
 	}
 	var sameFocus = oldBlock && this.oldBlock.focused == node.attrs.focused;

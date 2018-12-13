@@ -68,7 +68,7 @@ Blocks.fill = function(schema, data) {
 Blocks.prototype.copy = function(block) {
 	var copy = Object.assign({}, block);
 	copy.data = Object.assign({}, block.data);
-	if (block.template) copy.template = Object.assign({}, block.template);
+	if (block.expr) copy.expr = Object.assign({}, block.expr);
 	if (block.content) copy.content = Object.assign({}, block.content);
 	delete copy.focused;
 	return copy;
@@ -194,13 +194,6 @@ Blocks.prototype.renderFrom = function(block, blocks, store, overrideType, scope
 			console.warn("Removing unknown block", id);
 			node.remove();
 			return;
-		}
-		if (node.hasAttribute('block-template')) {
-			try {
-				child.template = JSON.parse(node.getAttribute('block-template'));
-			} catch(ex) {
-				console.warn("Unparsable block-template attribute", node);
-			}
 		}
 		var frag = this.renderFrom(child, blocks, store, type, scope);
 		if (!frag) return;
