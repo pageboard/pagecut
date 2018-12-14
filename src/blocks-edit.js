@@ -93,7 +93,6 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 		var list = [], blockEl;
 		while ((node = content.querySelector('[block-type]'))) {
 			type = node.getAttribute('block-type');
-			div = content.ownerDocument.createElement(node.nodeName);
 			parentNode = node.parentNode;
 			blockEl = this.view.element(type);
 			id = node.getAttribute('block-id');
@@ -107,20 +106,15 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 				if (blockEl.unmount) {
 					block = blockEl.unmount(block, node, this.view) || block;
 				}
+				div = content.ownerDocument.createElement(node.nodeName);
 				block = this.copy(block);
 				parentNode.replaceChild(div, node);
 				reassignContent(block, blockEl, node);
 			} else {
 				block = {type: type};
-				var expr = node.getAttribute('block-expr');
-				if (expr && expr != '{}') div.setAttribute('block-expr', expr);
-				else div.removeAttribute('block-expr');
-				var data = node.getAttribute('block-data');
-				if (data && data != '{}') div.setAttribute('block-data', data);
-				else div.removeAttribute('block-data');
+				div = node;
 				div.removeAttribute('block-type');
 				div.removeAttribute('block-focused');
-				div = node;
 			}
 
 			if (!id || this.serializeTo(block, blockEl, ancestor)) {
