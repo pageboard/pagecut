@@ -65,9 +65,11 @@ Viewer.prototype.render = function(block, opts) {
 		else dom.removeAttribute('block-id');
 	} else {
 		dom.removeAttribute('block-id');
-		if (block.data) dom.setAttribute('block-data', JSON.stringify(block.data));
+		if (block.data && Object.keys(block.data).length) {
+			dom.setAttribute('block-data', JSON.stringify(block.data));
+		}
 	}
-	if (block.expr) {
+	if (block.expr && Object.keys(block.expr).length) {
 		dom.setAttribute('block-expr', JSON.stringify(block.expr));
 	}
 

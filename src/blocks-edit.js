@@ -108,19 +108,19 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 					block = blockEl.unmount(block, node, this.view) || block;
 				}
 				block = this.copy(block);
-			} else {
-				block = {type: type};
-				var expr = node.getAttribute('block-expr');
-				if (expr) div.setAttribute('block-expr', expr);
-				var data = node.getAttribute('block-data');
-				if (data) div.setAttribute('block-data', data);
-			}
-			if (id) {
 				parentNode.replaceChild(div, node);
 				reassignContent(block, blockEl, node);
 			} else {
-				div = node;
+				block = {type: type};
+				var expr = node.getAttribute('block-expr');
+				if (expr && expr != '{}') div.setAttribute('block-expr', expr);
+				else div.removeAttribute('block-expr');
+				var data = node.getAttribute('block-data');
+				if (data && data != '{}') div.setAttribute('block-data', data);
+				else div.removeAttribute('block-data');
 				div.removeAttribute('block-type');
+				div.removeAttribute('block-focused');
+				div = node;
 			}
 
 			if (!id || this.serializeTo(block, blockEl, ancestor)) {
