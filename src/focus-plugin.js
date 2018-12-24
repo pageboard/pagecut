@@ -1,36 +1,16 @@
 var State = require("prosemirror-state");
 
 module.exports = function(view, options) {
-	var plugin = new FocusPlugin(view, options);
-	return {
-		props: {
-			handleClick: plugin.click // needed to focus on uneditable dom
-		},
-		appendTransaction: function(transactions, oldState, newState) {
-			// focus once per transaction
-			var itr;
-			var editorUpdate = false;
-			for (var i=0; i < transactions.length; i++) {
-				itr = transactions[i];
-				if (itr.getMeta('focus-plugin')) {
-					return;
-				}
-				if (itr.getMeta('editor')) {
-					editorUpdate = true;
-				}
-			}
-			var tr = newState.tr;
-			if (plugin.action(tr, editorUpdate)) {
-				return tr;
-			}
-		}
-	};
+	return new FocusPlugin(view, options);
 };
 
 function FocusPlugin(view, options) {
-	this.view = view;
-
+	this.editor = view;
 	this.click = this.click.bind(this);
+	this.appendTransaction = this.appendTransaction.bind(this);
+	this.props = {
+		handleClick: this.click
+	};
 }
 
 function hasParent(parent, node) {
@@ -40,6 +20,25 @@ function hasParent(parent, node) {
 	}
 	return false;
 }
+
+FocusPlugin.prototype.appendTransaction = function(transactions, oldState, newState) {
+	// focus once per transaction
+	var itr;
+	var editorUpdate = false;
+	for (var i=0; i < transactions.length; i++) {
+		itr = transactions[i];
+		if (itr.getMeta('focus')) {
+			return;
+		}
+		if (itr.getMeta('editor')) {
+			editorUpdate = true;
+		}
+	}
+	var tr = newState.tr;
+	if (this.action(tr, editorUpdate)) {
+		return tr;
+	}
+};
 
 FocusPlugin.prototype.click = function(view, pos, e) {
 	var posObj = view.posAtCoords({
@@ -90,7 +89,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 FocusPlugin.prototype.action = function(tr, editorUpdate) {
 	var sel = tr.selection;
 	// avoid unneeded changes
-	if (this.view.state.tr.selection.eq(sel) && !editorUpdate) return false;
+	if (this.editor.state.tr.selection.eq(sel) && !editorUpdate) return false;
 	return this.focus(tr, sel);
 };
 
@@ -105,7 +104,7 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	if (focus) attrs.focused = focus;
 	else delete attrs.focused;
 	if (node.type.spec.inline && node.type.spec.element.contents) {
-		var sel = this.view.utils.selectTr(tr, pos);
+		var sel = this.editor.utils.selectTr(tr, pos);
 		tr.removeMark(sel.from, sel.to, node.type);
 		tr.addMark(sel.from, sel.to, node.type.create(attrs));
 	} else if (isDoc) {
@@ -117,10 +116,10 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 
 FocusPlugin.prototype.focus = function(tr, sel) {
 	// do not unfocus if view or its document has lost focus
-	if (!this.view.hasFocus()) {
+	if (!this.editor.hasFocus()) {
 		return;
 	}
-	var parents = this.view.utils.selectionParents(tr, sel);
+	var parents = this.editor.utils.selectionParents(tr, sel);
 	var firstParent = parents.length && parents[0];
 	var root = firstParent.root;
 	var container = firstParent.container;
@@ -185,12 +184,12 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	}
 
 	if (selectedRoot) {
-		var el = this.view.element(root.node.attrs.type);
+		var el = this.editor.element(root.node.attrs.type);
 		if (!el.inline) {
 			sel = new State.NodeSelection(tr.doc.resolve(rootPos));
 			tr.setSelection(sel);
 		}
 	}
-	return tr.setMeta('focus-plugin', parents).setMeta('focus-selection', sel);
+	return tr.setMeta('focus', true);
 };
 

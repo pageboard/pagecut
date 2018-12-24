@@ -141,7 +141,7 @@ function Editor(opts) {
 		delete obj['block-root_id'];
 	});
 
-	plugins.push(
+	plugins.unshift(
 		IdPlugin,
 		KeymapPlugin,
 		FocusPlugin,
@@ -172,6 +172,8 @@ function Editor(opts) {
 		}
 	);
 
+	var pluginKeys = {};
+
 	plugins = plugins.map(function(plugin) {
 		if (plugin instanceof State.Plugin) return plugin;
 		if (typeof plugin == "function") {
@@ -183,9 +185,12 @@ function Editor(opts) {
 				return this;
 			}.bind(plugin)};
 		}
-		if (plugin.key && typeof plugin.key == "string") plugin.key = new State.PluginKey(plugin.key);
+		if (plugin.key && typeof plugin.key == "string") {
+			plugin.key = pluginKeys[plugin.key] = new State.PluginKey(plugin.key);
+		}
 		return new State.Plugin(plugin);
 	});
+	this.plugins = pluginKeys;
 
 	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
