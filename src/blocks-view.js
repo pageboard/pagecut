@@ -191,7 +191,7 @@ Blocks.prototype.renderFrom = function(block, blocks, store, overrideType, scope
 		var type = node.getAttribute('block-type');
 		var child = blocks[id];
 		if (!child) {
-			console.warn("Removing unknown block", id);
+			console.warn("Removing unknown block", id, "from", block.id);
 			node.remove();
 			return;
 		}
