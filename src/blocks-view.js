@@ -92,6 +92,7 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 			node = dom.querySelector(`[block-content="${name}"]`);
 		}
 		if (!node) return;
+		if (node.nodeName == "TEMPLATE") node = node.content;
 		var content = contents[name];
 		if (!content) return;
 		if (typeof content == "string") {
@@ -185,24 +186,31 @@ Blocks.prototype.renderFrom = function(block, blocks, store, overrideType, scope
 		delete block.children;
 	}
 	if (!fragment || !fragment.querySelectorAll) return;
-	Array.from(fragment.querySelectorAll('[block-id]')).map(function(node) {
-		var id = node.getAttribute('block-id');
-		if (id === block.id) return;
-		var type = node.getAttribute('block-type');
-		var child = blocks[id];
-		if (!child) {
-			console.warn("Removing unknown block", id, "from", block.id);
-			node.remove();
-			return;
-		}
-		var frag = this.renderFrom(child, blocks, store, type, scope);
-		if (!frag) return;
-		if (frag.attributes) {
-			for (var i=0, att; i < node.attributes.length, att = node.attributes[i]; i++) {
-				if (!frag.hasAttribute(att.name)) frag.setAttribute(att.name, att.value);
+
+	var fragments = [fragment];
+	Array.prototype.forEach.call(fragment.querySelectorAll('template'), function(node) {
+		fragments.push(node.content);
+	}, this);
+	fragments.forEach(function(fragment) {
+		Array.prototype.forEach.call(fragment.querySelectorAll('[block-id]'), function(node) {
+			var id = node.getAttribute('block-id');
+			if (id === block.id) return;
+			var type = node.getAttribute('block-type');
+			var child = blocks[id];
+			if (!child) {
+				console.warn("Removing unknown block", id, "from", block.id);
+				node.remove();
+				return;
 			}
-		}
-		node.parentNode.replaceChild(frag, node);
+			var frag = this.renderFrom(child, blocks, store, type, scope);
+			if (!frag) return;
+			if (frag.attributes) {
+				for (var i=0, att; i < node.attributes.length, att = node.attributes[i]; i++) {
+					if (!frag.hasAttribute(att.name)) frag.setAttribute(att.name, att.value);
+				}
+			}
+			node.parentNode.replaceChild(frag, node);
+		}, this);
 	}, this);
 	return fragment;
 };
