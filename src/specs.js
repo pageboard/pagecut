@@ -520,8 +520,6 @@ RootNodeView.prototype.update = function(node, decorations) {
 		if (sameData && block.expr) {
 			sameData = view.utils.equal(oldBlock.expr || {}, block.expr || {});
 		}
-	} else {
-		sameData = true;
 	}
 	var sameFocus = oldBlock && oldBlock.focused == node.attrs.focused || false;
 
