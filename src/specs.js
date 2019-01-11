@@ -498,12 +498,13 @@ RootNodeView.prototype.update = function(node, decorations) {
 		return false;
 	}
 	updateContainerId(node, this.id);
-	var uBlock = this.view.blocks.fromAttrs(node.attrs);
+	var view = this.view;
+	var uBlock = view.blocks.fromAttrs(node.attrs);
 	var block;
 	if (this.element.inplace) {
 		block = uBlock;
 	} else {
-		block = this.view.blocks.get(this.id);
+		block = view.blocks.get(this.id);
 		if (!block) {
 			console.warn("block should exist", node);
 			return true;
@@ -515,22 +516,24 @@ RootNodeView.prototype.update = function(node, decorations) {
 	// consider it's the same data when it's initializing
 	var sameData = false;
 	if (oldBlock) {
-		sameData = this.view.utils.equal(oldBlock.data, block.data);
+		sameData = view.utils.equal(oldBlock.data || {}, block.data || {});
 		if (sameData && block.expr) {
-			sameData = this.view.utils.equal(oldBlock.expr, block.expr);
+			sameData = view.utils.equal(oldBlock.expr || {}, block.expr || {});
 		}
+	} else {
+		sameData = true;
 	}
-	var sameFocus = oldBlock && this.oldBlock.focused == node.attrs.focused;
+	var sameFocus = oldBlock && oldBlock.focused == node.attrs.focused || false;
 
 	if (!sameData || !sameFocus) {
-		this.oldBlock = this.view.blocks.copy(block);
+		this.oldBlock = view.blocks.copy(block);
 		this.oldBlock.focused = node.attrs.focused;
 
 		if (node.attrs.focused) block.focused = node.attrs.focused;
 		else delete block.focused;
 
-		var dom = this.view.render(block, {type: node.attrs.type, merge: false});
-		var tr = this.view.state.tr;
+		var dom = view.render(block, {type: node.attrs.type, merge: false});
+		var tr = view.state.tr;
 		var curpos = this.getPos ? this.getPos() : undefined;
 		if (isNaN(curpos)) curpos = undefined;
 		if (sameData) {
@@ -538,16 +541,12 @@ RootNodeView.prototype.update = function(node, decorations) {
 		} else {
 			mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom));
 		}
-		// this is completely crazy to do that
+		// pay attention to the risk of looping over and over
 		if (oldBlock && curpos !== undefined && tr.docChanged) {
-			this.view.dispatch(tr);
+			view.dispatch(tr);
 		}
 		if (this.selected) {
 			this.selectNode();
-		}
-		if (oldBlock && this.dom.update) {
-			// tell custom elements the editor updates this dom node
-			setTimeout(this.dom.update.bind(this.dom), 30);
 		}
 	} else {
 		// no point in calling render
