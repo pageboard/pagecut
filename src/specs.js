@@ -346,7 +346,7 @@ function createWrapSpec(view, elt, obj) {
 
 	var parseRule = {
 		tag: domSelector(obj.dom) + ':not([block-type])',
-		context: `${obj.name}//`,
+		context: `${elt.name}//`, // FIXME context should be more precise but flagDom works bottom to top
 		getAttrs: function(dom) {
 			var attrs = attrsFrom(dom);
 			var json = saveDomAttrs(dom);
@@ -386,7 +386,7 @@ function createContainerSpec(view, elt, obj) {
 	}
 	var parseRule = {
 		tag: tag + ':not([block-type])',
-		context: `${obj.name}//`,
+		context: `${elt.name}//`, // FIXME context should be more precise but flagDom works bottom to top
 		getAttrs: function(dom) {
 			var attrs = attrsFrom(dom);
 			var json = saveDomAttrs(dom);
