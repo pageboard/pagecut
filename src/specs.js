@@ -205,6 +205,7 @@ function toDOMOutputSpec(obj, node, inplace) {
 	if (!inplace) delete attrs['block-data'];
 	var contentName = node.type.spec.contentName;
 	var rootContainer = contentName && (!obj.contentDOM || obj.dom == obj.contentDOM);
+	if (!rootContainer) delete attrs['block-content'];
 	while (dom) {
 		if (!obj.contentDOM || node instanceof Model.Mark) return [dom.nodeName, attrs];
 		if (dom != obj.dom) {
