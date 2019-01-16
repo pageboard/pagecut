@@ -18,22 +18,23 @@ function Blocks(view, opts) {
 }
 
 Blocks.prototype.render = function(block, opts) {
-	if (!opts) opts = {};
 	var type = opts.type || block.type;
 	var el = this.view.element(type);
-	if (!el) throw new Error(`Unknown block.type ${type}`);
-	block = Object.assign({}, block);
-	block.data = Blocks.fill(el, block.data);
-	var dom = el.render.call(el, block, opts.scope || {
+	if (!el) throw new Error(`Unknown element type ${type}`);
+	if (!opts) opts = {};
+	if (!opts.scope) opts.scope = {
 		$doc: this.view.doc,
 		$elements: this.view.elements,
 		$element: el
-	});
+	};
+	block = Object.assign({}, block);
+	block.data = Blocks.fill(el, block.data);
+	var dom = el.render.call(el, block, opts);
 	if (dom && opts.merge !== false) this.merge(dom, block, type);
 	return dom;
 };
 
-Blocks.prototype.mount = function(block, blocks, overrideType) {
+Blocks.prototype.mount = function(block, blocks, opts) {
 	var contents = block.content;
 	var copy = this.copy(block);
 	var content, view = this.view;
@@ -43,10 +44,10 @@ Blocks.prototype.mount = function(block, blocks, overrideType) {
 			copy.content[name] = htmlToFrag(content, view.doc);
 		}
 	}
-	if (!overrideType) overrideType = copy.type;
-	var el = view.element(overrideType);
+	var type = opts.type || copy.type;
+	var el = view.element(type);
 	if (!el) {
-		console.error("Cannot find element for block type", overrideType);
+		console.error("Cannot find element for block type", type);
 		return copy;
 	}
 	return copy;
@@ -111,7 +112,7 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 	}
 };
 
-Blocks.prototype.from = function(block, blocks, overrideType, scope) {
+Blocks.prototype.from = function(block, blocks, opts) {
 	// blocks can be a block or a map of blocks
 	// if it's a block, it can have a 'children' property
 	var view = this.view;
@@ -149,29 +150,24 @@ Blocks.prototype.from = function(block, blocks, overrideType, scope) {
 			block.content[contentName] = frag;
 		}
 	}
-	var result = this.renderFrom(block, blocks, store, overrideType, scope);
+	var result = this.renderFrom(block, blocks, store, opts);
 	this.store = store;
 	return result;
 };
 
-Blocks.prototype.renderFrom = function(block, blocks, store, overrideType, scope) {
+Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
 	var view = this.view;
 	if (!store) store = this.store;
 	if (!blocks) blocks = {};
-	if (!overrideType) {
-		overrideType = block.type;
-	}
-	block = this.mount(block, blocks, overrideType, scope);
+	if (!opts) opts = {};
+	block = this.mount(block, blocks, opts);
 	if (block.id) {
 		// overwrite can happen with virtual blocks
 		if (!store[block.id]) store[block.id] = block;
 	}
 	var fragment;
 	try {
-		fragment = view.render(block, {
-			type: overrideType,
-			scope: scope
-		});
+		fragment = view.render(block, opts);
 	} catch(ex) {
 		console.error(ex);
 	}
@@ -202,7 +198,10 @@ Blocks.prototype.renderFrom = function(block, blocks, store, overrideType, scope
 				node.remove();
 				return;
 			}
-			var frag = this.renderFrom(child, blocks, store, type, scope);
+			var old = opts.type;
+			opts.type = type;
+			var frag = this.renderFrom(child, blocks, store, opts);
+			opts.type = old;
 			if (!frag) return;
 			if (frag.attributes) {
 				for (var i=0, att; i < node.attributes.length, att = node.attributes[i]; i++) {

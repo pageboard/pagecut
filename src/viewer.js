@@ -17,14 +17,14 @@ function Viewer(opts) {
 				spec: "block*"
 			}
 		},
-		render: function renderFragment(block, scope) {
-			return block.content.fragment || scope.$doc.createElement("div");
+		render: function renderFragment(block, opts) {
+			return block.content.fragment || opts.scope.$doc.createElement("div");
 		}
 	};
 }
 
-Viewer.prototype.from = function(block, blocks, overrideType, scope) {
-	return this.blocks.from(block, blocks, overrideType, scope);
+Viewer.prototype.from = function(block, blocks, opts) {
+	return this.blocks.from(block, blocks, opts);
 };
 
 Viewer.prototype.element = function(type) {
@@ -34,10 +34,6 @@ Viewer.prototype.element = function(type) {
 
 Viewer.prototype.render = function(block, opts) {
 	var dom;
-	if (typeof opts == "string") {
-		opts = {type: opts};
-		console.warn("view.render now expects opts.type, not string");
-	}
 	var type = (opts || {}).type || block.type;
 	try {
 		dom = this.blocks.render(block, opts);

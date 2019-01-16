@@ -50,8 +50,8 @@ Editor.defaults.elements = {
 		group: "block",
 		inplace: true,
 		draggable: false,
-		render: function(block, scope) {
-			return scope.$doc.createElement('pagecut-placeholder');
+		render: function(block, opts) {
+			return opts.scope.$doc.createElement('pagecut-placeholder');
 		}
 	},
 	text: {
