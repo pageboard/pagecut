@@ -311,7 +311,7 @@ Utils.prototype.selectTr = function(tr, obj, textSelection) {
 	var $rootPos = root.level ? tr.doc.resolve(root.rpos.before(root.level)) : root.rpos;
 
 	if (!$pos.nodeAfter) textSelection = true;
-	if (parent.inline) {
+	if (parent.inline && !parent.inline.node.isLeaf) {
 		var nodeBefore = root.rpos.nodeBefore;
 		var nodeAfter = root.rpos.nodeAfter;
 
