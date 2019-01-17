@@ -17,8 +17,8 @@ function Viewer(opts) {
 				spec: "block*"
 			}
 		},
-		render: function renderFragment(block, opts) {
-			return block.content.fragment || opts.scope.$doc.createElement("div");
+		render: function renderFragment(block, scope) {
+			return block.content.fragment || scope.$doc.createElement("div");
 		}
 	};
 }
