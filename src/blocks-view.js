@@ -194,8 +194,8 @@ Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
 			var type = node.getAttribute('block-type');
 			var child = blocks[id];
 			if (!child) {
-				console.warn("Removing unknown block", id, "from", block.id);
-				node.remove();
+				console.warn("missing block for", node.parentNode.nodeName, '>', node.nodeName, id);
+				node.parentNode.replaceChild(node.ownerDocument.createTextNode('·'), node);
 				return;
 			}
 			var old = opts.type;
