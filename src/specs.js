@@ -275,6 +275,7 @@ function createRootSpec(view, elt, obj) {
 					block.id = id;
 				} else {
 					// attrs does not contain id so it's like setting a new id
+					console.warn("block id not found while parsing", id);
 				}
 				view.blocks.set(block);
 			}
