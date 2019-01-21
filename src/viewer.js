@@ -11,14 +11,15 @@ function Viewer(opts) {
 
 	// TODO remove this probably useless part
 	var map = this.elements = opts.elements || {};
+
 	if (!map.fragment) map.fragment = {
 		contents: {
 			fragment: {
 				spec: "block*"
 			}
 		},
-		render: function renderFragment(block, scope) {
-			return block.content.fragment || scope.$doc.createElement("div");
+		render: function renderFragment(block, opts) {
+			return block.content.fragment || opts.$doc.createElement("div");
 		}
 	};
 }
