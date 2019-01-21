@@ -22,14 +22,14 @@ Blocks.prototype.render = function(block, opts) {
 	var el = this.view.element(type);
 	if (!el) throw new Error(`Unknown element type ${type}`);
 	if (!opts) opts = {};
-	if (!opts.scope) opts.scope = {
-		$doc: this.view.doc,
-		$elements: this.view.elements,
-		$element: el
-	};
+	if (!opts.scope) opts.scope = {};
+	if (!opts.scope.$doc) opts.scope.$doc = this.view.doc;
+	if (!opts.scope.$elements) opts.scope.$elements = this.view.elements;
+	if (!opts.scope.$element) opts.scope.$element = el;
+
 	block = Object.assign({}, block);
 	block.data = Blocks.fill(el, block.data);
-	var dom = el.render.call(el, block, opts);
+	var dom = el.render.call(el, block, opts.scope);
 	if (dom && opts.merge !== false) this.merge(dom, block, type);
 	return dom;
 };
