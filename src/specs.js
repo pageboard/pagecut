@@ -168,10 +168,15 @@ function flagDom(elt, dom, iterate) {
 	var wrapper = false;
 	if (obj.contentDOM) {
 		var contentDOM = obj.contentDOM.cloneNode(true);
+		var notWrapper = contentDOM.hasAttribute('block-content');
 		Array.prototype.forEach.call(obj.contentDOM.childNodes, function(node) {
 			var child = flagDom(elt, node, iterate, obj);
 			if (!child) return;
 			if (child.contentDOM) {
+				if (notWrapper) {
+					console.error(`element ${elt.name} has nested block-content nodes`);
+					return;
+				}
 				wrapper = true;
 				obj.children.push(child);
 				contentDOM.appendChild(node.cloneNode(true));
