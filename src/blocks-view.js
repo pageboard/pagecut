@@ -116,7 +116,6 @@ Blocks.prototype.from = function(block, blocks, opts) {
 	// blocks can be a block or a map of blocks
 	// if it's a block, it can have a 'children' property
 	var view = this.view;
-	var store = {};
 
 	var frag = "";
 	if (typeof block == "string") {
@@ -150,14 +149,12 @@ Blocks.prototype.from = function(block, blocks, opts) {
 			block.content[contentName] = frag;
 		}
 	}
-	var result = this.renderFrom(block, blocks, store, opts);
-	this.store = store;
+	var result = this.renderFrom(block, blocks, this.store, opts);
 	return result;
 };
 
 Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
 	var view = this.view;
-	if (!store) store = this.store;
 	if (!blocks) blocks = {};
 	if (!opts) opts = {};
 	block = this.mount(block, blocks, opts);
