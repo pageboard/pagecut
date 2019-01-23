@@ -49,17 +49,6 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 	pos = posObj.inside < 0 ? pos : posObj.inside;
 
 	var tr = view.state.tr;
-	/* this behavior poses more problems than it solves
-	var root = view.utils.parents(tr, pos);
-	if (root) {
-		var rpos = tr.doc.resolve(pos);
-		if (tr.selection.node) {
-			tr.setSelection(new State.TextSelection(rpos));
-			view.dispatch(tr);
-		}
-	}
-	tr = view.state.tr;
-	*/
 
 	var dom = view.root.elementFromPoint(e.clientX, e.clientY);
 	if (!dom) {
