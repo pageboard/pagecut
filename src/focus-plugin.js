@@ -72,6 +72,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 	}
 	if (this.focus(tr, State.TextSelection.create(tr.doc, pos))) {
 		view.dispatch(tr);
+		return true;
 	}
 };
 
