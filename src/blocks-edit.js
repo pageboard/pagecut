@@ -103,11 +103,11 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 					console.warn("block", type, "not found", id, "while serializing");
 					continue;
 				}
+				block = this.copy(block);
 				if (blockEl.unmount) {
-					block = blockEl.unmount(block, node, this.view) || block;
+					blockEl.unmount(block, node, this.view);
 				}
 				div = content.ownerDocument.createElement(node.nodeName);
-				block = this.copy(block);
 				parentNode.replaceChild(div, node);
 				reassignContent(block, blockEl, node);
 			} else {
