@@ -46,7 +46,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		top: e.clientY
 	});
 
-	pos = posObj.inside < 0 ? pos : (posObj.pos < posObj.inside ? posObj.inside : posObj.pos);
+	pos = posObj.inside < 0 ? pos : posObj.inside;
 
 	var tr = view.state.tr;
 	/* this behavior poses more problems than it solves
