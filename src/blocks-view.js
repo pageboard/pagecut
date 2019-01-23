@@ -50,6 +50,7 @@ Blocks.prototype.mount = function(block, blocks, opts) {
 		console.error("Cannot find element for block type", type);
 		return copy;
 	}
+	if (el.mount) el.mount(copy, blocks, opts);
 	return copy;
 };
 
