@@ -124,9 +124,10 @@ Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
 	if (!blocks) blocks = {};
 	if (!opts) opts = {};
 	block = this.mount(block, blocks, opts);
-	if (block.id && block.id != this.rootId) {
+	if (block.id) {
 		// overwrite can happen when (re)loading virtual blocks
-		store[block.id] = block;
+		var oldBlock = store[block.id];
+		if (!oldBlock || oldBlock.type == block.type) store[block.id] = block;
 	}
 	var fragment;
 	try {
