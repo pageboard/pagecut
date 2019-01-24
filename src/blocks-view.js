@@ -114,48 +114,9 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 };
 
 Blocks.prototype.from = function(block, blocks, opts) {
-	// blocks can be a block or a map of blocks
-	// if it's a block, it can have a 'children' property
-	var view = this.view;
-
-	var frag = "";
-	if (typeof block == "string") {
-		frag = block;
-		block = null;
-	}
-	if (!blocks) {
-		if (block && !block.type) {
-			blocks = block;
-			block = null;
-		}
-	}
+	this.rootId = block.id;
 	if (!blocks) blocks = this.initial = {};
-
-	// update the root block
-	var id = view.dom.getAttribute('block-id');
-	if (!id) { // TODO remove this
-		// can't rely on id plugin until view.dom changes are applied by a Step instance
-		console.warn("root dom has no id !");
-		id = this.genId();
-		view.dom.setAttribute('block-id', id);
-	}
-	this.rootId = id;
-	this.rootType = view.dom.getAttribute('block-type');
-	// it's a map of blocks, we need to find the root block
-	if (!block) {
-		var contentName = view.dom.getAttribute('block-content') || 'fragment';
-		block = blocks[id];
-		if (!block) {
-			block = {
-				id: id,
-				type: 'fragment',
-				content: {}
-			};
-			block.content[contentName] = frag;
-		}
-	}
-	var result = this.renderFrom(block, blocks, this.store, opts);
-	return result;
+	return this.renderFrom(block, blocks, this.store, opts);
 };
 
 Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
