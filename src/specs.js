@@ -589,8 +589,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 			}
 		}
 	}
-
-	return true;
+	return !(this.virtualContent && node.childCount == 0 && this.dom.isConnected);
 };
 
 RootNodeView.prototype.ignoreMutation = function(record) {
@@ -696,7 +695,7 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 	if (block.content[contentName] != this.contentDOM) {
 		block.content[contentName] = this.contentDOM;
 	}
-	return true;
+	return !(this.virtualContent && node.childCount == 0 && this.dom.isConnected);
 };
 
 ContainerNodeView.prototype.ignoreMutation = function(record) {
