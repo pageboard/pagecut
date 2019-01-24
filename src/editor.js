@@ -209,14 +209,9 @@ function Editor(opts) {
 		nodeViews: views
 	});
 
-	var rootId = this.dom.getAttribute('block-id');
-	if (rootId) {
-		this.state.doc.attrs.id = rootId;
-	}
-	var rootType = this.dom.getAttribute('block-type');
-	if (rootType) {
-		this.state.doc.attrs.type = rootType;
-	}
+
+	this.state.doc.attrs.id = this.rootId;
+	this.state.doc.attrs.type = this.rootType;
 }
 
 Object.assign(Editor.prototype, Viewer.prototype, View.EditorView);

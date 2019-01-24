@@ -130,15 +130,19 @@ Blocks.prototype.from = function(block, blocks, opts) {
 		}
 	}
 	if (!blocks) blocks = this.initial = {};
+
+	// update the root block
+	var id = view.dom.getAttribute('block-id');
+	if (!id) { // TODO remove this
+		// can't rely on id plugin until view.dom changes are applied by a Step instance
+		console.warn("root dom has no id !");
+		id = this.genId();
+		view.dom.setAttribute('block-id', id);
+	}
+	this.rootId = id;
+	this.rootType = view.dom.getAttribute('block-type');
 	// it's a map of blocks, we need to find the root block
 	if (!block) {
-		var id = view.dom.getAttribute('block-id');
-		if (!id) { // TODO remove this
-			// can't rely on id plugin until view.dom changes are applied by a Step instance
-			console.warn("root dom has no id !");
-			id = this.genId();
-			view.dom.setAttribute('block-id', id);
-		}
 		var contentName = view.dom.getAttribute('block-content') || 'fragment';
 		block = blocks[id];
 		if (!block) {
@@ -159,9 +163,9 @@ Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
 	if (!blocks) blocks = {};
 	if (!opts) opts = {};
 	block = this.mount(block, blocks, opts);
-	if (block.id) {
-		// overwrite can happen with virtual blocks
-		if (!store[block.id]) store[block.id] = block;
+	if (block.id && block.id != this.rootId) {
+		// overwrite can happen when (re)loading virtual blocks
+		store[block.id] = block;
 	}
 	var fragment;
 	try {
