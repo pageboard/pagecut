@@ -418,9 +418,16 @@ function createContainerSpec(view, elt, obj) {
 	return spec;
 }
 
-function setupView(me) {
+function setupView(me, node) {
 	me.dom = me.domModel.cloneNode(true);
 	me.contentDOM = findContent(me.element, me.dom);
+
+	me.contentName = node.type.spec.contentName;
+	var contentSpec;
+	if (me.contentName) {
+		contentSpec = me.element.contents[me.contentName];
+		me.virtualContent = contentSpec && contentSpec.virtual;
+	}
 
 	if (!me.contentDOM || me.contentDOM == me.dom) return;
 	if (['span'].indexOf(me.contentDOM.nodeName.toLowerCase()) < 0) return;
@@ -471,7 +478,7 @@ function RootNodeView(node, view, getPos, decorations) {
 
 	if (block.focused) delete block.focused;
 
-	setupView(this);
+	setupView(this, node);
 	this.update(node);
 }
 
@@ -642,7 +649,7 @@ function WrapNodeView(node, view, getPos, decorations) {
 	}
 	this.element = node.type.spec.element;
 	this.domModel = node.type.spec.domModel;
-	setupView(this);
+	setupView(this, node);
 	this.update(node);
 }
 
@@ -664,8 +671,7 @@ function ContainerNodeView(node, view, getPos, decorations) {
 	this.element = node.type.spec.element;
 	this.domModel = node.type.spec.domModel;
 	this.id = node.attrs.root_id;
-	setupView(this);
-	this.contentName = node.type.spec.contentName;
+	setupView(this, node);
 	this.update(node);
 }
 
