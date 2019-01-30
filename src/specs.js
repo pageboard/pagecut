@@ -234,6 +234,7 @@ function createRootSpec(view, elt, obj) {
 		focused: null,
 		data: null,
 		expr: null,
+		lock: null,
 		type: elt.name,
 		standalone: elt.standalone ? "true" : null,
 		_json: saveDomAttrs(obj.dom)
@@ -250,11 +251,15 @@ function createRootSpec(view, elt, obj) {
 			var standalone = dom.getAttribute('block-standalone') == "true";
 			var data = dom.getAttribute('block-data');
 			var expr = dom.getAttribute('block-expr');
+			var lock = dom.getAttribute('block-lock');
 			var attrs = {
 				type: type
 			};
 			if (expr) {
 				attrs.expr = expr;
+			}
+			if (lock) {
+				attrs.lock = lock;
 			}
 			if (data) {
 				attrs.data = data;
@@ -526,6 +531,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 	}
 	if (uBlock.data) block.data = uBlock.data;
 	if (uBlock.expr) block.expr = uBlock.expr;
+	if (uBlock.lock) block.lock = uBlock.lock;
 
 	// consider it's the same data when it's initializing
 	var sameData = false;

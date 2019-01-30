@@ -22,6 +22,7 @@ Blocks.prototype.fromAttrs = function(attrs) {
 	}
 	if (block.data) block.data = JSON.parse(block.data);
 	if (block.expr) block.expr = JSON.parse(block.expr);
+	if (block.lock) block.lock = JSON.parse(block.lock);
 
 	if (attrs.standalone == "true") block.standalone = true;
 	else delete block.standalone;
@@ -35,6 +36,7 @@ Blocks.prototype.toAttrs = function(block) {
 	if (block.type != null) attrs.type = block.type;
 	if (block.data) attrs.data = JSON.stringify(block.data);
 	if (block.expr) attrs.expr = JSON.stringify(block.expr);
+	if (block.lock) attrs.lock = JSON.stringify(block.lock);
 	if (block.focused) attrs.focused = block.focused;
 	if (block.standalone) attrs.standalone = "true";
 	if (attrs.data == "{}") delete attrs.data;

@@ -125,6 +125,7 @@ function Editor(opts) {
 		var attrs = out[1];
 		if (node.attrs.data) attrs['block-data'] = node.attrs.data;
 		if (node.attrs.expr) attrs['block-expr'] = node.attrs.expr;
+		if (node.attrs.lock) attrs['block-lock'] = node.attrs.lock;
 		if (node.attrs.standalone) attrs['block-standalone'] = 'true';
 		delete attrs['block-focused'];
 	});

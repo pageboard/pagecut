@@ -71,6 +71,7 @@ Blocks.prototype.copy = function(block) {
 	var copy = Object.assign({}, block);
 	copy.data = Object.assign({}, block.data);
 	if (block.expr) copy.expr = Object.assign({}, block.expr);
+	if (block.lock) copy.lock = Object.assign({}, block.lock);
 	if (block.content) copy.content = Object.assign({}, block.content);
 	delete copy.focused;
 	return copy;
