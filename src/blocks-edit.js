@@ -174,7 +174,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 };
 
 function reassignContent(block, elt, dom) {
-	if (elt.contents == null || typeof elt.contents.spec == "string" || elt.inline) return;
+	if (elt.contents == null) return;
 	var rootContentName = dom.getAttribute('block-content');
 	var content = block.content;
 	if (!content) {
@@ -185,6 +185,9 @@ function reassignContent(block, elt, dom) {
 	}
 	var once = !rootContentName && elt.inline;
 	var times = 0;
+	if (typeof elt.contents != "object") {
+		return;
+	}
 	Object.keys(elt.contents).forEach(function(name) {
 		if (rootContentName == name || once) {
 			times++;
