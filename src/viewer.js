@@ -10,7 +10,7 @@ function Viewer(opts) {
 	this.elements = opts.elements || {};
 
 	// TODO remove this probably useless part
-	var map = this.elements = opts.elements || {};
+	var map = opts.elements || {};
 
 	if (!map.fragment) map.fragment = {
 		contents: {
