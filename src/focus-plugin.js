@@ -36,9 +36,11 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 	var tr = view.state.tr;
 	var sel = State.TextSelection.create(tr.doc, pos);
 	var reselect = false;
-	if (sel.$from.nodeAfter == null && sel.$from.nodeBefore == null) {
-		reselect = true;
-		tr.setSelection(sel);
+	if (!e.ctrlKey) {
+		if (!e.target.pmViewDesc && !e.target._pcAttrs) {
+			reselect = true;
+			tr.setSelection(sel);
+		}
 	}
 	if (this.focus(tr, sel)) {
 		view.dispatch(tr);
