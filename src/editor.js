@@ -77,6 +77,7 @@ Editor.prototype.to = function(blocks) {
 
 function Editor(opts) {
 	var editor = this;
+	if (opts.scope) editor.scope = opts.scope;
 
 	this.utils = new Utils(this);
 	var defaultElts = Editor.defaults.elements;

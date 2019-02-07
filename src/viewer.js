@@ -25,6 +25,8 @@ function Viewer(opts) {
 }
 
 Viewer.prototype.from = function(block, blocks, opts) {
+	if (opts.scope) this.scope = opts.scope;
+	else opts.scope = this.scope;
 	return this.blocks.from(block, blocks, opts);
 };
 
