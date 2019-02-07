@@ -35,16 +35,24 @@ FocusPlugin.prototype.appendTransaction = function(transactions, oldState, newSt
 FocusPlugin.prototype.click = function(view, pos, e) {
 	var tr = view.state.tr;
 	var sel = State.TextSelection.create(tr.doc, pos);
-	var reselect = false;
+	var custom = false;
 	if (!e.ctrlKey) {
-		if (!e.target.pmViewDesc && !e.target._pcAttrs) {
-			reselect = true;
+		var dom = e.target;
+		while (!dom.pmViewDesc && !dom._pcAttrs) {
+			dom = dom.parentNode;
+			custom = true;
+		}
+		if (dom) {
+			pos = this.editor.utils.posFromDOM(dom);
+			sel = State.NodeSelection.create(tr.doc, pos);
 			tr.setSelection(sel);
+		} else {
+			custom = false;
 		}
 	}
 	if (this.focus(tr, sel)) {
 		view.dispatch(tr);
-		return reselect;
+		return custom;
 	}
 };
 
