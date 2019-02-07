@@ -1,6 +1,6 @@
 {
   "name": "@pageboard/pagecut",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "description": "Extensible web content editor",
   "main": "index.js",
   "scripts": {
