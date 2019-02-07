@@ -1,7 +1,12 @@
 module.exports = Blocks;
 var domify = require('domify');
 function htmlToFrag(str, doc) {
-	var node = domify(str, doc);
+	var node;
+	try {
+		node = domify(str, doc);
+	} catch(err) {
+		console.error(err);
+	}
 	if (node && node.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {
 		var frag = doc.createDocumentFragment();
 		frag.appendChild(node);
