@@ -13,14 +13,6 @@ function FocusPlugin(view, options) {
 	};
 }
 
-function hasParent(parent, node) {
-	while (node) {
-		if (node == parent) return true;
-		node = node.parentNode;
-	}
-	return false;
-}
-
 FocusPlugin.prototype.appendTransaction = function(transactions, oldState, newState) {
 	// focus once per transaction
 	var itr;
@@ -41,38 +33,16 @@ FocusPlugin.prototype.appendTransaction = function(transactions, oldState, newSt
 };
 
 FocusPlugin.prototype.click = function(view, pos, e) {
-	var posObj = view.posAtCoords({
-		left: e.clientX,
-		top: e.clientY
-	});
-
-	pos = posObj.inside < 0 ? pos : posObj.inside;
-
 	var tr = view.state.tr;
-
-	var dom = view.root.elementFromPoint(e.clientX, e.clientY);
-	if (!dom) {
-		return;
+	var sel = State.TextSelection.create(tr.doc, pos);
+	var reselect = false;
+	if (sel.$from.nodeAfter == null && sel.$from.nodeBefore == null) {
+		reselect = true;
+		tr.setSelection(sel);
 	}
-	var parent = dom;
-	var nodeView;
-	while (parent) {
-		nodeView = parent.pmViewDesc;
-		if (nodeView) break;
-		parent = parent.parentNode;
-	}
-	if (!nodeView) {
-		return;
-	}
-	// now find if dom is in view.dom or view.contentDOM
-	if (!(
-		hasParent(nodeView.dom, dom) || nodeView.contentDOM && hasParent(nodeView.contentDOM, dom)
-	)) {
-		return;
-	}
-	if (this.focus(tr, State.TextSelection.create(tr.doc, pos))) {
+	if (this.focus(tr, sel)) {
 		view.dispatch(tr);
-		return true;
+		return reselect;
 	}
 };
 
@@ -109,17 +79,11 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	if (!this.editor.hasFocus()) {
 		return;
 	}
+	var oldSel = tr.selection;
 	var parents = this.editor.utils.selectionParents(tr, sel);
 	var firstParent = parents.length && parents[0];
 	var root = firstParent.root;
-	var container = firstParent.container;
 	var rootPos = root && root.level && root.rpos.before(root.level);
-	var selectedRoot = rootPos !== undefined &&
-		(
-			(root && tr.selection.node == root.node)
-			||
-			(!root.node.isTextblock && (!container || !container.node.isTextblock))
-		);
 
 	var me = this;
 
@@ -172,13 +136,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 			console.error(ex);
 		}
 	}
-
-	if (selectedRoot) {
-		if (!root.node.isInline || root.node.isLeaf) {
-			sel = new State.NodeSelection(tr.doc.resolve(rootPos));
-			tr.setSelection(sel);
-		}
-	}
+	tr.setSelection(oldSel);
 	return tr.setMeta('focus', true);
 };
 
