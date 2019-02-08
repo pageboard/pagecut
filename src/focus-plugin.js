@@ -42,7 +42,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 			dom = dom.parentNode;
 			custom = true;
 		}
-		if (dom) {
+		if (custom && dom) {
 			pos = this.editor.utils.posFromDOM(dom);
 			sel = State.NodeSelection.create(tr.doc, pos);
 			tr.setSelection(sel);
