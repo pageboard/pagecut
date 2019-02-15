@@ -95,7 +95,9 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		dom = this.view.render(dom);
 	}
 	var parent = sel.$from.parent;
-	var slice = this.parseTr(tr, dom, sel.$to);
+	// when replacing current selection, parseTr sel.$from
+	// when appending after selection, parseTr sel.$to
+	var slice = this.parseTr(tr, dom, sel.node ? sel.$to : sel.$from);
 
 	var from = sel.from;
 	var to = sel.to;
