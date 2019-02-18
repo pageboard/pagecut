@@ -630,6 +630,7 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 		} else {
 			console.warn("TODO support the type of that property", prop);
 		}
+		if (!block.data) block.data = {};
 		if (block.data[dataWhat] === val) return true;
 		block.data[dataWhat] = val;
 		var pos = this.getPos();
