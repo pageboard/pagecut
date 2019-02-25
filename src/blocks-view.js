@@ -126,6 +126,7 @@ Blocks.prototype.from = function(block, blocks, opts) {
 };
 
 Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
+	if (!block.type) return;
 	var view = this.view;
 	if (!blocks) blocks = {};
 	if (!opts) opts = {};
