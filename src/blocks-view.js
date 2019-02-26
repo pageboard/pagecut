@@ -163,23 +163,27 @@ Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
 			var id = node.getAttribute('block-id');
 			if (id === block.id) return;
 			var type = node.getAttribute('block-type');
+			var parent = node.parentNode;
 			var child = blocks[id];
 			if (!child) {
-				console.warn("missing block for", node.parentNode.nodeName, '>', node.nodeName, id);
-				node.parentNode.replaceChild(node.ownerDocument.createTextNode('·'), node);
+				console.warn("missing block for", parent.nodeName, '>', node.nodeName, id);
+				parent.replaceChild(node.ownerDocument.createTextNode('·'), node);
 				return;
 			}
 			var old = opts.type;
 			opts.type = type;
 			var frag = this.renderFrom(child, blocks, store, opts);
 			opts.type = old;
-			if (!frag) return;
+			if (!frag) {
+				parent.removeChild(node);
+				return;
+			}
 			if (frag.attributes) {
 				for (var i=0, att; i < node.attributes.length, att = node.attributes[i]; i++) {
 					if (!frag.hasAttribute(att.name)) frag.setAttribute(att.name, att.value);
 				}
 			}
-			node.parentNode.replaceChild(frag, node);
+			parent.replaceChild(frag, node);
 		}, this);
 	}, this);
 	return fragment;
