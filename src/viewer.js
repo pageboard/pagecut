@@ -38,7 +38,8 @@ Viewer.prototype.element = function(type) {
 
 Viewer.prototype.render = function(block, opts) {
 	var dom;
-	var type = (opts || {}).type || block.type;
+	opts = opts || {};
+	var type = opts.type || block.type;
 	try {
 		dom = this.blocks.render(block, opts);
 	} catch(ex) {
