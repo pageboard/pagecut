@@ -41,7 +41,7 @@
     "domify": "^1.4.0",
     "esequal": "^0.1.15",
     "orderedmap": "^1.0.0",
-    "prosemirror-commands": "^1.0.6",
+    "prosemirror-commands": "^1.0.7",
     "prosemirror-example-setup": "^1.0.1",
     "prosemirror-history": "^1.0.3",
     "prosemirror-inputrules": "^1.0.1",
@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "postinstall": "^0.4.2",
-    "prosemirror-menu": "^1.0.1",
-    "prosemirror-view": "^1.7.1"
+    "prosemirror-menu": "^1.0.5",
+    "prosemirror-view": "^1.8.4"
   }
 }
