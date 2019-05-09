@@ -6,7 +6,7 @@ var Input = require("prosemirror-inputrules");
 var keymap = require("prosemirror-keymap").keymap;
 var Commands = require("prosemirror-commands");
 var Setup = require("prosemirror-example-setup");
-var DropCursor = require("@kapouer/prosemirror-dropcursor").dropCursor;
+var DropCursor = require("prosemirror-dropcursor").dropCursor;
 var History = require("prosemirror-history");
 var OrderedMap = require("orderedmap");
 
@@ -162,16 +162,8 @@ function Editor(opts) {
 			return History.history({
 				preserveItems: true // or else cancel does not keep selected node
 			});
-		}, function(editor, opts) {
-			return DropCursor({
-				decorate: function($pos) {
-					var node = editor.root.createElement("span");
-					node.textContent = "\u200b";
-					node.style.cssText = "margin-left:-1px; margin-right:-1px; border-left:2px solid black; display: inline-block; pointer-events: none";
-					return View.Decoration.widget($pos.pos, node);
-				}
-			});
-		}
+		},
+		DropCursor({width: 2})
 	);
 
 	var pluginKeys = {};
