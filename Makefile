@@ -21,8 +21,9 @@ predist:
 	cp -f src/*.css dist/
 
 dist/editor.js: src/*.js
-	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-view-pull-40.patch
-	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-dropcursor-issue-923.patch
+	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-view-pr-40.patch
+	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-dropcursor-pr-6.patch
+	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-dropcursor-pr-7.patch
 	$(BROWSERIFY) --standalone Pagecut --outfile $@ src/editor.js
 
 dist/viewer.js: src/*.js

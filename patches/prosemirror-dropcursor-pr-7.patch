@@ -1,0 +1,11 @@
+--- node_modules/prosemirror-dropcursor/dist/dropcursor.js	2019-05-10 11:01:27.379852475 +0200
++++ node_modules/prosemirror-dropcursor/dist/dropcursor.js.new	2019-05-10 11:06:33.900040065 +0200
+@@ -73,7 +73,7 @@
+     rect = {left: coords.left - this.width / 2, right: coords.left + this.width / 2, top: coords.top, bottom: coords.bottom};
+   }
+ 
+-  var parent = this.editorView.dom.offsetParent;
++  var parent = this.editorView.dom.offsetParent || this.editorView.dom; // e.g. body.offsetParent is null
+   if (!this.element) {
+     this.element = parent.appendChild(document.createElement("div"));
+     this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none; background-color: " + this.color;
