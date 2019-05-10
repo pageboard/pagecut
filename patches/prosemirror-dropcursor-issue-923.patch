@@ -1,0 +1,10 @@
+--- node_modules/prosemirror-dropcursor/dist/dropcursor.js	1985-10-26 09:15:00.000000000 +0100
++++ node_modules/prosemirror-dropcursor/dist/dropcursor.js.new	2019-05-10 10:22:49.800761957 +0200
+@@ -74,6 +74,7 @@
+   }
+ 
+   var parent = this.editorView.dom.offsetParent;
++  if (!parent) parent = this.editorView.dom;
+   if (!this.element) {
+     this.element = parent.appendChild(document.createElement("div"));
+     this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none; background-color: " + this.color;
