@@ -186,6 +186,7 @@ function reassignContent(block, elt, dom) {
 	var once = !rootContentName && elt.inline;
 	var times = 0;
 	if (typeof elt.contents != "object") {
+		console.warn("FIXME");
 		return;
 	}
 	Object.keys(elt.contents).forEach(function(name) {
