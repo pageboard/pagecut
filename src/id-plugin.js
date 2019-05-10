@@ -31,13 +31,12 @@ module.exports = function(view) {
 				if (lastMark && (mark.attrs.id == lastMark.attrs.id || mark.eq(lastMark))) {
 					return;
 				}
-				lastMark = mark;
 				var attrs = mark.attrs;
-				var type = attrs.type;
-				if (!type) return;
-				var el = view.element(type);
+				var el = mark.type.spec.element;
 				if (!el) return;
 				var id = attrs.id;
+				if (el.inplace && !id) return;
+				lastMark = mark;
 				if (id && ids[id] || !el.inplace && !id) {
 					// add id attribute to the extended mark
 					var block = view.blocks.fromAttrs(attrs);
