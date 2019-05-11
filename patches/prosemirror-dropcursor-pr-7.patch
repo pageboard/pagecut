@@ -5,7 +5,7 @@
    }
  
 -  var parent = this.editorView.dom.offsetParent;
-+  var parent = this.editorView.dom.offsetParent || this.editorView.dom; // e.g. body.offsetParent is null
++  var parent = this.editorView.dom.offsetParent || this.editorView.dom.parentNode;
    if (!this.element) {
      this.element = parent.appendChild(document.createElement("div"));
      this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none; background-color: " + this.color;
