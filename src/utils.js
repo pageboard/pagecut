@@ -244,8 +244,8 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 	}
 	if (attrs.id && attrs.id != node.attrs.id) return tr;
 	var selectedNode = sel.from === pos && sel.node;
-	tr.setNodeMarkup(pos, null, attrs);
 	if (selectedNode) {
+		tr.setNodeMarkup(pos, null, attrs);
 		tr.setSelection(new State.NodeSelection(tr.doc.resolve(pos)));
 	}
 	return tr;
