@@ -225,7 +225,7 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 
 	if (parent.inline) {
 		node = parent.inline.node;
-		node.marks.forEach(function(mark) {
+		if (sel.empty) node.marks.forEach(function(mark) {
 			if (attrs.id && attrs.id != mark.attrs.id) return;
 			var markType = mark.attrs.type;
 			if (!markType || type != markType) return;
