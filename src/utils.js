@@ -236,6 +236,10 @@ Utils.prototype.refreshTr = function(tr, dom, block) {
 			let [exFrom, exTo] = this.extendUpdateMark(tr, sel.from, sel.to, mark, attrs);
 			tr.setSelection(State.TextSelection.create(tr.doc, exFrom, exTo));
 		}, this);
+		else {
+			var markType = this.view.schema.marks[type];
+			if (markType) tr.addMark(sel.from, sel.to, markType.create(attrs));
+		}
 	}
 	node = parent.root.node;
 	if (!attrs.id && node.attrs.focused) {
