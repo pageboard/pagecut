@@ -206,7 +206,7 @@ function flagDom(elt, dom, iterate) {
 function toDOMOutputSpec(obj, node, inplace) {
 	var out = 0;
 	var dom = obj.contentDOM || obj.dom;
-	var attrs = Object.assign(attrsTo(node.attrs), restoreDomAttrs(node.attrs._json), domAttrsMap(obj.dom));
+	var attrs = Object.assign(attrsTo(node.attrs), tryJSON(node.attrs._json), domAttrsMap(obj.dom));
 	if (!inplace) delete attrs['block-data'];
 	var contentName = node.type.spec.contentName;
 	var rootContainer = contentName && (!obj.contentDOM || obj.dom == obj.contentDOM);
@@ -236,8 +236,7 @@ function createRootSpec(view, elt, obj) {
 		expr: null,
 		lock: null,
 		type: elt.name,
-		standalone: elt.standalone ? "true" : null,
-		_json: saveDomAttrs(obj.dom)
+		standalone: elt.standalone ? "true" : null
 	};
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
@@ -554,9 +553,8 @@ RootNodeView.prototype.update = function(node, decorations) {
 		var tr = view.state.tr;
 		var curpos = this.getPos ? this.getPos() : undefined;
 		if (isNaN(curpos)) curpos = undefined;
-		if (sameData) {
-			mutateAttributes(this.dom, dom);
-		} else {
+		mutateAttributes(this.dom, dom);
+		if (!sameData) {
 			mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom));
 		}
 		// pay attention to the risk of looping over and over
@@ -599,51 +597,21 @@ RootNodeView.prototype.update = function(node, decorations) {
 };
 
 RootNodeView.prototype.ignoreMutation = function(record) {
-	if (record.type == "childList" && record.addedNodes.length > 0 && !Array.prototype.some.call(record.addedNodes, function(node) {
+	if (record.type == "attributes") {
+		var dom = record.target;
+		var obj = dom.pcUiAttrs;
+		if (!obj) obj = dom.pcUiAttrs = {};
+		var name = record.attributeName;
+		var val = dom.getAttribute(name);
+		obj[name] = val;
+		return true;
+	}	else if (record.type == "childList" && record.addedNodes.length > 0 && !Array.prototype.some.call(record.addedNodes, function(node) {
 		if (node.nodeType != Node.ELEMENT_NODE) return true;
 		return node.getAttribute('contenteditable') != "false";
 	})) {
 		return true;
 	} else if (record.target == this.contentDOM && record.type == "childList") {
 		return false;
-	} else if (record.target == this.dom && record.type == "attributes" && record.attributeName && record.attributeName.startsWith('data-')) {
-		var block = this.view.blocks.get(this.id);
-		if (!block) return true;
-
-		var dataWhat = record.attributeName.split('-').slice(1).map(function(str, i) {
-			if (i == 0) return str;
-			return str[0].toUpperCase() + str.substring(1);
-		}).join('');
-		var prop = this.element.properties && this.element.properties[dataWhat];
-		if (!prop) return true;
-
-		var val = record.target.getAttribute(record.attributeName);
-		if (prop.type == "boolean") {
-			if (val == "true") val = true;
-			else if (val == "false") val = false;
-		} else if (prop.type == "integer") {
-			val = parseInt(val);
-		} else if (prop.type == "number") {
-			val = parseFloat(val);
-		} else if (prop.type == "string") {
-			// nothing to do
-		} else {
-			console.warn("TODO support the type of that property", prop);
-		}
-		if (!block.data) block.data = {};
-		if (block.data[dataWhat] === val) return true;
-		block.data[dataWhat] = val;
-		var pos = this.getPos();
-		var attrs = this.view.blocks.toAttrs(block);
-		attrs.type = this.element.name;
-		var tr = this.view.state.tr;
-		var reselect = tr.selection.node && tr.selection.from == pos;
-		tr.setNodeMarkup(pos, null, attrs);
-		if (reselect) {
-			tr.setSelection(State.NodeSelection.create(tr.doc, pos));
-		}
-		this.view.dispatch(tr);
-		return true;
 	} else {
 		return true;
 	}
@@ -660,7 +628,7 @@ function WrapNodeView(node, view, getPos, decorations) {
 }
 
 WrapNodeView.prototype.update = function(node, decorations) {
-	restoreDomAttrs(node.attrs._json, this.dom);
+	restoreDomAttrs(tryJSON(node.attrs._json), this.dom);
 	return true;
 };
 
@@ -687,7 +655,7 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 		console.warn("cannot update to a different content name", contentName, this.contentName);
 		return false;
 	}
-	restoreDomAttrs(node.attrs._json, this.dom);
+	restoreDomAttrs(tryJSON(node.attrs._json), this.dom);
 	var id = node.attrs.root_id;
 	if (!id || id != this.id) {
 		return false;
@@ -821,65 +789,19 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 
 function mapOfClass(att) {
 	var map = {};
-	att.split(' ').forEach(function(str) {
+	(att || '').split(' ').forEach(function(str) {
 		str = str.trim();
 		if (str) map[str] = true;
 	});
 	return map;
 }
 
-function applyDiffClass(src, dst, tar) {
-	var srcMap = mapOfClass(src);
-	var dstMap = mapOfClass(dst);
-	var tarMap = mapOfClass(tar);
-
-	Object.keys(dstMap).forEach(function(str) {
-		if (!srcMap[str]) {
-			tarMap[str] = true;
-		}
-	});
-	for (var str in srcMap) {
-		if (!dstMap[str]) {
-			delete tarMap[str];
-		}
-	}
-	return Object.keys(tarMap).join(' ');
+function applyDiffClass(a, b) {
+	return Object.keys(Object.assign(mapOfClass(a), mapOfClass(b))).join(' ');
 }
 
 function mutateAttributes(dom, ndom) {
-	// TODO all changes go through here, except maybe block-* related ones
-	// SO, store into dom._pcAttrs the last copy, and compare
-	var attr, name, val, oval;
-	var natts = ndom.attributes;
-	var iatts = dom._pcAttrs;
-	if (!iatts) iatts = dom._pcAttrs = {};
-	for (var k=0; k < natts.length; k++) {
-		attr = natts[k];
-		name = attr.name;
-		if (name == "contenteditable") continue;
-		oval = dom.getAttribute(name);
-		val = attr.value;
-		if (iatts[name] == null || iatts[name] == oval) {
-			if (val != oval) dom.setAttribute(name, val);
-		} else if (name == "class") {
-			dom.setAttribute(name, applyDiffClass(iatts[name], oval, val));
-		} else {
-			// TODO what ?
-			dom.setAttribute(name, val);
-		}
-		iatts[name] = val;
-	}
-
-	var atts = dom.attributes;
-	for (var j=0; j < atts.length; j++) {
-		attr = atts[j];
-		name = attr.name;
-		if (name == "block-content" || name == "contenteditable") continue;
-		if ((name.startsWith('block-') || (iatts[name] != null && iatts[name] == attr.value)) && !ndom.hasAttribute(name)) {
-			dom.removeAttribute(name);
-			delete iatts[name];
-		}
-	}
+	restoreDomAttrs(ndom.attributes, dom);
 }
 
 function saveDomAttrs(dom) {
@@ -888,39 +810,46 @@ function saveDomAttrs(dom) {
 	return JSON.stringify(map);
 }
 
-function restoreDomAttrs(json, dom) {
-	if (!json) return;
-	var map;
+function tryJSON(str) {
+	if (!str) return;
+	var obj;
 	try {
-		map = JSON.parse(json);
+		obj = JSON.parse(str);
 	} catch(ex) {
-		console.info("Bad attributes", json);
+		console.info("Bad attributes", str);
 	}
-	if (!map) return;
-	if (!dom) return map;
-	var iatts = dom._pcAttrs;
-	if (!iatts) iatts = dom._pcAttrs = {};
-	var oval, val, name;
-	for (name in map) {
+	return obj;
+}
+
+function restoreDomAttrs(srcAtts, dom) {
+	if (!srcAtts || !dom) return;
+	var attr, name, dstVal, srcVal;
+	var dstAtts = dom.attributes;
+	var uiAtts = dom.pcUiAttrs;
+	if (!uiAtts) {
+		uiAtts = dom.pcUiAttrs = {};
+	}
+	// pcUiAttrs: attributes set by ui processes
+	for (var k=0; k < srcAtts.length; k++) {
+		attr = srcAtts[k];
+		name = attr.name;
 		if (name == "contenteditable") continue;
-		oval = dom.getAttribute(name);
-		val = map[name];
-		if (iatts[name] == null || iatts[name] == oval) {
-			if (val != oval) dom.setAttribute(name, val);
-		} else if (name == "class") {
-			dom.setAttribute(name, applyDiffClass(iatts[name], oval, val));
-		} else {
-			// TODO what ?
-			dom.setAttribute(name, val);
+		dstVal = dom.getAttribute(name);
+		srcVal = attr.value;
+		// TODO style using dom.style map
+		if (name == "class") {
+			dom.setAttribute(name, applyDiffClass(srcVal, uiAtts[name]));
+		} else if (srcVal != dstVal) {
+			dom.setAttribute(name, srcVal);
 		}
-		iatts[name] = val;
 	}
 
-	var atts = dom.attributes;
-	for (var i=0; i < atts.length; i++) {
-		name = atts[i].name;
-		if (name == "contenteditable") continue;
-		if (!name.startsWith('block-') && map[name] === undefined && iatts[name] == null) {
+	for (var j=0; j < dstAtts.length; j++) {
+		attr = dstAtts[j];
+		name = attr.name;
+		if (name == "block-content" || name == "contenteditable") continue;
+		// remove attribute if not in srcAtts unless it is set in uiAtts
+		if (srcAtts[name] == null && uiAtts[name] == null) {
 			dom.removeAttribute(name);
 		}
 	}
