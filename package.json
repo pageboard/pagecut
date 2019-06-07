@@ -46,7 +46,7 @@
     "prosemirror-history": "^1.0.4",
     "prosemirror-inputrules": "^1.0.2",
     "prosemirror-keymap": "^1.0.1",
-    "prosemirror-model": "^1.7.0",
+    "prosemirror-model": "^1.7.1",
     "prosemirror-schema-basic": "^1.0.1",
     "prosemirror-schema-list": "^1.0.3",
     "prosemirror-state": "^1.2.3",
@@ -66,6 +66,6 @@
   "dependencies": {
     "postinstall": "^0.4.2",
     "prosemirror-menu": "^1.0.5",
-    "prosemirror-view": "^1.9.6"
+    "prosemirror-view": "^1.9.8"
   }
 }
