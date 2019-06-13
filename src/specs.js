@@ -294,7 +294,16 @@ function createRootSpec(view, elt, obj) {
 		},
 		contentElement: function(dom) { return findContent(elt, dom); }
 	};
-	if (elt.context) parseRule.context = elt.context;
+	if (elt.context) {
+		if (elt.context.split(/\s*\|\s*/).some((tok) => {
+			while (tok.endsWith('/')) tok = tok.slice(0, -1);
+			return tok.indexOf('/') >= 0;
+		})) {
+			console.warn("element.context should define only one parent type", elt.name, elt.context);
+		} else {
+			parseRule.context = elt.context;
+		}
+	}
 
 	if (elt.tag) {
 		parseRule.tag = elt.tag;
