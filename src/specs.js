@@ -362,9 +362,11 @@ function createWrapSpec(view, elt, obj) {
 	var defaultAttrs = attrsFrom(obj.dom);
 	defaultAttrs._json = null;
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
+	var wrapTag = domSelector(obj.dom);
+	if (wrapTag == "div") console.warn(elt.name, "should define a class on wrapper tag", obj.dom.outerHTML);
 
 	var parseRule = {
-		tag: domSelector(obj.dom) + ':not([block-type])',
+		tag: wrapTag + ':not([block-type])',
 		context: `${elt.name}//`, // FIXME context should be more precise but flagDom works bottom to top
 		getAttrs: function(dom) {
 			var attrs = attrsFrom(dom);
