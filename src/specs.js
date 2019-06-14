@@ -565,7 +565,11 @@ RootNodeView.prototype.update = function(node, decorations) {
 		if (isNaN(curpos)) curpos = undefined;
 		mutateAttributes(this.dom, dom);
 		if (!sameData) {
-			mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom));
+			try {
+				mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom));
+			} catch(ex) {
+				return true;
+			}
 		}
 		// pay attention to the risk of looping over and over
 		if (oldBlock && curpos !== undefined && tr.docChanged) {
@@ -719,7 +723,10 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 		nobj.children.forEach(function(childObj, i) {
 			var pmChild = pmNode.child(i);
 			var newAttrs = Object.assign({}, pmChild.attrs, {_json: saveDomAttrs(childObj.dom)});
-			if (pos !== undefined) tr.setNodeMarkup(curpos, null, newAttrs);
+			if (pos !== undefined) {
+				// updates that are incompatible with schema might happen (e.g. popup(title + content))
+				tr.setNodeMarkup(curpos, null, newAttrs);
+			}
 			pmChild.attrs = newAttrs; // because we want the modification NOW
 			var viewDom = Array.prototype.find.call(obj.contentDOM.childNodes, function(child, i) {
 				return child.pmViewDesc && child.pmViewDesc.node == pmChild;
