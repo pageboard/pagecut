@@ -2,6 +2,20 @@ module.exports = Blocks;
 
 function Blocks() {}
 
+Blocks.prototype.mutate = function(id, data) {
+	if (typeof id != "string") id = id.getAttribute('block-id');
+	if (!id) throw new Error("Cannot mutate without id");
+	var block = this.get(id);
+	if (!block) throw new Error("Block not found " + id);
+	block.data = Object.assign(block.data || {}, data);
+	var view = this.view;
+	var tr = view.state.tr;
+	this.domQuery(id, {all: true}).forEach(function(node) {
+		view.utils.refreshTr(tr, node, block);
+	});
+	view.dispatch(tr);
+};
+
 Blocks.prototype.create = function(type) {
 	var el = this.view.element(type);
 	var block = {
@@ -236,6 +250,10 @@ Blocks.prototype.clear = function(id) {
 
 Blocks.prototype.get = function(id) {
 	if (id == null) return;
+	if (typeof id != "string" && id.getAttribute) {
+		id = id.getAttribute('block-id');
+		if (!id) throw new Error("Node without block-id attribute");
+	}
 	return this.store[id];
 };
 
