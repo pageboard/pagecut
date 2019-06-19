@@ -140,7 +140,7 @@ function Editor(opts) {
 		if (node.type.name == "_") return "";
 		var obj = out[1];
 		if (typeof obj != "object") return;
-		delete obj['block-root_id'];
+		// delete obj['block-root_id'];
 	});
 
 	plugins.unshift(

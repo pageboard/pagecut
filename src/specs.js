@@ -398,6 +398,7 @@ function createContainerSpec(view, elt, obj) {
 		defaultAttrs.content = obj.contentDOM.getAttribute("block-content");
 	}
 	defaultAttrs._json = null;
+	defaultAttrs._id = null;
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 	var tag;
 	if (obj.dom == obj.contentDOM) {
@@ -410,6 +411,13 @@ function createContainerSpec(view, elt, obj) {
 		context: `${elt.name}//`, // FIXME context should be more precise but flagDom works bottom to top
 		getAttrs: function(dom) {
 			var attrs = attrsFrom(dom);
+			var root = dom.closest('[block-type]');
+			if (!root) {
+				console.error("container should be in a root with block-type");
+			} else {
+				attrs._id = root.getAttribute('block-id');
+				if (!attrs._id) console.error("container's root should have a block-id attribute");
+			}
 			var json = saveDomAttrs(dom);
 			if (json) attrs._json = json;
 			return attrs;
@@ -506,16 +514,16 @@ RootNodeView.prototype.deselectNode = function() {
 	this.dom.classList.remove('ProseMirror-selectednode');
 };
 
-function updateContainerId(node, id) {
-	if (node.forEach) node.forEach(function(child, offset, index) {
-		var tn = child.type.spec.typeName;
-		if (tn == "container") {
-			child.attrs.root_id = id;
-		} else if (tn == "wrap") {
-			updateContainerId(child, id);
-		}
-	});
-}
+// function updateContainerId(node, id) {
+// 	if (node.forEach) node.forEach(function(child, offset, index) {
+// 		var tn = child.type.spec.typeName;
+// 		if (tn == "container") {
+// 			child.attrs.root_id = id;
+// 		} else if (tn == "wrap") {
+// 			updateContainerId(child, id);
+// 		}
+// 	});
+// }
 
 RootNodeView.prototype.update = function(node, decorations) {
 	if (this.element.name != node.attrs.type) {
@@ -525,7 +533,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 	if (node.attrs.id != this.id) {
 		return false;
 	}
-	updateContainerId(node, this.id);
+	// updateContainerId(node, this.id);
 	var view = this.view;
 	var uBlock = view.blocks.fromAttrs(node.attrs);
 	var block;
@@ -658,7 +666,7 @@ function ContainerNodeView(node, view, getPos, decorations) {
 	this.view = view;
 	this.element = node.type.spec.element;
 	this.domModel = node.type.spec.domModel;
-	this.id = node.attrs.root_id;
+
 	setupView(this, node);
 	this.update(node);
 }
@@ -670,11 +678,11 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 		return false;
 	}
 	restoreDomAttrs(tryJSON(node.attrs._json), this.dom);
-	var id = node.attrs.root_id;
-	if (!id || id != this.id) {
-		return false;
-	}
-	var block = this.view.blocks.get(id);
+
+	if (!this.id) this.id = node.attrs._id;
+	else if (this.id != node.attrs._id) return false;
+
+	var block = this.view.blocks.get(this.id);
 	if (!block) {
 		console.warn("container has no root node id", this, node);
 		return false;
@@ -723,6 +731,9 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 		nobj.children.forEach(function(childObj, i) {
 			var pmChild = pmNode.child(i);
 			var newAttrs = Object.assign({}, pmChild.attrs, {_json: saveDomAttrs(childObj.dom)});
+			if (pmNode.attrs.id && pmChild.type.spec.typeName == "container") {
+				newAttrs._id = pmNode.attrs.id;
+			}
 			if (pos !== undefined) {
 				// updates that are incompatible with schema might happen (e.g. popup(title + content))
 				tr.setNodeMarkup(curpos, null, newAttrs);
