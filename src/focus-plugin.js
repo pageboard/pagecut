@@ -71,8 +71,10 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	if (prev == focus) {
 		return;
 	}
-	if (focus) attrs.focused = focus;
-	else delete attrs.focused;
+	if (node.type.defaultAttrs.focused === null) {
+		if (focus) attrs.focused = focus;
+		else attrs.focused = null;
+	}
 	if (node.type.spec.inline && node.type.spec.element.contents) {
 		var sel = this.editor.utils.selectTr(tr, pos);
 		tr.removeMark(sel.from, sel.to, node.type);

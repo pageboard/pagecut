@@ -40,12 +40,13 @@ InputPlugin.prototype.handleTextInput = function(view, from, to, text) {
 InputPlugin.prototype.transformPasted = function(pslice) {
 	var view = this.view;
 	view.utils.fragmentApply(pslice.content, function(node) {
-		delete node.attrs.focused;
+		var focusable = node.type.defaultAttrs.focused === null;
+		if (focusable) node.attrs.focused = null;
 		var id = node.attrs.id;
 		if (!id) return;
 		var block = view.blocks.get(id);
 		if (!block) return;
-		delete block.focused;
+		if (focusable) delete block.focused;
 	});
 	return pslice; // we did not change anything, just removed block focus
 //	return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
