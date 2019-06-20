@@ -38,7 +38,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 	var custom = false;
 	if (!e.ctrlKey) {
 		var dom = e.target;
-		while (!dom.pmViewDesc && !dom._pcAttrs) {
+		while (!dom.pmViewDesc && !dom._pcAttrs && !dom.hasAttribute('block-content')) {
 			dom = dom.parentNode;
 			custom = true;
 		}
