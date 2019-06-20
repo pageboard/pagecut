@@ -716,6 +716,7 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 	if (initial) obj._pcinit = true;
 	if (nobj.dom.nodeName != dom.nodeName) {
 		var emptyDom = nobj.dom.cloneNode(false);
+		var sameContentDOM = obj.contentDOM == obj.dom;
 		if (dom.parentNode) {
 			// workaround: nodeView cannot change their dom node
 			var desc = emptyDom.pmViewDesc = dom.pmViewDesc;
@@ -724,7 +725,7 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 		}
 		obj.dom = emptyDom;
 		while (dom.firstChild) emptyDom.appendChild(dom.firstChild);
-		obj.contentDOM = obj.dom;
+		if (sameContentDOM) obj.contentDOM = obj.dom;
 	}
 	if (nobj.children.length) {
 		var curpos = pos + 1;
