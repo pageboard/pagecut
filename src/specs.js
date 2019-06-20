@@ -704,7 +704,7 @@ ContainerNodeView.prototype.ignoreMutation = function(record) {
 };
 
 /*
-problem: nodes between obj.dom and obj.contentDOM (included) can be modified
+Nota Bene: nodes between obj.dom and obj.contentDOM (included) can be modified
 by front-end. So when applying a new rendered DOM, one only wants to apply
 diff between initial rendering and new rendering, leaving user modifications
 untouched.
