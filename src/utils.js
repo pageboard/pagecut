@@ -91,7 +91,7 @@ Utils.prototype.splitTr = function(tr) {
 
 Utils.prototype.insertTr = function(tr, dom, sel) {
 	if (!sel) sel = tr.selection;
-	if (!(dom instanceof Node)) {
+	if (!dom.ownerDocument) {
 		dom = this.view.render(dom);
 	}
 	var parent = sel.$from.parent;
@@ -292,7 +292,7 @@ Utils.prototype.selectTr = function(tr, obj, textSelection) {
 		if (obj instanceof Model.ResolvedPos) {
 			pos = obj.pos;
 		} else {
-			if (obj instanceof Node) {
+			if (obj.ownerDocument == this.view.dom.ownerDocument) {
 				if (obj == this.view.dom) {
 					return new State.AllSelection(tr.doc);
 				} else if (obj.pmViewDesc) {
