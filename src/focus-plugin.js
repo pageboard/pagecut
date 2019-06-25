@@ -1,4 +1,5 @@
-var State = require("prosemirror-state");
+const { NodeSelection, TextSelection } = require("prosemirror-state");
+const { Step, StepResult } = require('prosemirror-transform');
 
 module.exports = function(view, options) {
 	return new FocusPlugin(view, options);
@@ -34,7 +35,7 @@ FocusPlugin.prototype.appendTransaction = function(transactions, oldState, newSt
 
 FocusPlugin.prototype.click = function(view, pos, e) {
 	var tr = view.state.tr;
-	var sel = State.TextSelection.create(tr.doc, pos);
+	var sel = TextSelection.create(tr.doc, pos);
 	var custom = false;
 	if (!e.ctrlKey) {
 		var dom = e.target;
@@ -44,7 +45,7 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		}
 		if (custom && dom) {
 			pos = this.editor.utils.posFromDOM(dom);
-			sel = State.NodeSelection.create(tr.doc, pos);
+			sel = NodeSelection.create(tr.doc, pos);
 			tr.setSelection(sel);
 		} else {
 			custom = false;
@@ -65,8 +66,7 @@ FocusPlugin.prototype.action = function(tr, editorUpdate) {
 
 FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 	var isDoc = node.type.name == tr.doc.type.name;
-	// TODO create a new Step that updates doc.attrs
-	var attrs = isDoc ? node.attrs : Object.assign({}, node.attrs);
+	var attrs = Object.assign({}, node.attrs);
 	var prev = attrs.focused;
 	if (prev == focus) {
 		return;
@@ -80,7 +80,7 @@ FocusPlugin.prototype.focusRoot = function(tr, pos, node, focus) {
 		tr.removeMark(sel.from, sel.to, node.type);
 		tr.addMark(sel.from, sel.to, node.type.create(attrs));
 	} else if (isDoc) {
-		// prosemirror doesn't transform doc, we just changed doc.attrs directly
+		tr.step(new SetDocAttr('focused', attrs.focused));
 	} else {
 		tr.setNodeMarkup(pos, null, attrs);
 	}
@@ -152,3 +152,35 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 	return tr.setMeta('focus', true);
 };
 
+
+
+class SetDocAttr extends Step {
+	constructor(key, value, stepType = 'SetDocAttr') {
+		super();
+		this.stepType = stepType;
+		this.key = key;
+		this.value = value;
+	}
+	apply(doc) {
+		this.prevValue = doc.attrs[this.key];
+		if (doc.attrs == doc.type.defaultAttrs) doc.attrs = Object.assign({}, doc.attrs);
+		doc.attrs[this.key] = this.value;
+		return StepResult.ok(doc);
+	}
+	invert() {
+		return new SetDocAttr(this.key, this.prevValue, 'revertSetDocAttr');
+	}
+	map() {
+		return null;
+	}
+	toJSON() {
+		return {
+			stepType: this.stepType,
+			key: this.key,
+			value: this.value,
+		};
+	}
+	static fromJSON(json) {
+		return new SetDocAttr(json.key, json.value, json.stepType);
+	}
+}
