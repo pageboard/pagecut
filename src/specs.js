@@ -404,7 +404,7 @@ function createContainerSpec(view, elt, obj) {
 	if (obj.dom == obj.contentDOM) {
 		tag = `${obj.dom.nodeName.toLowerCase()}[block-content="${defaultAttrs.content}"]`;
 	} else {
-		tag = domSelector(obj.dom) + `[block-content="${defaultAttrs.content}"]`;
+		tag = domSelector(obj.dom) + `:not([block-content])`;
 	}
 	var parseRule = {
 		tag: tag + ':not([block-type])',
