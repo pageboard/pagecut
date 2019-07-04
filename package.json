@@ -66,6 +66,6 @@
   "dependencies": {
     "postinstall": "^0.4.2",
     "prosemirror-menu": "^1.0.5",
-    "prosemirror-view": "^1.9.10"
+    "prosemirror-view": "^1.9.11"
   }
 }
