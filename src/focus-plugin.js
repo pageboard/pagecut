@@ -111,7 +111,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 			focus: "last"
 		});
 		var parent, cur;
-		for (var i=1; i < parents.length; i++) {
+		for (var i = 1; i < parents.length; i++) {
 			parent = parents[i];
 			cur = parent.root;
 			if (!cur.level) continue;
