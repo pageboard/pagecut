@@ -108,10 +108,10 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		var atStart = !sel.node && sel.$from.parentOffset == 0;
 		var insertPos;
 		if (atStart) {
-			insertPos = this.insertPoint(tr.doc, from+1, node.type, -1, true);
+			insertPos = this.insertPoint(tr, from+1, node.type, -1, true);
 		}
 		if (insertPos == null) {
-			insertPos = this.insertPoint(tr.doc, to-1, node.type, 1, true);
+			insertPos = this.insertPoint(tr, to-1, node.type, 1, true);
 		}
 		if (insertPos != null) {
 			tr.insert(insertPos, node);
@@ -558,10 +558,11 @@ function checkContext(list, type, $pos, d) {
 	});
 }
 
-Utils.prototype.insertPoint = function(doc, from, nodeType, dir, jump) {
+Utils.prototype.insertPoint = function(tr, from, nodeType, dir, jump) {
 	from = from + dir;
 	var depth;
 	var $pos;
+	var doc = tr.doc;
 	var docSize = doc.content.size;
 	while (from >= 0 && from <= docSize) {
 		$pos = doc.resolve(from);
@@ -584,7 +585,7 @@ Utils.prototype.move = function(tr, dir) {
 	if (!node) return;
 	if (node.type.name == "_") return;
 	tr.delete(sel.from, sel.to);
-	var npos = this.insertPoint(tr.doc, sel.from, node.type, dir, true);
+	var npos = this.insertPoint(tr, sel.from, node.type, dir, true);
 	if (npos == null) return;
 	node = node.cut(0);
 	tr.insert(npos, node);
