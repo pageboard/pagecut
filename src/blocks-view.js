@@ -40,17 +40,17 @@ Blocks.prototype.render = function(block, opts) {
 };
 
 Blocks.prototype.mount = function(block, blocks, opts) {
-	var contents = block.content;
+	var type = opts.type || block.type;
+	var el = this.view.element(type);
+	el.contents.normalize(block);
 	var copy = this.copy(block);
-	var content, view = this.view;
-	if (contents) for (var name in contents) {
-		content = contents[name];
+	var doc = this.view.doc;
+
+	el.contents.each(block, function(content, def) {
 		if (!(content instanceof Node)) {
-			copy.content[name] = htmlToFrag(content, view.doc);
+			el.contents.set(copy, def.id, htmlToFrag(content, doc));
 		}
-	}
-	var type = opts.type || copy.type;
-	var el = view.element(type);
+	});
 	if (!el) {
 		console.error("Cannot find element for block type", type);
 		return copy;
@@ -85,24 +85,18 @@ Blocks.prototype.copy = function(block) {
 Blocks.prototype.merge = function(dom, block, overrideType) {
 	if (dom.nodeType != Node.ELEMENT_NODE) return;
 	var el = this.view.element(overrideType || block.type);
-	var contents = block.content;
-	if (!contents) return;
-	if (!el.contents) return;
 	if (el.inplace) return;
-	if (typeof el.contents.spec != "string") Object.keys(el.contents).forEach(function(name) {
-		var blockContent = dom.getAttribute('block-content');
+	if (!block.content) return;
+	el.contents.each(block, function(content, def) {
+		if (!content) return;
 		var node;
-		if (blockContent) {
-			if (name == blockContent) node = dom;
-		} else if (el.inline) {
+		if (!def.id || def.id == dom.getAttribute('block-content') || el.inline) {
 			node = dom;
 		} else {
-			node = dom.querySelector(`[block-content="${name}"]`);
+			node = dom.querySelector(`[block-content="${def.id}"]`);
 		}
 		if (!node) return;
 		if (node.nodeName == "TEMPLATE") node = node.content;
-		var content = contents[name];
-		if (!content) return;
 		if (typeof content == "string") {
 			content = node.ownerDocument.createTextNode(content);
 		} else if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
@@ -114,9 +108,6 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 		node.textContent = "";
 		node.appendChild(content);
 	});
-	else if (Object.keys(block.content).length) {
-		console.warn("Cannot mount block", block);
-	}
 };
 
 Blocks.prototype.from = function(block, blocks, opts) {

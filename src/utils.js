@@ -46,8 +46,8 @@ Utils.prototype.setDom = function(dom) {
 		console.warn("unsupported case: setting a block dom node that has no content");
 		return;
 	}
-	var content = this.view.dom.getAttribute('block-content') || Object.keys(block.content)[0];
-	block.content[content] = this.view.dom;
+	var el = this.view.element(block.type);
+	el.contents.set(block, this.view.dom);
 };
 
 Utils.prototype.getDom = function() {
@@ -443,12 +443,9 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 			}
 			if (type == "root") {
 				var el = node.type.spec.element;
-				if (!el.inline && el.contents && !(el.contents.spec && typeof el.contents.spec == "string")) {
-					var list = Object.keys(el.contents);
-					if (list.length == 1) {
-						if (!obj.container) obj.container = obj.root || {};
-						obj.container.name = list[0];
-					}
+				if (!el.inline && el.contents.firstId) {
+					if (!obj.container) obj.container = obj.root || {};
+					obj.container.name = el.contents.firstId;
 				}
 			}
 		}

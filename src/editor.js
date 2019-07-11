@@ -108,11 +108,7 @@ function Editor(opts) {
 	var views = {};
 
 	var elements = this.elements;
-	var elemsList = Object.keys(elements).map(function(key) {
-		var el = elements[key];
-		if (!el.name) el.name = key;
-		return el;
-	}).sort(function(a, b) {
+	var elemsList = Object.values(elements).sort(function(a, b) {
 		return (a.priority || 0) - (b.priority || 0);
 	});
 
@@ -206,9 +202,6 @@ function Editor(opts) {
 		},
 		nodeViews: views
 	});
-
-	this.state.doc.attrs.id = this.dom.getAttribute('block-id');
-	this.state.doc.attrs.type = this.dom.getAttribute('block-type');
 }
 
 Object.assign(Editor.prototype, Viewer.prototype, View.EditorView);

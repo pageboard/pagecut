@@ -17,14 +17,7 @@ Blocks.prototype.mutate = function(id, data) {
 };
 
 Blocks.prototype.create = function(type) {
-	var el = this.view.element(type);
-	var block = {
-		type: type,
-		data: {},
-		content: {}
-	};
-	if (el.standalone) block.standalone = true;
-	return block;
+	return this.view.element(type).create();
 };
 
 Blocks.prototype.fromAttrs = function(attrs) {
@@ -85,13 +78,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 		parent.blocks = {};
 	}
 
-	var contentKeys = (!el.contents || typeof el.contents.spec == "string")
-		? null : Object.keys(el.contents);
-
-	if (!contentKeys) {
-		// nothing to serialize here
-	} else contentKeys.forEach(function(name) {
-		var content = parent.content && parent.content[name];
+	el.contents.each(parent, (content, def) => {
 		if (!content || typeof content == "string") {
 			return;
 		}
@@ -101,11 +88,6 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 		}
 		content = content.cloneNode(true);
 		var node, div, id, type, block, parentNode;
-		if (content.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
-			var frag = content.ownerDocument.createElement('div');
-			frag.appendChild(content);
-			content = frag;
-		}
 		var list = [], blockEl;
 		while ((node = content.querySelector('[block-type]'))) {
 			type = node.getAttribute('block-type');
@@ -134,7 +116,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 			}
 
 			if (!id || this.serializeTo(block, blockEl, ancestor)) {
-				if (el.contents[name].virtual) {
+				if (def.virtual) {
 					block.virtual = true;
 				}
 				if (id && type == block.type) type = null;
@@ -151,32 +133,12 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 				item.node.setAttribute('block-type', item.type);
 			}
 		});
-		parent.content[name] = nodeToHtml(content);
-	}, this);
+		if (def.virtual) el.contents.clear(parent, def.id);
+		else el.contents.set(parent, def.id, nodeToHtml(content));
+	});
 
-	if (parent.content && contentKeys) {
-		Object.keys(parent.content).forEach(function(name) {
-			if (!el.contents[name] || el.contents[name].virtual) {
-				delete parent.content[name];
-			}
-		});
-		if (Object.keys(parent.content).length == 0) {
-			delete parent.content;
-		}
-	}
-
-	if (el.inline && contentKeys && contentKeys.length) {
-		var hasContent = false;
-		if (parent.content) for (var name in parent.content) {
-			if (parent.content[name]) {
-				hasContent = true;
-				break;
-			}
-		}
-		if (!hasContent) {
-			// TODO find the meaning of this
-			return;
-		}
+	if (el.inline && !el.leaf) {
+		if (!el.contents.get(parent)) return; // TODO find the meaning of this
 	}
 	if (parent == ancestor) {
 		parent.children = Object.keys(parent.blocks).map(function(kid) {
@@ -188,51 +150,32 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 };
 
 function reassignContent(block, elt, dom) {
-	if (elt.contents == null) return;
-	var rootContentName = dom.getAttribute('block-content');
-	var content = block.content;
-	if (!content) {
+	if (!block.content) {
 		if (!block.standalone) {
 			console.warn("block without content", block, dom);
 		}
-		return;
-	}
-	var once = !rootContentName && elt.inline;
-	var times = 0;
-	if (typeof elt.contents != "object") {
-		console.warn("FIXME");
-		return;
-	}
-	Object.keys(elt.contents).forEach(function(name) {
-		if (rootContentName == name || once) {
-			times++;
-			if (once && times > 1) {
-				console.error("inline content found too many times", times, name, elt, block, dom);
-			} else {
-				block.content[name] = dom;
-			}
+	} else elt.contents.each(block, function(content, def) {
+		if (!def.id || def.id == dom.getAttribute('block-content') || elt.inline) {
+			elt.contents.set(block, def.id, dom);
 		} else {
-			var node = dom.querySelector(`[block-content="${name}"]`);
+			var node = dom.querySelector(`[block-content="${def.id}"]`);
 			if (node && node.closest('[block-id]') == dom) {
-				content[name] = node;
-			} else if (content[name]) {
-				console.error("block has content but it was not found", name, elt, block, dom);
+				elt.contents.set(block, def.id, node);
+			} else {
+				console.error(`block.content[${def.id}] not found`, block, dom);
 			}
 		}
 	});
 }
 
 Blocks.prototype.to = function() {
-	var domFragment = this.view.utils.getDom();
-
-	var id = this.view.dom.getAttribute('block-id');
-	var type = this.view.dom.getAttribute('block-type');
-	var contentName = this.view.dom.getAttribute('block-content') || 'fragment';
-
-	var block = this.copy(this.store[id]);
-	if (!block.content) block.content = {};
-	block.content[contentName] = domFragment;
-	return this.serializeTo(block, type);
+	var view = this.view;
+	var id = view.dom.getAttribute('block-id');
+	var contentName = view.dom.getAttribute("block-content");
+	var copy = this.copy(this.store[id]);
+	var el = view.element(copy.type);
+	el.contents.set(copy, contentName, view.utils.getDom());
+	return this.serializeTo(copy, view.dom.getAttribute('block-type'));
 };
 
 

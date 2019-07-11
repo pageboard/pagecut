@@ -1,17 +1,20 @@
 module.exports = Viewer;
 
-var BlocksView = require('./blocks-view');
+const BlocksView = require('./blocks-view');
+const Element = require('./element');
 
 function Viewer(opts) {
 	if (!opts) opts = {};
 	this.blocks = new BlocksView(this, opts);
 
 	this.doc = opts.document || document.cloneNode();
-	this.elements = opts.elements || {};
-
-	// TODO remove this probably useless part
-	var map = opts.elements || {};
-
+	var elts = this.elements = opts.elements || {};
+	var el;
+	for (var name in elts) {
+		el = elts[name];
+		el.name = name;
+		this.setElement(el);
+	}
 }
 
 Viewer.prototype.from = function(block, blocks, opts) {
@@ -23,7 +26,15 @@ Viewer.prototype.from = function(block, blocks, opts) {
 
 Viewer.prototype.element = function(type) {
 	if (!type) return;
+
+	var el = this.elements[type];
+	if (!(el instanceof Element)) this.setElement(el);
 	return this.elements[type];
+};
+
+Viewer.prototype.setElement = function(el) {
+	if (!el.name) throw new Error("Element must have a name");
+	this.elements[el.name] = new Element(el);
 };
 
 Viewer.prototype.render = function(block, opts) {

@@ -14,9 +14,6 @@ exports.define = define;
 
 function define(view, elt, schema, views) {
 	if (!view.tags) view.tags = {};
-	if (typeof elt.contents == "string") elt.contents = {
-		spec: elt.contents
-	};
 	if (elt.name == "text") {
 		schema.nodes = schema.nodes.remove(elt.name);
 		schema.nodes = schema.nodes.addToStart(elt.name, elt);
@@ -31,6 +28,26 @@ function define(view, elt, schema, views) {
 	if (dom.parentNode) dom = dom.cloneNode(true);
 	var index = 0;
 
+	var contents = elt.contents;
+	var contentsLen = contents.list.length;
+	var domContents = dom.querySelectorAll('[block-content]');
+
+	if (domContents.length > 1) {
+		if (contentsLen != domContents.length) {
+			console.error(`${elt.name} has ${contentsLen} contents but ${domContents.length} block-content`);
+			return;
+		}
+	} else if (domContents.length == 1) {
+		var contentName = domContents[0].getAttribute('block-content');
+		if (contents.unnamed && contentName) {
+			console.error(`${elt.name}.contents.id = ${contentName} is missing`);
+			return;
+		}
+	} else if (contentsLen == 1 && dom.getAttribute('block-content') != contents.firstId) {
+		console.error(`${elt.name}.html should contain a block-content="${contents.firstId}"`);
+		return;
+	}
+
 	flagDom(elt, dom, function(type, obj) {
 		var spec;
 		if (type == "root") {
@@ -43,58 +60,19 @@ function define(view, elt, schema, views) {
 		} else {
 			throw new Error("Missing type in flagDom iterator", type, obj);
 		}
-		var contents = elt.contents;
-
 		if (obj.children && obj.children.length) {
 			// this type of node has content that is wrap or container type nodes
 			spec.content = obj.children.map(function(child) {
 				if (!child.name) console.warn(obj, "has no name for child", child);
 				return child.name;
 			}).join(" ");
-		} else if (contents) {
-			var contentName = (obj.contentDOM || obj.dom).getAttribute('block-content');
-			if (contents.spec == null || typeof contents.spec != "string") {
-				if (!contentName) {
-					var contentKeys = Object.keys(contents);
-					if (contentKeys.length == 1) {
-						contentName = contentKeys[0];
-					} else if (contentKeys.length > 1) {
-						console.warn(`element ${elt.name} has no sane default block-content`, contents, obj);
-						return;
-					}
-				}
-				if (contentName) {
-					var contentSpec = contents[contentName];
-					if (!contentSpec) {
-						console.warn(`element ${elt.name} has no matching contents`, contentName);
-						return;
-					} else {
-						spec.contentName = contentName;
-						if (typeof contentSpec == "string") {
-							contentSpec = {spec: contentSpec};
-						} else if (!contentSpec.spec) {
-							console.warn(`element ${elt.name} has bad definition for content ${contentName}`);
-							return;
-						}
-						spec.content = contentSpec.spec;
-						if (contentSpec.marks) {
-							spec.marks = contentSpec.marks;
-						}
-					}
-				}
-			} else {
-				if (!elt.inplace) {
-					console.error("contents can be a string spec only for inplace element", elt);
-				} else {
-					if (contents.spec) {
-						spec.content = contents.spec;
-					}
-					if (contents.marks) {
-						spec.marks = contents.marks;
-					}
-				}
-			}
+		} else if (type != "wrap" && !elt.leaf) {
+			var def = contents.find(obj.contentDOM.getAttribute('block-content'));
+			if (def.nodes) spec.content = def.nodes;
+			if (def.marks) spec.marks = def.marks;
+			spec.contentName = def.id || "";
 		}
+
 		if (!obj.name) {
 			obj.name = `${elt.name}_${type}_${spec.contentName || index++}`;
 		}
@@ -113,7 +91,7 @@ function define(view, elt, schema, views) {
 
 		if (type == "root") {
 			var existingName = elt.replaces || elt.name;
-			if (elt.inline && elt.contents) {
+			if (elt.inline && spec.content) {
 				if (schema.marks.get(existingName)) {
 					schema.marks = schema.marks.remove(existingName);
 				}
@@ -123,7 +101,7 @@ function define(view, elt, schema, views) {
 				}
 			}
 		}
-		if (spec.inline && elt.contents) {
+		if (spec.inline && spec.content) {
 			schema.marks = schema.marks.addToStart(obj.name, spec);
 		} else {
 			schema.nodes = schema.nodes.addToStart(obj.name, spec);
@@ -145,8 +123,8 @@ function getImmediateContents(root, list) {
 }
 
 function findContent(elt, dom) {
-	if (elt.contents == null) return;
-	if (elt.inline || typeof elt.contents.spec == "string") return dom;
+	if (elt.leaf) return;
+	if (elt.inline || elt.contents.unnamed) return dom;
 	var list = [];
 	getImmediateContents(dom, list);
 	if (!list.length) return;
@@ -207,9 +185,8 @@ function toDOMOutputSpec(obj, node, inplace) {
 	var dom = obj.contentDOM || obj.dom;
 	var attrs = Object.assign(attrsTo(node.attrs), tryJSON(node.attrs._json), domAttrsMap(obj.dom));
 	if (!inplace) delete attrs['block-data'];
+	delete attrs['block-focused'];
 	var contentName = node.type.spec.contentName;
-	var rootContainer = contentName && (!obj.contentDOM || obj.dom == obj.contentDOM);
-	if (!rootContainer) delete attrs['block-content'];
 	while (dom) {
 		if (!obj.contentDOM || node instanceof Model.Mark) return [dom.nodeName, attrs];
 		if (dom != obj.dom) {
@@ -219,7 +196,7 @@ function toDOMOutputSpec(obj, node, inplace) {
 			}, out];
 		} else {
 			out = [dom.nodeName, attrs, out];
-			if (rootContainer) out[1]['block-content'] = contentName;
+			if (contentName) out[1]['block-content'] = contentName;
 			break;
 		}
 		dom = dom.parentNode;
@@ -239,7 +216,7 @@ function createRootSpec(view, elt, obj) {
 	};
 
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
-	if (elt.inline && elt.contents) obj.contentDOM = obj.dom;
+	if (elt.inline && elt.contents.list.length == 1) obj.contentDOM = obj.dom;
 
 	var parseRule = {
 		priority: 1000 - (elt.priority || 0),
@@ -441,15 +418,15 @@ function createContainerSpec(view, elt, obj) {
 }
 
 function setupView(me, node) {
-	me.dom = me.domModel.cloneNode(true);
-	me.contentDOM = findContent(me.element, me.dom);
-
-	me.contentName = node.type.spec.contentName;
-	var contentSpec;
-	if (me.contentName) {
-		contentSpec = me.element.contents[me.contentName];
-		me.virtualContent = contentSpec && contentSpec.virtual;
+	if (me.view && node.type.name == me.view.state.doc.type.name) {
+		me.dom = me.contentDOM = me.view.dom;
+	} else {
+		me.dom = me.domModel.cloneNode(true);
+		me.contentDOM = findContent(me.element, me.dom);
 	}
+	me.contentName = node.type.spec.contentName;
+	var def = me.element.contents.find(me.contentName);
+	me.virtualContent = def && def.virtual;
 
 	if (!me.contentDOM || me.contentDOM == me.dom) return;
 	if (['span'].indexOf(me.contentDOM.nodeName.toLowerCase()) < 0) return;
@@ -477,6 +454,10 @@ function RootNodeView(node, view, getPos, decorations) {
 	this.domModel = node.type.spec.domModel;
 	this.getPos = typeof getPos == "function" ? getPos : null;
 	this.id = node.attrs.id;
+	if (!this.id && node.type.name == view.state.doc.type.name) {
+		this.id = node.attrs.id = view.dom.getAttribute('block-id');
+	}
+
 	var block;
 	if (this.id) {
 		if (this.element.inplace) {
@@ -591,7 +572,7 @@ RootNodeView.prototype.update = function(node, decorations) {
 	}
 
 	var cname = node.type.spec.contentName;
-	if (cname) {
+	if (cname != null) {
 		var cdom = this.contentDOM;
 		if (!block.content) block.content = {};
 		if (block.standalone && oldBlock) {
