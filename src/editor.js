@@ -22,8 +22,12 @@ var InputPlugin = require("./input-plugin");
 var Utils = require("./utils");
 var Specs = require("./specs");
 var BlocksEdit = require('./blocks-edit');
+const SetDocAttr = require("./SetDocAttr");
 
 var Viewer = global.Pagecut && global.Pagecut.Viewer || require("./viewer");
+Transform.Transform.prototype.docAttr = function(key, value) {
+	return this.step(new SetDocAttr(key, value));
+};
 
 Editor.prototype = Object.create(View.EditorView.prototype);
 Object.assign(Editor.prototype, Viewer.prototype);
