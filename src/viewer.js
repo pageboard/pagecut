@@ -52,7 +52,7 @@ Viewer.prototype.render = function(block, opts) {
 	var el = this.element(type);
 	dom.setAttribute('block-type', type);
 	if (!el.inplace) {
-		if (block.id == null && this.blocks.set) this.blocks.set(block);
+		if (block.id == null && this.blocks.set && opts.genId !== false) this.blocks.set(block);
 		if (block.id != null) dom.setAttribute('block-id', block.id);
 		else dom.removeAttribute('block-id');
 	} else {

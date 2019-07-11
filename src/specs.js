@@ -23,7 +23,7 @@ function define(view, elt, schema, views) {
 		return;
 	}
 	if (!elt.render) return; // some elements are not meant to be rendered
-	var dom = view.render(view.blocks.create(elt.name), {merge: false});
+	var dom = view.render(view.blocks.create(elt.name), {merge: false, genId: false});
 	if (!dom || dom.nodeType != Node.ELEMENT_NODE) {
 		console.error(`ignoring ${elt.name} element - render does not return a DOM Node`);
 		return;
