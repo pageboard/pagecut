@@ -1,5 +1,5 @@
-var State = require("prosemirror-state");
-var Model = require("prosemirror-model");
+const State = require("prosemirror-state");
+const Model = require("prosemirror-model");
 
 module.exports = function(view, options) {
 	return {

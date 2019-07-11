@@ -1,8 +1,8 @@
-var commonAncestor = require('@kapouer/common-ancestor');
-var Model = require('prosemirror-model');
-var DiffDOM = require('diff-dom');
+const commonAncestor = require('@kapouer/common-ancestor');
+const Model = require('prosemirror-model');
+const DiffDOM = require('diff-dom');
 
-var differ = new DiffDOM({
+const differ = new DiffDOM({
 	preDiffApply: function(info) {
 		if (/Attribute$/.test(info.diff.action) && info.diff.name == "block-focused") {
 			return true;

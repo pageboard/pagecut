@@ -1,30 +1,32 @@
-var State = require("prosemirror-state");
-var Transform = require("prosemirror-transform");
-var View = require("prosemirror-view");
-var Model = require("prosemirror-model");
-var Input = require("prosemirror-inputrules");
-var keymap = require("prosemirror-keymap").keymap;
-var Commands = require("prosemirror-commands");
-var Setup = require("prosemirror-example-setup");
-var DropCursor = require("prosemirror-dropcursor").dropCursor;
-var History = require("prosemirror-history");
-var OrderedMap = require("orderedmap");
+const State = require("prosemirror-state");
+const Transform = require("prosemirror-transform");
+const View = require("prosemirror-view");
+const Model = require("prosemirror-model");
+const Input = require("prosemirror-inputrules");
+const keymap = require("prosemirror-keymap").keymap;
+const Commands = require("prosemirror-commands");
+const Setup = require("prosemirror-example-setup");
+const DropCursor = require("prosemirror-dropcursor").dropCursor;
+const History = require("prosemirror-history");
+const OrderedMap = require("orderedmap");
 
-var baseSchema = require("prosemirror-schema-basic");
-var listSchema = require("prosemirror-schema-list");
+const baseSchema = require("prosemirror-schema-basic");
+const listSchema = require("prosemirror-schema-list");
 // var tableSchema = require("prosemirror-schema-table");
 
-var IdPlugin = require("./id-plugin");
-var FocusPlugin = require("./focus-plugin");
-var KeymapPlugin = require("./keymap-plugin");
-var InputPlugin = require("./input-plugin");
+const IdPlugin = require("./id-plugin");
+const FocusPlugin = require("./focus-plugin");
+const KeymapPlugin = require("./keymap-plugin");
+const InputPlugin = require("./input-plugin");
 
-var Utils = require("./utils");
-var Specs = require("./specs");
-var BlocksEdit = require('./blocks-edit');
+const Utils = require("./utils");
+const Specs = require("./specs");
+const BlocksEdit = require('./blocks-edit');
 const SetDocAttr = require("./SetDocAttr");
 
-var Viewer = global.Pagecut && global.Pagecut.Viewer || require("./viewer");
+
+const Viewer = global.Pagecut && global.Pagecut.Viewer || require("./viewer");
+
 Transform.Transform.prototype.docAttr = function(key, value) {
 	return this.step(new SetDocAttr(key, value));
 };

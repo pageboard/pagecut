@@ -1,4 +1,4 @@
-var Menu = require("prosemirror-menu");
+const Menu = require("prosemirror-menu");
 
 module.exports = Menubar;
 

@@ -1,7 +1,7 @@
-var State = require("prosemirror-state");
-var Model = require("prosemirror-model");
-var Commands = require("prosemirror-commands");
-var View = require("prosemirror-view");
+const State = require("prosemirror-state");
+const Model = require("prosemirror-model");
+const Commands = require("prosemirror-commands");
+const View = require("prosemirror-view");
 
 module.exports = Utils;
 
