@@ -879,7 +879,7 @@ function domAttrsMap(dom) {
 function attrsTo(attrs) {
 	var domAttrs = {};
 	for (var k in attrs) {
-		if (!k.startsWith('_') && attrs[k] != null) domAttrs['block-' + k] = attrs[k];
+		if (!k.startsWith('_') && attrs[k] != null && attrs[k] != '{}') domAttrs['block-' + k] = attrs[k];
 	}
 	return domAttrs;
 }

@@ -70,10 +70,14 @@ Viewer.prototype.render = function(block, opts) {
 		dom.removeAttribute('block-id');
 		if (block.data && Object.keys(block.data).length) {
 			dom.setAttribute('block-data', JSON.stringify(block.data));
+		} else {
+			dom.removeAttribute('block-data');
 		}
 	}
 	if (block.expr && Object.keys(block.expr).length) {
 		dom.setAttribute('block-expr', JSON.stringify(block.expr));
+	} else {
+		dom.removeAttribute('block-expr');
 	}
 
 	if (block.focused) dom.setAttribute('block-focused', block.focused);
