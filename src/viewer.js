@@ -12,16 +12,6 @@ function Viewer(opts) {
 	// TODO remove this probably useless part
 	var map = opts.elements || {};
 
-	if (!map.fragment) map.fragment = {
-		contents: {
-			fragment: {
-				spec: "block*"
-			}
-		},
-		render: function renderFragment(block, opts) {
-			return block.content.fragment || opts.$doc.createElement("div");
-		}
-	};
 }
 
 Viewer.prototype.from = function(block, blocks, opts) {
