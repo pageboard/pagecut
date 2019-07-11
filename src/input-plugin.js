@@ -43,10 +43,11 @@ InputPlugin.prototype.transformPasted = function(pslice) {
 		var focusable = node.type.defaultAttrs.focused === null;
 		if (focusable) node.attrs.focused = null;
 		var id = node.attrs.id;
-		if (!id) return;
+		if (!id) return; // keep id so standalones children can keep their id
 		var block = view.blocks.get(id);
-		if (!block) return;
-		if (focusable) delete block.focused;
+		if (block && focusable) {
+			delete block.focused;
+		}
 	});
 	return pslice; // we did not change anything, just removed block focus
 //	return new Model.Slice(frag, pslice.openStart, pslice.openEnd);
