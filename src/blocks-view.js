@@ -17,8 +17,7 @@ function htmlToFrag(str, doc) {
 
 function Blocks(view, opts) {
 	this.view = view;
-	this.store = {};
-	this.initial = {};
+	this.store = opts.store || {};
 	if (opts.genId) this.genId = opts.genId;
 }
 
@@ -112,7 +111,7 @@ Blocks.prototype.merge = function(dom, block, overrideType) {
 
 Blocks.prototype.from = function(block, blocks, opts) {
 	this.rootId = block.id;
-	if (!blocks) blocks = this.initial = {};
+	if (!blocks) blocks = {};
 	return this.renderFrom(block, blocks, this.store, opts);
 };
 
