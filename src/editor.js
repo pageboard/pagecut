@@ -2,7 +2,6 @@ const State = require("prosemirror-state");
 const Transform = require("prosemirror-transform");
 const View = require("prosemirror-view");
 const Model = require("prosemirror-model");
-const Input = require("prosemirror-inputrules");
 const keymap = require("prosemirror-keymap").keymap;
 const Commands = require("prosemirror-commands");
 const Setup = require("prosemirror-example-setup");
