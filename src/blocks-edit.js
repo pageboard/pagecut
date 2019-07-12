@@ -150,7 +150,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 };
 
 function reassignContent(block, elt, dom) {
-	if (!block.content) {
+	if (!block.content && !elt.leaf) {
 		if (!block.standalone) {
 			console.warn("block without content", block, dom);
 		}
