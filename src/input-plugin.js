@@ -57,7 +57,7 @@ InputPlugin.prototype.clipboardTextParser = function(str, $context) {
 	if (str instanceof Model.Slice) {
 		return str;
 	}
-	var dom = HTMLReader.read(str);
+	var dom = this.view.utils.parseHTML(str);
 	return this.view.someProp("clipboardParser").parseSlice(dom, {
 		preserveWhitespace: true,
 		context: $context
@@ -90,39 +90,4 @@ InputPlugin.prototype.cbParseSlice = function(view, dom, opts) {
 	return Model.DOMParser.prototype.parseSlice.call(view.clipboardParser, dom, opts);
 };
 
-var HTMLReader = {
-	doc: document.cloneNode(false),
-	wrapMap: {
-		thead: ["table"],
-		colgroup: ["table"],
-		col: ["table", "colgroup"],
-		tr: ["table", "tbody"],
-		td: ["table", "tbody", "tr"],
-		th: ["table", "tbody", "tr"]
-	},
-	read: function(html) {
-		var metas = /(\s*<meta [^>]*>)*/.exec(html);
-		if (metas) {
-			html = html.slice(metas[0].length);
-		}
-		var firstTag = /(?:<meta [^>]*>)*<([a-z][^>\s]+)/i.exec(html);
-		var elt = HTMLReader.doc.createElement("div");
-		var wrap;
-		var depth = 0;
-
-		if ((wrap = firstTag && HTMLReader.wrapMap[firstTag[1].toLowerCase()])) {
-			html = wrap.map(function(n) {
-				return "<" + n + ">";
-			}).join("") + html + wrap.map(function(n) {
-				return "</" + n + ">";
-			}).reverse().join("");
-			depth = wrap.length;
-		}
-		elt.innerHTML = html;
-		for (var i = 0; i < depth; i++) {
-			elt = elt.firstChild;
-		}
-		return elt;
-	}
-};
 

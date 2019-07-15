@@ -646,3 +646,58 @@ function fragmentApply(frag, fun) {
 	return Model.Fragment.fromArray(list);
 }
 
+Utils.prototype.serializeHTML = function(dom, children) {
+	var html;
+	if (dom instanceof Node) {
+		if (children) {
+			html = "";
+			var child;
+			for (var i=0; i < dom.childNodes.length; i++) {
+				child = dom.childNodes[i];
+				if (child.nodeType == Node.TEXT_NODE) html += child.nodeValue;
+				else html += child.outerHTML;
+			}
+		} else {
+			html = dom.outerHTML;
+		}
+	} else {
+		html = dom;
+	}
+	return html;
+};
+
+Utils.wrapMap = {
+	thead: ["table"],
+	colgroup: ["table"],
+	col: ["table", "colgroup"],
+	tr: ["table", "tbody"],
+	td: ["table", "tbody", "tr"],
+	th: ["table", "tbody", "tr"]
+};
+
+Utils.offdoc = document.cloneNode(false);
+
+Utils.prototype.parseHTML = function(html) {
+	var metas = /(\s*<meta [^>]*>)*/.exec(html);
+	if (metas) {
+		html = html.slice(metas[0].length);
+	}
+	var firstTag = /(?:<meta [^>]*>)*<([a-z][^>\s]+)/i.exec(html);
+	var elt = Utils.offdoc.createElement("div");
+	var wrap;
+	var depth = 0;
+
+	if ((wrap = firstTag && Utils.wrapMap[firstTag[1].toLowerCase()])) {
+		html = wrap.map(function(n) {
+			return "<" + n + ">";
+		}).join("") + html + wrap.map(function(n) {
+			return "</" + n + ">";
+		}).reverse().join("");
+		depth = wrap.length;
+	}
+	elt.innerHTML = html;
+	for (var i = 0; i < depth; i++) {
+		elt = elt.firstChild;
+	}
+	return elt;
+};

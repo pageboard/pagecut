@@ -50,23 +50,6 @@ Blocks.prototype.toAttrs = function(block) {
 	return attrs;
 };
 
-
-function nodeToHtml(node) {
-	var html;
-	if (node instanceof Node) {
-		html = "";
-		var child;
-		for (var i=0; i < node.childNodes.length; i++) {
-			child = node.childNodes[i];
-			if (child.nodeType == Node.TEXT_NODE) html += child.nodeValue;
-			else html += child.outerHTML;
-		}
-	} else {
-		html = node;
-	}
-	return html;
-}
-
 Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 	if (!el || typeof el == "string") el = this.view.element(el || parent.type);
 	if (ancestor && parent.id) ancestor.blocks[parent.id] = parent;
@@ -134,7 +117,7 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 			}
 		});
 		if (def.virtual) el.contents.clear(parent, def.id);
-		else el.contents.set(parent, def.id, nodeToHtml(content));
+		else el.contents.set(parent, def.id, this.view.utils.serializeHTML(content, true));
 	});
 
 	if (el.inline && !el.leaf) {
