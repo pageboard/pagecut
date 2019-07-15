@@ -623,7 +623,7 @@ function fragmentApply(frag, fun) {
 Utils.prototype.serializeHTML = function(dom, children) {
 	var html;
 	if (dom instanceof Node) {
-		if (children) {
+		if (children || dom instanceof DocumentFragment) {
 			html = "";
 			var child;
 			for (var i=0; i < dom.childNodes.length; i++) {
