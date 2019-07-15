@@ -153,7 +153,6 @@ function Editor(opts) {
 		KeymapPlugin,
 		FocusPlugin,
 		InputPlugin,
-		// require("./test-plugin"),
 		function(editor) {
 			return Setup.buildInputRules(editor.schema);
 		},
