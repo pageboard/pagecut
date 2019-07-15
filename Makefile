@@ -24,7 +24,7 @@ dist/editor.js: src/*.js
 	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-view-pr-40.patch
 	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-dropcursor-pr-6.patch
 	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-dropcursor-pr-7.patch
-	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-model-issue-945.patch
+	-patch --backup --forward --strip 0 --quiet --reject-file - < patches/prosemirror-model-pr-39.patch
 	$(BROWSERIFY) --standalone Pagecut --outfile $@ src/editor.js
 
 dist/viewer.js: src/*.js
