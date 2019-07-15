@@ -1,7 +1,6 @@
 const State = require("prosemirror-state");
 const Model = require("prosemirror-model");
 const Commands = require("prosemirror-commands");
-const View = require("prosemirror-view");
 
 module.exports = Utils;
 
@@ -95,16 +94,16 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 		dom = this.view.render(dom);
 	}
 	var parent = sel.$from.parent;
-	// when replacing current selection, parseTr sel.$from
-	// when appending after selection, parseTr sel.$to
-	var slice = this.parseTr(tr, dom, sel.node ? sel.$to : sel.$from);
+	// when replacing current selection, parse sel.$from
+	// when appending after selection, parse sel.$to
+	var slice = this.parse(dom, sel.node ? sel.$to : sel.$from);
 
 	var from = sel.from;
 	var to = sel.to;
 
 	var fromto = from;
 	if (slice.content.childCount == 1 && (from == to || sel.node)) {
-		var node = this.fill(slice.content.firstChild);
+		var node = this.fill(slice.content).firstChild;
 		var atStart = !sel.node && sel.$from.parentOffset == 0;
 		var insertPos;
 		if (atStart) {
@@ -128,20 +127,20 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	return fromto;
 };
 
-Utils.prototype.fill = function(node) {
-	var content = node.content;
-	if (content.size) {
-		var before = node.type.contentMatch.fillBefore(content);
-		if (before) content = before.append(content);
-	}
-	var after = node.type.contentMatch.matchFragment(content).fillBefore(Model.Fragment.empty, true);
-	if (after) content = content.append(after);
+Utils.prototype.fill = function(frag) {
+	if (!(frag instanceof Model.Fragment)) frag = Model.Fragment.from(frag);
 	var list = [];
-	var me = this;
-	content.forEach(function(child) {
-		list.push(me.fill(child));
+	frag.forEach((node) => {
+		var content = node.content;
+		if (content.size) {
+			var before = node.type.contentMatch.fillBefore(content);
+			if (before) content = before.append(content);
+		}
+		var after = node.type.contentMatch.matchFragment(content).fillBefore(Model.Fragment.empty, true);
+		if (after) content = content.append(after);
+		list.push(node.copy(this.fill(content)));
 	});
-	return node.copy(Model.Fragment.from(list));
+	return Model.Fragment.from(list);
 };
 
 Utils.prototype.delete = function(sel) {
@@ -160,33 +159,8 @@ Utils.prototype.deleteTr = function(tr, sel) {
 	return true;
 };
 
-Utils.prototype.parseTr = function(tr, dom, $pos) {
-	if (!dom) return;
-	var wasFragment = true;
-	if (dom.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {
-		var parent = dom.ownerDocument.createDocumentFragment();
-		parent.appendChild(dom);
-		dom = parent;
-		wasFragment = false;
-	}
-	var opts = {};
-	var slice;
-	if ($pos.parent.type.name != tr.doc.type.name || !wasFragment) {
-		opts.context = $pos;
-		slice = this.view.parser.parseSlice(dom, opts).content;
-	} else {
-		opts.topNode = $pos.parent;
-		slice = this.view.parser.parse(dom, opts).content;
-	}
-	if (tr) opts.tr = tr;
-
-	slice = new Model.Slice(slice, 0, 0);
-	// parseFromClipboard calls clipboardTextParser which returns the slice untouched
-	return View.__parseFromClipboard(this.view, slice, null, null, $pos);
-};
-
 Utils.prototype.parse = function(dom, $pos) {
-	return this.parseTr(null, dom, $pos);
+	return this.view.parseFromClipboard(dom, $pos);
 };
 
 Utils.prototype.refresh = function(dom, block) {

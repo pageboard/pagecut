@@ -95,6 +95,13 @@ function Editor(opts) {
 
 	Viewer.call(this, opts);
 
+	this.parseFromClipboard = (html, $pos) => {
+		if (typeof html != "string") {
+			html = this.utils.serializeHTML(html);
+		}
+		return View.__parseFromClipboard(this, null, html, null, $pos);
+	};
+
 	var BlocksViewProto = Object.getPrototypeOf(this.blocks);
 	Object.assign(BlocksViewProto.constructor, BlocksEdit);
 	Object.assign(BlocksViewProto, BlocksEdit.prototype);
@@ -122,7 +129,7 @@ function Editor(opts) {
 	this.serializer = Model.DOMSerializer.fromSchema(this.schema);
 	this.parser = Model.DOMParser.fromSchema(this.schema);
 
-	this.clipboardSerializer = filteredSerializer(spec, function(node, out) {
+	this.clipboardSerializer = filteredSerializer(spec, (node, out) => {
 		if (node.type.name == "_") return "";
 		var attrs = out[1];
 		if (node.attrs.data) attrs['block-data'] = node.attrs.data;
@@ -132,10 +139,7 @@ function Editor(opts) {
 		delete attrs['block-focused'];
 	});
 
-	this.clipboardParser = new Model.DOMParser(
-		this.schema,
-		Model.DOMParser.schemaRules(this.schema)
-	);
+	this.clipboardParser = Model.DOMParser.fromSchema(this.schema);
 
 	this.viewSerializer = filteredSerializer(spec, function(node, out) {
 		if (node.type.name == "_") return "";
