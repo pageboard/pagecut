@@ -45,7 +45,6 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		if (custom && dom) {
 			pos = this.editor.utils.posFromDOM(dom);
 			sel = NodeSelection.create(tr.doc, pos);
-			tr.setSelection(sel);
 		} else {
 			custom = false;
 		}
@@ -90,7 +89,6 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 		this.focusRoot(tr, 0, tr.doc, false);
 		return;
 	}
-	var oldSel = tr.selection;
 	var parents = this.editor.utils.selectionParents(tr, sel);
 	var firstParent = parents.length && parents[0];
 	var root = firstParent.root;
@@ -151,7 +149,7 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 			console.error(ex);
 		}
 	}
-	tr.setSelection(oldSel);
+	tr.setSelection(sel);
 	return tr.setMeta('focus', true);
 };
 
