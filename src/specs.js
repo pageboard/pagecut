@@ -244,28 +244,26 @@ function createRootSpec(view, elt, obj) {
 				if (id) delete attrs.id;
 				return attrs;
 			}
-			var block;
-			if (id) block = view.blocks.get(id);
-			if (!block) {
-				block = view.blocks.fromAttrs(attrs);
-				if (standalone) {
-					if (!id) {
-						console.warn("standalone block missing id", dom.outerHTML);
-					} else {
-						block.id = id;
-						block.standalone = true;
-					}
-				} else if (dom.closest('[block-standalone="true"]')) {
-					block.id = id;
-				} else if (id) {
-					// attrs does not contain id so it's like setting a new id
-					console.warn("block id not found while parsing", id, attrs);
+			var block = view.blocks.fromAttrs(attrs);
+			if (id) {
+				var oldBlock = view.blocks.get(id);
+				if (oldBlock) {
+					Object.assign(oldBlock, block);
+					block = oldBlock;
 				}
-				view.blocks.set(block);
 			}
-			attrs = view.blocks.toAttrs(block);
-			attrs.type = type;
-			return attrs;
+			if (standalone) {
+				if (!id) {
+					console.warn("standalone block missing id", dom.outerHTML);
+				} else {
+					block.standalone = true;
+					block.id = id;
+				}
+			} else if (dom.closest('[block-standalone="true"]')) {
+				block.id = id;
+			}
+			view.blocks.set(block);
+			return view.blocks.toAttrs(block);
 		},
 		contentElement: function(dom) { return findContent(elt, dom); }
 	};
