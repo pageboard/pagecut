@@ -3,7 +3,15 @@ module.exports = function(view) {
 	setInterval(function() {
 		count = 0;
 	}, 2000);
+
 	return {
+		view: function(view) {
+			var tr = view.state.tr;
+			if (processStandalone(tr, view.state.doc, 0, false)) {
+				view.dispatch(tr);
+			}
+			return {};
+		},
 		appendTransaction: function(trs, oldState, newState) {
 			var tr = newState.tr;
 			if (count++ > 500) {
@@ -62,7 +70,17 @@ module.exports = function(view) {
 			var attrs = node.attrs;
 			var id = attrs.id;
 			var type = attrs.type;
-			if (!type) return;
+			if (!type) {
+				var typeName = node.type.spec.typeName;
+				if (typeName == "container" || typeName == "wrap") {
+					var parentId = parent.type.spec.typeName == "root" ? parent.attrs.id : parent.attrs._id;
+					if (parentId != attrs._id) {
+						modified = true;
+						tr.setNodeMarkup(pos, null, Object.assign({}, attrs, {_id: parentId}));
+					}
+				}
+				return;
+			}
 			var el = view.element(type);
 			if (!el) return;
 			var standalone = attrs.standalone == "true";
