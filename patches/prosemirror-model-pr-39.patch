@@ -1,5 +1,5 @@
 --- node_modules/prosemirror-model/dist/index.js	1985-10-26 09:15:00.000000000 +0100
-+++ node_modules/prosemirror-model/dist/index.js.new	2019-07-15 11:53:39.141456583 +0200
++++ node_modules/prosemirror-model/dist/index.js	2019-07-16 15:38:00.896252960 +0200
 @@ -2648,7 +2648,8 @@
      var rule = this$1.tags[i];
      if (matches(dom, rule.tag) &&
@@ -24,11 +24,11 @@
 +  var useRoot = !this.isOpen && (!option || option.parent.type == this.nodes[0].type);
 +  var minDepth = -(option ? option.depth + 1 : 0) + (useRoot ? 0 : 1);
 +  var match = function (depth) {
-+    var next = depth > 0 || (depth == 0 && useRoot) ? this$1.nodes[depth].type
-+        : option && depth >= minDepth ? option.node(depth - minDepth).type
++    var next = depth > 0 || (depth == 0 && useRoot) ? this$1.nodes[depth]
++        : option && depth >= minDepth ? option.node(depth - minDepth)
 +        : null;
 +    if (!next) return false;
-+    if (next.contentMatch.matchType(type)) return true;
++    if (next.match && next.match.matchType(type) || next.type && next.type.contentMatch.matchType(type)) return true;
 +    return match(depth - 1);
 +  };
 +  return match(this.open);
