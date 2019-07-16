@@ -647,7 +647,6 @@ function ContainerNodeView(node, view, getPos, decorations) {
 ContainerNodeView.prototype.update = function(node, decorations) {
 	var contentName = node.type.spec.contentName;
 	if (contentName != this.contentName) {
-		console.warn("cannot update to a different content name", contentName, this.contentName);
 		return false;
 	}
 	restoreDomAttrs(tryJSON(node.attrs._json), this.dom);
