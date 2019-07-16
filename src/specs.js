@@ -337,6 +337,7 @@ function createRootSpec(view, elt, obj) {
 function createWrapSpec(view, elt, obj) {
 	var defaultAttrs = attrsFrom(obj.dom);
 	defaultAttrs._json = null;
+	defaultAttrs._id = null;
 	var defaultSpecAttrs = specAttrs(defaultAttrs);
 	var wrapTag = domSelector(obj.dom);
 	if (wrapTag == "div") console.warn(elt.name, "should define a class on wrapper tag", obj.dom.outerHTML);
@@ -348,6 +349,8 @@ function createWrapSpec(view, elt, obj) {
 			var attrs = attrsFrom(dom);
 			var json = saveDomAttrs(dom);
 			if (json) attrs._json = json;
+			var root = dom.closest('[block-id]');
+			if (root) attrs._id = root.getAttribute('block-id');
 			return attrs;
 		},
 		contentElement: function(dom) { return findContent(elt, dom); }
@@ -387,15 +390,10 @@ function createContainerSpec(view, elt, obj) {
 		context: `${elt.name}//`, // FIXME context should be more precise but flagDom works bottom to top
 		getAttrs: function(dom) {
 			var attrs = attrsFrom(dom);
-			var root = dom.closest('[block-type]');
-			if (!root) {
-				console.error("container should be in a root with block-type");
-			} else {
-				attrs._id = root.getAttribute('block-id');
-				if (!attrs._id) console.error("container's root should have a block-id attribute");
-			}
 			var json = saveDomAttrs(dom);
 			if (json) attrs._json = json;
+			var root = dom.closest('[block-id]');
+			if (root) attrs._id = root.getAttribute('block-id');
 			return attrs;
 		},
 		contentElement: function(dom) { return findContent(elt, dom); }
@@ -494,17 +492,6 @@ RootNodeView.prototype.deselectNode = function() {
 	this.dom.classList.remove('ProseMirror-selectednode');
 };
 
-// function updateContainerId(node, id) {
-// 	if (node.forEach) node.forEach(function(child, offset, index) {
-// 		var tn = child.type.spec.typeName;
-// 		if (tn == "container") {
-// 			child.attrs.root_id = id;
-// 		} else if (tn == "wrap") {
-// 			updateContainerId(child, id);
-// 		}
-// 	});
-// }
-
 RootNodeView.prototype.update = function(node, decorations) {
 	if (this.element.name != node.attrs.type) {
 		return false;
@@ -513,8 +500,8 @@ RootNodeView.prototype.update = function(node, decorations) {
 	if (node.attrs.id != this.id) {
 		return false;
 	}
-	// updateContainerId(node, this.id);
 	var view = this.view;
+	// view.utils.propagateId(this.id, this.getPos(), node);
 	var uBlock = view.blocks.fromAttrs(node.attrs);
 	var block;
 	if (this.element.inplace) {
@@ -623,6 +610,8 @@ function WrapNodeView(node, view, getPos, decorations) {
 	if (!(this instanceof WrapNodeView)) {
 		return new WrapNodeView(node, view, getPos, decorations);
 	}
+	this.view = view;
+	this.getPos = typeof getPos == "function" ? getPos : null;
 	this.element = node.type.spec.element;
 	this.domModel = node.type.spec.domModel;
 	setupView(this, node);
@@ -630,6 +619,12 @@ function WrapNodeView(node, view, getPos, decorations) {
 }
 
 WrapNodeView.prototype.update = function(node, decorations) {
+	if (!this.id) {
+		this.id = node.attrs._id;
+		// propagateId(this, node);
+	} else if (this.id != node.attrs._id) {
+		return false;
+	}
 	restoreDomAttrs(tryJSON(node.attrs._json), this.dom);
 	return true;
 };
