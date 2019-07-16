@@ -187,7 +187,6 @@ function toDOMOutputSpec(obj, node, inplace) {
 	var attrs = Object.assign(attrsTo(node.attrs), tryJSON(node.attrs._json), domAttrsMap(obj.dom));
 	if (!inplace) delete attrs['block-data'];
 	delete attrs['block-focused'];
-	var contentName = node.type.spec.contentName;
 	while (dom) {
 		if (!obj.contentDOM || node instanceof Model.Mark) return [dom.nodeName, attrs];
 		if (dom != obj.dom) {
@@ -197,7 +196,6 @@ function toDOMOutputSpec(obj, node, inplace) {
 			}, out];
 		} else {
 			out = [dom.nodeName, attrs, out];
-			if (contentName) out[1]['block-content'] = contentName;
 			break;
 		}
 		dom = dom.parentNode;
