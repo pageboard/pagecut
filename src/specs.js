@@ -226,28 +226,22 @@ function createRootSpec(view, elt, obj) {
 			var data = dom.getAttribute('block-data');
 			var expr = dom.getAttribute('block-expr');
 			var lock = dom.getAttribute('block-lock');
-			var attrs = {
-				type: type
-			};
-			if (expr) {
-				attrs.expr = expr;
-			}
-			if (lock) {
-				attrs.lock = lock;
-			}
-			if (data) {
-				attrs.data = data;
-			} else if (elt.parse) {
-				attrs.data = JSON.stringify(elt.parse.call(elt, dom));
-			}
+			var attrs = {};
+			if (expr) attrs.expr = expr;
+			if (lock) attrs.lock = lock;
+			if (data) attrs.data = data;
+			else if (elt.parse) attrs.data = JSON.stringify(elt.parse.call(elt, dom));
+
 			if (elt.inplace) {
 				if (id) delete attrs.id;
+				attrs.type = type;
 				return attrs;
 			}
 			var block = view.blocks.fromAttrs(attrs);
 			if (id) {
 				var oldBlock = view.blocks.get(id);
 				if (oldBlock) {
+					// update the stored block
 					Object.assign(oldBlock, block);
 					block = oldBlock;
 				}
@@ -262,8 +256,11 @@ function createRootSpec(view, elt, obj) {
 			} else if (dom.closest('[block-standalone="true"]')) {
 				block.id = id;
 			}
+			if (!block.type) block.type = type;
 			view.blocks.set(block);
-			return view.blocks.toAttrs(block);
+			attrs = view.blocks.toAttrs(block);
+			attrs.type = type;
+			return attrs;
 		},
 		contentElement: function(dom) { return findContent(elt, dom); }
 	};

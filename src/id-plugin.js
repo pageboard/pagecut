@@ -100,6 +100,10 @@ module.exports = function(view) {
 			var rem = id && el.inplace;
 			if (gen) {
 				var block = view.blocks.fromAttrs(attrs);
+				if (knownBlock) {
+					// block.type can be overriden by attrs.type
+					block.type = knownBlock.type;
+				}
 				delete block.id;
 				view.blocks.set(block);
 				var newAttrs = Object.assign({}, attrs, {
