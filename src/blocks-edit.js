@@ -61,7 +61,10 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 		parent.blocks = {};
 	}
 
-	el.contents.each(parent, (content, def) => {
+	var contents = parent.content;
+	parent.content = {};
+
+	el.contents.each({content: contents}, (content, def) => {
 		if (!content || typeof content == "string") {
 			return;
 		}
@@ -116,9 +119,9 @@ Blocks.prototype.serializeTo = function(parent, el, ancestor) {
 				item.node.setAttribute('block-type', item.type);
 			}
 		});
-		if (def.virtual) el.contents.clear(parent, def.id);
-		else el.contents.set(parent, def.id, this.view.utils.serializeHTML(content, true));
+		if (!def.virtual) el.contents.set(parent, def.id, this.view.utils.serializeHTML(content, true));
 	});
+	if (Object.keys(parent.content).length == 0) delete parent.content;
 
 	if (el.inline && !el.leaf) {
 		if (!el.contents.get(parent)) return; // TODO find the meaning of this
