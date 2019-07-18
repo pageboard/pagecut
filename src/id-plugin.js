@@ -91,11 +91,6 @@ module.exports = function(view) {
 				// user changes a block to become not standalone
 				forceGen = true;
 			}
-			if (standalone && id && ids[id]) {
-				// two instances of the same standalone block are not yet supported
-				standalone = false;
-				forceGen = true;
-			}
 			var gen = id && forceGen || !standalone && !el.inplace && (!id || ids[id]);
 			var rem = id && el.inplace;
 			if (gen) {
