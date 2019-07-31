@@ -59,7 +59,7 @@ Editor.defaults.elements = {
 			return scope.$doc.createElement('pagecut-placeholder');
 		}
 	},
-	text: {
+	text: { // NB inline group is text + leaf inline nodes - hard_break, imageInline, rating...
 		inline: true,
 		group: 'inline'
 	}
