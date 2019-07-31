@@ -41,6 +41,7 @@ Blocks.prototype.render = function(block, opts) {
 Blocks.prototype.mount = function(block, blocks, opts) {
 	var type = opts.type || block.type;
 	var el = this.view.element(type);
+	if (!el) return;
 	el.contents.normalize(block);
 	var copy = this.copy(block);
 	var doc = this.view.doc;
@@ -121,6 +122,7 @@ Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
 	if (!blocks) blocks = {};
 	if (!opts) opts = {};
 	block = this.mount(block, blocks, opts);
+	if (!block) return;
 	if (block.id) {
 		// overwrite can happen when (re)loading virtual blocks
 		var oldBlock = store[block.id];
