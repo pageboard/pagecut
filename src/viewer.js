@@ -9,6 +9,7 @@ function Viewer(opts) {
 
 	this.doc = opts.document || document.cloneNode();
 	var elts = this.elements = opts.elements || {};
+
 	var el;
 	for (var name in elts) {
 		el = elts[name];
@@ -28,6 +29,7 @@ Viewer.prototype.element = function(type) {
 	if (!type) return;
 
 	var el = this.elements[type];
+	if (!el) return;
 	if (!(el instanceof Element)) this.setElement(el);
 	return this.elements[type];
 };
