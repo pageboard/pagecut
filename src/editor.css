@@ -12,11 +12,10 @@
 	outline: none;
 }
 pagecut-placeholder {
-	display:inline-block;
+	display:none;
+	width:0;
+	height:0;
 	position:relative;
-	width:0px;
-	height:0px;
-	visibility:hidden;
 	overflow:visible;
 	z-index:10000;
 }
@@ -32,13 +31,17 @@ pagecut-placeholder:after {
 	font-weight: normal;
 	font-variant: normal;
 }
-.ProseMirror pagecut-placeholder {
-	visibility:visible;
-	width:auto;
-	height:auto;
+[block-focused][block-type] [block-type]:not([block-focused]) > pagecut-placeholder,
+[block-focused][block-type] [block-type]:not([block-focused]) [block-content] > pagecut-placeholder {
+	display:none;
 }
-.ProseMirror pagecut-placeholder.ProseMirror-selectednode {
-	visibility:visible;
+[block-focused][block-type] > pagecut-placeholder,
+[block-focused][block-type] [block-content] > pagecut-placeholder {
+	display:inline-block;
+}
+
+pagecut-placeholder.ProseMirror-selectednode {
+	display:inline-block;
 	outline:none !important;
 	box-shadow:none !important;
 }
