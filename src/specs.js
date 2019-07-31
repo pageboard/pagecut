@@ -295,6 +295,8 @@ function createRootSpec(view, elt, obj) {
 		parseRule.tag = `[block-type="${elt.name}"]`;
 	}
 
+	if (elt.preserveWhitespace) parseRule.preserveWhitespace = elt.preserveWhitespace;
+
 	var spec = {
 		typeName: "root",
 		element: elt,
@@ -326,6 +328,7 @@ function createRootSpec(view, elt, obj) {
 			return out;
 		}
 	};
+	if (elt.code) spec.code = elt.code;
 	if (elt.marks) spec.marks = elt.marks;
 	spec.nodeView = RootNodeView;
 
