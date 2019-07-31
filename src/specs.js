@@ -70,7 +70,17 @@ function define(view, elt, schema, views) {
 			}).join(" ");
 		} else if (type != "wrap" && !elt.leaf) {
 			var def = contents.find(obj.contentDOM.getAttribute('block-content'));
-			if (def.nodes) spec.content = def.nodes;
+			var nodes = def.nodes;
+			if (nodes) {
+				spec.content = nodes;
+				if (nodes != "text*" && !nodes.endsWith("inline*") && nodes.indexOf(' ') < 0) {
+					if (nodes.endsWith('?')) {
+						spec.content = `_ | ${nodes.slice(0, -1)}`;
+					} else if (nodes.endsWith('*')) {
+						spec.content = `(_ | ${nodes.slice(0, -1)})+`;
+					}
+				}
+			}
 			if (def.marks) spec.marks = def.marks;
 			spec.contentName = def.id || "";
 		}
