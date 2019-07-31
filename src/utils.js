@@ -102,7 +102,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	var to = sel.to;
 
 	var fromto = from;
-	if (slice.content.childCount == 1 && (from == to || sel.node)) {
+	if (slice.content.childCount == 1 && (from == to || sel.node && sel.node.type.name != "_")) {
 		var node = this.fill(slice.content).firstChild;
 		var atStart = !sel.node && sel.$from.parentOffset == 0;
 		var insertPos;
@@ -474,9 +474,13 @@ Utils.prototype.canInsert = function($pos, nodeType, all, after) {
 	var ret = {};
 	for (var d = $pos.depth; d >= 0; d--) {
 		var index = after ? $pos.indexAfter(d) : $pos.index(d);
+		var to = index;
 		var node = $pos.node(d);
 		if (!found) {
-			if (node.canReplaceWith(index, index, nodeType)) {
+			if ($pos.nodeAfter && d == $pos.depth && $pos.nodeAfter.type.name == "_") {
+				to += 1;
+			}
+			if (node.canReplaceWith(index, to, nodeType)) {
 				// check context
 				found = true;
 				ret.node = node;
