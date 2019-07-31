@@ -190,11 +190,15 @@ function Editor(opts) {
 
 	var place = typeof opts.place == "string" ? document.querySelector(opts.place) : opts.place;
 
+	var stateDoc;
+	if (opts.jsonContent) stateDoc = this.schema.nodeFromJSON(opts.jsonContent);
+	else if (opts.content) stateDoc = this.parser.parse(opts.content);
+
 	View.EditorView.call(this, {mount: place}, {
 		state: State.EditorState.create({
 			schema: this.schema,
 			plugins: plugins,
-			doc: opts.content ? this.parser.parse(opts.content) : undefined
+			doc: stateDoc
 		}),
 		domParser: this.parser,
 		clipboardParser: this.clipboardParser,
