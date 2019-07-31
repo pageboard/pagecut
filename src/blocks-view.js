@@ -162,10 +162,7 @@ Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
 				parent.replaceChild(node.ownerDocument.createTextNode('·'), node);
 				return;
 			}
-			var old = opts.type;
-			opts.type = type;
-			var frag = this.renderFrom(child, blocks, store, opts);
-			opts.type = old;
+			var frag = this.renderFrom(child, blocks, store, Object.assign({}, opts, {type: type}));
 			if (!frag) {
 				parent.removeChild(node);
 				return;
