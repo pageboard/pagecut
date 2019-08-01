@@ -199,14 +199,17 @@ function toDOMOutputSpec(obj, node, inplace) {
 	var attrs = Object.assign(attrsTo(node.attrs), tryJSON(node.attrs._json), domAttrsMap(obj.dom));
 	if (!inplace) delete attrs['block-data'];
 	delete attrs['block-focused'];
+	var contentName;
 	while (dom) {
 		if (!obj.contentDOM || node instanceof Model.Mark) return [dom.nodeName, attrs];
 		if (dom != obj.dom) {
+			contentName = dom.getAttribute('block-content');
 			out = [dom.nodeName, {
 				'class': dom.className || undefined,
-				'block-content': dom.getAttribute('block-content') || undefined
+				'block-content': contentName || undefined
 			}, out];
 		} else {
+			if (contentName) delete attrs['block-content'];
 			out = [dom.nodeName, attrs, out];
 			break;
 		}
