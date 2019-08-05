@@ -1,5 +1,5 @@
---- node_modules/prosemirror-model/dist/index.js	1985-10-26 09:15:00.000000000 +0100
-+++ node_modules/prosemirror-model/dist/index.js	2019-07-16 15:38:00.896252960 +0200
+--- node_modules/prosemirror-model/dist/index.js.orig	1985-10-26 09:15:00.000000000 +0100
++++ node_modules/prosemirror-model/dist/index.js	2019-08-05 11:44:07.268410620 +0200
 @@ -2648,7 +2648,8 @@
      var rule = this$1.tags[i];
      if (matches(dom, rule.tag) &&
@@ -10,7 +10,7 @@
        if (rule.getAttrs) {
          var result = rule.getAttrs(dom);
          if (result === false) { continue }
-@@ -3136,6 +3137,26 @@
+@@ -3136,6 +3137,36 @@
    } }
  };
  
@@ -28,7 +28,17 @@
 +        : option && depth >= minDepth ? option.node(depth - minDepth)
 +        : null;
 +    if (!next) return false;
-+    if (next.match && next.match.matchType(type) || next.type && next.type.contentMatch.matchType(type)) return true;
++    if (next.match && next.match.matchType(type)) return true;
++    if (next.type) {
++      var nextMatch = function(contentMatch) {
++        if (contentMatch.matchType(type)) return true;
++        if (!contentMatch.validEnd) {
++        	return nextMatch(contentMatch.next[contentMatch.next.length - 1]);
++        }
++        return false;
++      };
++      return nextMatch(next.type.contentMatch);
++    }
 +    return match(depth - 1);
 +  };
 +  return match(this.open);
