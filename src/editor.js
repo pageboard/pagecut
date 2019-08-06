@@ -109,7 +109,7 @@ function Editor(opts) {
 	var plugins = opts.plugins || [];
 
 	var spec = {
-		nodes: opts.nodes,
+		nodes: opts.topNode ? opts.nodes.remove('doc') : opts.nodes,
 		marks: opts.marks,
 		topNode: opts.topNode
 	};
