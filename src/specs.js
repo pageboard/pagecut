@@ -160,7 +160,7 @@ function flagDom(elt, dom, iterate) {
 		var contentDOM = obj.contentDOM.cloneNode(false);
 		var notWrapper = contentDOM.hasAttribute('block-content');
 		Array.prototype.forEach.call(obj.contentDOM.childNodes, function(node) {
-			var child = flagDom(elt, node, iterate, obj);
+			var child = flagDom(elt, node, iterate);
 			if (!child) return;
 			if (child.contentDOM) {
 				if (notWrapper) {
