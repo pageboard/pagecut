@@ -68,7 +68,7 @@ function define(view, elt, schema, views) {
 				if (!child.name) console.warn(obj, "has no name for child", child);
 				return child.name;
 			}).join(" ");
-		} else if (type != "wrap" && !elt.leaf) {
+		} else if (["root", "container"].includes(type) && !elt.leaf) {
 			var def = contents.find(obj.contentDOM.getAttribute('block-content'));
 			var nodes = def.nodes;
 			if (nodes) {
