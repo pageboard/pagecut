@@ -1,16 +1,15 @@
 pagecut -- Extensible web content editor
 ========================================
 
-Warning: this is a work in progress. Documentation is out of date.
+Warning: this is a work in progress,
+[not to be used before 1.0](https://github.com/pageboard/pagecut).
 
 It is mostly meant to be used by [pageboard](https://github.com/pageboard),
 with a lot of elements already [defined here](https://github.com/pageboard/client/tree/master/packages).
 
-[Demo](https://kapouer.github.io/pagecut/demo/index.html)
+pagecut tries to make prosemirror schema definition more intuitive, powerful, and close to html definitions.
 
-An easy to setup and easy to extend html content editor built upon
-[ProseMirror](https://prosemirror.net).
-
+See pageboard documentation (when it's available...).
 
 Objects
 -------
@@ -23,23 +22,11 @@ Objects
   parse that DOM into an internal editor object model, which is in turn used
   by prosemirror to render that internal model into a DOM view.
 
-* Resolvers  
-  Return synchronously or asynchronously a block from a url or from a DOM node.
-
-* Modifiers  
-  Change a block or its rendered attributes on the fly.
-
 * Elements  
   Blocks are instances of elements.  
   An element comes in two parts:  
   - its definition (name, group, contents, and json schema properties)
   - its edit and view methods, with signatures (document, block).
-
-* Modules  
-  A simple extension system for defining resolvers and elements.
-  A module can be a simple object in which case it is added as an element having
-  the name of the module, or it can be a class constructor function, instantiated
-  by the viewer and accessible under `pagecut.modules[name]`.
 
 * Blocks  
   The core data structure for holding elements instances, and persisting content.
@@ -69,52 +56,6 @@ var pagecut = new Pagecut.Editor({
 Yet such a setup isn't really useful without modules.
 
 
-Modules
--------
-
-A module constructor receives a viewer instance as argument, so it can set up:
-- elements
-- resolvers
-- modifiers
-
-Example:
-```
-module.exports = function(main) {
-	this.main = main;
-	main.elements.video = VideoElement;
-	main.resolvers.youtube = YoutubeResolver;
-	main.modifiers.oddity = MyOwnModifier;
-};
-```
-and is typically exported using browserify:
-```
-browserify --standalone Pagecut.modules.video modules/video.js
-```
-
-The viewer instance initializes the globally installed modules automatically.
-
-The order of modules, and in particular, the order of resolvers or modifiers,
-should not change the result - be sure to define independent functions that
-can be run in any order.
-
-If a module is an object, it is directly added as an element, with
-`element.name` set to be the key under which the object was set on modules.
-
-
-Resolvers
----------
-
-Elements convert blocks to DOM, and resolvers are there to do the reverse.
-
-A resolver is a `function(main, obj, cb)`,
-- that can return a block immediately.
-- that can return a block asynchronously using `cb(err, block)`;
-- the synchronous block is automatically replaced by the asynchronous block
-
-obj can have obj.url or obj.node, depending on wether a url was pasted or a
-node is being processed.
-
-
 Elements
 --------
 
@@ -132,6 +73,11 @@ Properties for the editor:
   an object matching contents names to an object having a 'spec' property being
   a [prosemirror content expression](http://prosemirror.net/guide/schema.html).  
   Or, `contents` can be a string, meaning content is not labelled.
+  ```
+    { id: "<id>", nodes: "<spec>", marks: "<marks>"}
+    <div class="parent"><div block-content="<id>"><p>Default Content</p></div></div>
+  ```
+  
 - inplace  
   A boolean indicating the block is not stored, implying it is entirely defined
   by its DOM representation.
