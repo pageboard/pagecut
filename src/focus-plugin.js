@@ -151,7 +151,9 @@ FocusPlugin.prototype.focus = function(tr, sel) {
 			console.error(ex);
 		}
 	}
-	tr.setSelection(sel);
+	if (root && sel.node && sel.from === rootPos) {
+		tr.setSelection(NodeSelection.create(tr.doc, rootPos));
+	}
 	return tr.setMeta('focus', true);
 };
 
