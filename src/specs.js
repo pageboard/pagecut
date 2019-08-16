@@ -589,18 +589,16 @@ RootNodeView.prototype.update = function(node, decorations) {
 
 		var dom = view.render(block, {type: node.attrs.type, merge: false});
 		var tr = view.state.tr;
-		var curpos = this.getPos ? this.getPos() : undefined;
-		if (isNaN(curpos)) curpos = undefined;
 		mutateAttributes(this.dom, dom);
 		if (!sameData) {
 			try {
-				mutateNodeView(tr, curpos, node, this, flagDom(this.element, dom));
+				mutateNodeView(tr, this.getPos ? this.getPos() : null, node, this, flagDom(this.element, dom));
 			} catch(ex) {
 				return true;
 			}
 		}
 		// pay attention to the risk of looping over and over
-		if (oldBlock && curpos !== undefined && tr.docChanged) {
+		if (oldBlock && this.getPos && tr.docChanged) {
 			view.dispatch(tr);
 		}
 		if (this.selected) {
@@ -766,12 +764,12 @@ by front-end. So when applying a new rendered DOM, one only wants to apply
 diff between initial rendering and new rendering, leaving user modifications
 untouched.
 */
+
 function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 	var dom = obj.dom;
-	if (!dom) return;
 	var initial = !obj._pcinit;
 	if (initial) obj._pcinit = true;
-	if (nobj.dom.nodeName != dom.nodeName) {
+	if (dom && nobj.dom.nodeName != dom.nodeName) {
 		var emptyDom = nobj.dom.cloneNode(false);
 		var sameContentDOM = obj.contentDOM == obj.dom;
 		if (dom.parentNode) {
@@ -785,27 +783,39 @@ function mutateNodeView(tr, pos, pmNode, obj, nobj) {
 		if (sameContentDOM) obj.contentDOM = obj.dom;
 	}
 	if (nobj.children.length) {
+		// pmNode's contentDOM.children may be wrap, container, const
 		var curpos = pos + 1;
-		nobj.children.forEach(function(childObj, i) {
+		nobj.children.forEach(function(objChild, i) {
 			var pmChild = pmNode.child(i);
-			var newAttrs = Object.assign({}, pmChild.attrs, {_json: saveDomAttrs(childObj.dom)});
-			if (pmNode.attrs.id && pmChild.type.spec.typeName == "container") {
-				newAttrs._id = pmNode.attrs.id;
+			var newAttrs = Object.assign({}, pmChild.attrs, {
+				_json: saveDomAttrs(objChild.dom)
+			});
+			var type = pmChild.type.spec.typeName;
+			if (type != "root") {
+				if (pmNode.attrs.id) {
+					newAttrs._id = pmNode.attrs.id;
+				}
+				if (type == "const") {
+					// TODO extend to container, wrap...
+					newAttrs._html = objChild.dom.innerHTML;
+				}
 			}
-			if (pos !== undefined) {
+			if (!isNaN(curpos)) {
 				// updates that are incompatible with schema might happen (e.g. popup(title + content))
 				tr.setNodeMarkup(curpos, null, newAttrs);
+				// however, this transaction is going to happen right now,
+				// before all rooNodeView children have been updated with *old* state
+				pmChild.attrs = newAttrs; // so we must change pmNode right now !
+				if (objChild.children.length)  {
+					var domChild = obj.contentDOM && obj.contentDOM.children[i];
+					var desc = domChild && domChild.pmViewDesc || {};
+					mutateNodeView(tr, curpos, pmChild, desc, objChild);
+				}
+				curpos += pmChild.nodeSize;
 			}
-			pmChild.attrs = newAttrs; // because we want the modification NOW
-			var viewDom = Array.prototype.find.call(obj.contentDOM.childNodes, function(child, i) {
-				return child.pmViewDesc && child.pmViewDesc.node == pmChild;
-			});
-			if (viewDom) {
-				mutateNodeView(tr, curpos, pmChild, viewDom.pmViewDesc, childObj);
-			}
-			curpos += pmChild.nodeSize;
 		}, this);
 	}
+	if (!obj.dom) return;
 	// first upgrade attributes
 	mutateAttributes(obj.dom, nobj.dom);
 	// then upgrade descendants
