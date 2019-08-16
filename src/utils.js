@@ -401,7 +401,7 @@ Utils.prototype.parents = function(tr, pos, all, before) {
 			node = rpos.node(level);
 			type = node.type && node.type.spec.typeName;
 		}
-		if (type) {
+		if (type && type != "const") {
 			obj[type] = {rpos: rpos, level: level, node: node};
 		}
 		if (node) {

@@ -390,6 +390,41 @@ function createWrapSpec(view, elt, obj) {
 	return spec;
 }
 
+function createConstSpec(view, elt, obj) {
+	var defaultAttrs = attrsFrom(obj.dom);
+	defaultAttrs._id = null;
+	defaultAttrs._json = null;
+	defaultAttrs._html = null;
+	var defaultSpecAttrs = specAttrs(defaultAttrs);
+	var wrapTag = domSelector(obj.dom);
+
+	var parseRule = {
+		tag: wrapTag + ':not([block-type])',
+		context: `${elt.name}//`,
+		getAttrs: function(dom) {
+			var attrs = {}; //attrsFrom(dom);
+			attrs._html = dom.innerHTML;
+			attrs._json = saveDomAttrs(dom);
+			var root = dom.closest('[block-id]');
+			if (root) attrs._id = root.getAttribute('block-id');
+			return attrs;
+		}
+	};
+
+	var spec = {
+		typeName: "const",
+		element: elt,
+		domModel: obj.dom,
+		attrs: defaultSpecAttrs,
+		parseDOM: [parseRule],
+		toDOM: function(node) {
+			return toDOMOutputSpec(obj, node);
+		},
+		nodeView: ConstNodeView
+	};
+	return spec;
+}
+
 function createContainerSpec(view, elt, obj) {
 	var defaultAttrs = attrsFrom(obj.dom);
 	if (obj.contentDOM != obj.dom) {
@@ -647,6 +682,37 @@ WrapNodeView.prototype.update = function(node, decorations) {
 };
 
 WrapNodeView.prototype.ignoreMutation = function(record) {
+	// always ignore mutation
+	return true;
+};
+
+function ConstNodeView(node, view, getPos, decorations) {
+	if (!(this instanceof ConstNodeView)) {
+		return new ConstNodeView(node, view, getPos, decorations);
+	}
+	this.view = view;
+	this.getPos = typeof getPos == "function" ? getPos : null;
+	this.element = node.type.spec.element;
+	this.domModel = node.type.spec.domModel;
+	setupView(this, node);
+	this.dom.setAttribute("contenteditable", "false");
+	this.update(node);
+}
+
+ConstNodeView.prototype.update = function(node, decorations) {
+	if (!this.id) {
+		this.id = node.attrs._id;
+	} else if (this.id != node.attrs._id) {
+		return false;
+	}
+	restoreDomAttrs(tryJSON(node.attrs._json), this.dom);
+	var prevHtml = this.dom.innerHTML;
+	var curHtml = node.attrs._html;
+	if (curHtml != prevHtml) this.dom.innerHTML = curHtml != null ? curHtml : "";
+	return true;
+};
+
+ConstNodeView.prototype.ignoreMutation = function(record) {
 	// always ignore mutation
 	return true;
 };
