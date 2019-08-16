@@ -7,7 +7,7 @@
 +  var custom = view.nodeViews[doc.type.name];
 +  var spec = custom && custom(doc, view, () => { return 0; }, outerDeco);
    applyOuterDeco(dom, outerDeco, doc);
-+  if (spec) return new CustomNodeViewDesc(null, doc, outerDeco, innerDeco, dom, dom, dom, spec, view)
++  if (spec) return new CustomNodeViewDesc(null, doc, outerDeco, innerDeco, dom, dom, dom, spec, view, 0)
    return new NodeViewDesc(null, doc, outerDeco, innerDeco, dom, dom, dom, view, 0)
  }
  
