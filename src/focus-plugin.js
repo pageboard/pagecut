@@ -40,8 +40,8 @@ FocusPlugin.prototype.click = function(view, pos, e) {
 		var dom = e.target;
 		if (dom.children.length == 1 && dom.firstElementChild.matches('pagecut-placeholder')) {
 			custom = true;
-		} else while (!dom.pmViewDesc && !dom._pcAttrs && !dom.hasAttribute('block-content')) {
-			dom = dom.parentNode;
+		} else while ((!dom.pmViewDesc || dom.pmViewDesc.node && dom.pmViewDesc.node.type.spec.typeName == "const") && !dom._pcAttrs && !dom.hasAttribute('block-content')) {
+			dom = dom.closest('[block-type]');
 			custom = true;
 		}
 		if (custom && dom) {
