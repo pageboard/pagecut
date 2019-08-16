@@ -50,8 +50,9 @@ function define(view, elt, schema, views) {
 		return;
 	}
 
-	flagDom(elt, dom, function(type, obj) {
+	flagDom(elt, dom, function(obj) {
 		var spec;
+		var type = obj.type;
 		if (type == "root") {
 			spec = createRootSpec(view, elt, obj);
 			obj.name = elt.name; // wrap and container are set further
@@ -59,6 +60,8 @@ function define(view, elt, schema, views) {
 			spec = createWrapSpec(view, elt, obj);
 		} else if (type == "container") {
 			spec = createContainerSpec(view, elt, obj);
+		} else if (type == "const") {
+			spec = createConstSpec(view, elt, obj);
 		} else {
 			throw new Error("Missing type in flagDom iterator", type, obj);
 		}
@@ -66,7 +69,7 @@ function define(view, elt, schema, views) {
 			// this type of node has content that is wrap or container type nodes
 			spec.content = obj.children.map(function(child) {
 				if (!child.name) console.warn(obj, "has no name for child", child);
-				return child.name;
+				return child.name + (child.type == "const" ? "?" : "");
 			}).join(" ");
 		} else if (["root", "container"].includes(type) && !elt.leaf) {
 			var def = contents.find(obj.contentDOM.getAttribute('block-content'));
@@ -144,30 +147,38 @@ function findContent(elt, dom) {
 	return commonAncestor.apply(null, list);
 }
 
-function flagDom(elt, dom, iterate) {
+function flagDom(elt, dom, iterate, parent) {
 	if (!dom) return;
 	if (dom.nodeType == Node.TEXT_NODE) {
 		return {text: dom.nodeValue};
 	}
 	if (dom.nodeType != Node.ELEMENT_NODE) return;
+	if (!parent) parent = {};
 	var obj = {
 		dom: dom,
 		contentDOM: findContent(elt, dom)
 	};
 	if (!obj.children) obj.children = [];
-	var wrapper = false;
+
+	if (!dom.parentNode) {
+		obj.type = 'root';
+	} else if (obj.contentDOM) {
+		if (obj.contentDOM.hasAttribute('block-content')) {
+			if (parent.type != 'container') {
+				obj.type = 'container';
+			}
+		} else {
+			obj.type = 'wrap';
+		}
+	} else if (obj.dom && parent.type == 'wrap') {
+		obj.type = 'const';
+	}
 	if (obj.contentDOM) {
 		var contentDOM = obj.contentDOM.cloneNode(false);
-		var notWrapper = contentDOM.hasAttribute('block-content');
 		Array.prototype.forEach.call(obj.contentDOM.childNodes, function(node) {
-			var child = flagDom(elt, node, iterate);
+			var child = flagDom(elt, node, iterate, obj);
 			if (!child) return;
-			if (child.contentDOM) {
-				if (notWrapper) {
-					console.error(`element ${elt.name} has nested block-content nodes`);
-					return;
-				}
-				wrapper = true;
+			if (["wrap", "container", "const"].includes(child.type)) {
 				obj.children.push(child);
 				contentDOM.appendChild(node.cloneNode(true));
 			} else {
@@ -182,13 +193,8 @@ function flagDom(elt, dom, iterate) {
 		obj.contentDOM = contentDOM;
 	}
 
-	if (iterate) {
-		if (!dom.parentNode) {
-			iterate('root', obj);
-		} else if (obj.contentDOM) {
-			if (!wrapper) iterate('container', obj);
-			else iterate('wrap', obj);
-		}
+	if (iterate && obj.type) {
+		iterate(obj);
 	}
 	return obj;
 }
