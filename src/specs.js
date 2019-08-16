@@ -520,7 +520,6 @@ RootNodeView.prototype.update = function(node, decorations) {
 		return false;
 	}
 	var view = this.view;
-	// view.utils.propagateId(this.id, this.getPos(), node);
 	var uBlock = view.blocks.fromAttrs(node.attrs);
 	var block;
 	if (this.element.inplace) {
@@ -640,7 +639,6 @@ function WrapNodeView(node, view, getPos, decorations) {
 WrapNodeView.prototype.update = function(node, decorations) {
 	if (!this.id) {
 		this.id = node.attrs._id;
-		// propagateId(this, node);
 	} else if (this.id != node.attrs._id) {
 		return false;
 	}

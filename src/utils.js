@@ -680,19 +680,3 @@ Utils.prototype.parseHTML = function(html) {
 	return elt;
 };
 
-Utils.prototype.propagateId = function propagateId(id, pos, node, tr) {
-	if (pos == null || isNaN(pos)) return;
-	var offset = 1;
-	var child, name;
-	for (var i=0; i < node.childCount; i++) {
-		child = node.child(i);
-		name = child.type.spec.typeName;
-		if (!name || name == "root") break;
-		if (child.attrs._id != id) {
-			if (tr) tr.setNodeMarkup(pos + offset, null, Object.assign({}, child.attrs, {_id: id}));
-			else child.attrs._id = id;
-		}
-		if (name == "wrap") this.propagateId(id, pos + offset, child, tr);
-		offset += child.nodeSize;
-	}
-};

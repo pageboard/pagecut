@@ -109,7 +109,6 @@ module.exports = function(view) {
 					block.standalone = false;
 				}
 				tr.setNodeMarkup(pos, null, newAttrs);
-				// view.utils.propagateId(block.id, pos, node, tr);
 				ids[block.id] = true;
 				modified = true;
 			} else if (rem) {
