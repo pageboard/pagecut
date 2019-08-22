@@ -4,8 +4,7 @@
   "description": "Extensible web content editor",
   "main": "index.js",
   "scripts": {
-    "prepare": "make all",
-    "postinstall": "postinstall",
+    "prepare": "postinstall && make all",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -40,6 +39,9 @@
     "domify": "^1.4.0",
     "esequal": "^0.1.15",
     "orderedmap": "^1.0.0",
+    "postinstall": "^0.5.1",
+    "prosemirror-menu": "^1.0.5",
+    "prosemirror-view": "^1.10.0",
     "prosemirror-commands": "^1.0.7",
     "prosemirror-dropcursor": "^1.1.1",
     "prosemirror-example-setup": "^1.0.1",
@@ -59,13 +61,8 @@
     "diff-dom/diffDOM.js": "link sample/",
     "dom-template-strings/dist/dom-template-strings.js": "link sample/"
   },
-  "postinstall": {
-    "prosemirror-view/style/prosemirror.css": "link src/prosemirror.css",
-    "prosemirror-menu/style/menu.css": "link src/prosemirror-menu.css"
-  },
-  "dependencies": {
-    "postinstall": "^0.4.2",
-    "prosemirror-menu": "^1.0.5",
-    "prosemirror-view": "^1.10.0"
+  "prepare": {
+    "prosemirror-view/style/prosemirror.css": "copy src/prosemirror.css",
+    "prosemirror-menu/style/menu.css": "copy src/prosemirror-menu.css"
   }
 }
