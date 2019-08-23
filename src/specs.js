@@ -138,9 +138,12 @@ function getImmediateContents(root, list) {
 	});
 }
 
-function findContent(elt, dom) {
+function findContent(elt, dom, type) {
 	if (elt.leaf) return;
-	if (elt.inline || elt.contents.unnamed) return dom;
+	if (elt.inline || elt.contents.unnamed) {
+		if (type == "root") return dom;
+		else return;
+	}
 	var list = [];
 	getImmediateContents(dom, list);
 	if (!list.length) return;
@@ -154,9 +157,13 @@ function flagDom(elt, dom, iterate, parent) {
 	}
 	if (dom.nodeType != Node.ELEMENT_NODE) return;
 	if (!parent) parent = {};
+	var type;
+	if (!parent.type) type = "root";
+	else if (parent.type == "root") type = ["container", "wrap"];
+	else if (parent.type == "wrap") type = "container";
 	var obj = {
 		dom: dom,
-		contentDOM: findContent(elt, dom)
+		contentDOM: findContent(elt, dom, type)
 	};
 	if (!obj.children) obj.children = [];
 
@@ -283,7 +290,7 @@ function createRootSpec(view, elt, obj) {
 			attrs.type = type;
 			return attrs;
 		},
-		contentElement: function(dom) { return findContent(elt, dom); }
+		contentElement: function(dom) { return findContent(elt, dom, "root"); }
 	};
 	if (elt.context) {
 		if (elt.context.split(/\s*\|\s*/).some((tok) => {
@@ -372,7 +379,7 @@ function createWrapSpec(view, elt, obj) {
 			if (root) attrs._id = root.getAttribute('block-id');
 			return attrs;
 		},
-		contentElement: function(dom) { return findContent(elt, dom); }
+		contentElement: function(dom) { return findContent(elt, dom, 'wrap'); }
 	};
 
 	var spec = {
@@ -450,7 +457,7 @@ function createContainerSpec(view, elt, obj) {
 			if (root) attrs._id = root.getAttribute('block-id');
 			return attrs;
 		},
-		contentElement: function(dom) { return findContent(elt, dom); }
+		contentElement: function(dom) { return findContent(elt, dom, 'container'); }
 	};
 
 	var spec = {
@@ -473,7 +480,7 @@ function setupView(me, node) {
 		me.dom = me.contentDOM = me.view.dom;
 	} else {
 		me.dom = me.domModel.cloneNode(true);
-		me.contentDOM = findContent(me.element, me.dom);
+		me.contentDOM = findContent(me.element, me.dom, node.type.spec.typeName);
 	}
 	me.contentName = node.type.spec.contentName;
 	var def = me.element.contents.find(me.contentName);
