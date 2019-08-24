@@ -598,8 +598,12 @@ RootNodeView.prototype.update = function(node, decorations) {
 		var tr = view.state.tr;
 		mutateAttributes(this.dom, dom);
 		if (!sameData) {
+			var nobj = flagDom(this.element, dom);
+			if (view.explicit && !nobj.children.length && nobj.contentDOM && !this.element.inline) {
+				nobj.contentDOM.setAttribute('element-content', 'true');
+			}
 			try {
-				mutateNodeView(tr, this.getPos ? this.getPos() : null, node, this, flagDom(this.element, dom));
+				mutateNodeView(tr, this.getPos ? this.getPos() : null, node, this, nobj);
 			} catch(ex) {
 				return true;
 			}
@@ -711,9 +715,13 @@ ConstNodeView.prototype.update = function(node, decorations) {
 		return false;
 	}
 	restoreDomAttrs(tryJSON(node.attrs._json), this.dom);
-	var prevHtml = this.dom.innerHTML;
-	var curHtml = node.attrs._html;
-	if (curHtml != prevHtml) this.dom.innerHTML = curHtml != null ? curHtml : "";
+	if (this.view.explicit) {
+		this.dom.innerHTML = '';
+	} else {
+		var prevHtml = this.dom.innerHTML;
+		var curHtml = node.attrs._html;
+		if (curHtml != prevHtml) this.dom.innerHTML = curHtml != null ? curHtml : "";
+	}
 	return true;
 };
 
@@ -740,6 +748,10 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 		return false;
 	}
 	restoreDomAttrs(tryJSON(node.attrs._json), this.dom);
+
+	if (this.view.explicit) {
+		this.contentDOM.setAttribute('element-content', 'true');
+	}
 
 	if (!this.id) this.id = node.attrs._id;
 	else if (this.id != node.attrs._id) return false;
