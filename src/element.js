@@ -1,7 +1,7 @@
 module.exports = class Element {
 	constructor(elt) {
 		Object.assign(this, elt);
-		if (!elt.contents || Object.getPrototypeOf(elt.contents).constructor.name != "Contents") {
+		if (!elt.contents || !elt.contents.list) {
 			this.contents = new Contents(elt.contents);
 		}
 	}
