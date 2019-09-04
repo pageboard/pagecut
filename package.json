@@ -41,7 +41,7 @@
     "orderedmap": "^1.0.0",
     "postinstall": "^0.5.1",
     "prosemirror-menu": "^1.0.5",
-    "prosemirror-view": "^1.10.0",
+    "prosemirror-view": "^1.10.2",
     "prosemirror-commands": "^1.0.7",
     "prosemirror-dropcursor": "^1.1.1",
     "prosemirror-example-setup": "^1.0.1",
