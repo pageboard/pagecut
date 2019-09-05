@@ -48,7 +48,7 @@ InputPlugin.prototype.transformPasted = function(slice) {
 			delete block.focused;
 		}
 	});
-	slice.content = view.utils.fill(slice.content);
+	// slice.content = view.utils.fill(slice.content);
 	return slice;
 };
 
