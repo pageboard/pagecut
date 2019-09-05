@@ -103,6 +103,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 
 	var fromto = from;
 	if (slice.content.childCount == 1 && (from == to || sel.node && sel.node.type.name != "_")) {
+		if (slice.openStart || slice.openEnd) console.info("parsing node from open slice", slice);
 		var node = this.fill(slice.content).firstChild;
 		var atStart = !sel.node && sel.$from.parentOffset == 0;
 		var insertPos;
