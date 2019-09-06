@@ -421,6 +421,7 @@ function createConstSpec(view, elt, obj) {
 	var spec = {
 		typeName: "const",
 		element: elt,
+		atom: true,
 		domModel: obj.dom,
 		attrs: defaultSpecAttrs,
 		parseDOM: [parseRule],
