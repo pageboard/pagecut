@@ -2,15 +2,30 @@ module.exports = Blocks;
 
 function Blocks() {}
 
-Blocks.prototype.mutate = function(id, data) {
-	if (typeof id != "string") id = id.getAttribute('block-id');
-	if (!id) throw new Error("Cannot mutate without id");
-	var block = this.get(id);
-	if (!block) throw new Error("Block not found " + id);
-	block.data = Object.assign(block.data || {}, data);
+Blocks.prototype.mutate = function(node, data) {
+	var nodes = [], block, id;
+	if (typeof node != "string") {
+		id = node.getAttribute('block-id');
+	} else {
+		id = node;
+	}
+	if (id) {
+		block = this.get(id);
+		if (!block) throw new Error("mutate node but block not found: " + id);
+	}
+	if (!id) {
+		block = {
+			type: node.getAttribute('block-type'),
+			data: data
+		};
+		nodes = [node];
+	} else {
+		block.data = Object.assign(block.data || {}, data);
+		nodes = this.domQuery(id, {all: true});
+	}
 	var view = this.view;
 	var tr = view.state.tr;
-	this.domQuery(id, {all: true}).forEach(function(node) {
+	nodes.forEach(function(node) {
 		view.utils.refreshTr(tr, node, block);
 	});
 	view.dispatch(tr);
