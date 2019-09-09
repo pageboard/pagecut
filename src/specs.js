@@ -664,7 +664,7 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 		return true;
 	} else if (record.target == this.contentDOM && record.type == "childList") {
 		return false;
-	} else {
+	} else if (record.type != "selection") {
 		return true;
 	}
 };
@@ -693,7 +693,7 @@ WrapNodeView.prototype.update = function(node, decorations) {
 
 WrapNodeView.prototype.ignoreMutation = function(record) {
 	// always ignore mutation
-	return true;
+	if (record.type != "selection") return true;
 };
 
 function ConstNodeView(node, view, getPos, decorations) {
@@ -727,7 +727,7 @@ ConstNodeView.prototype.update = function(node, decorations) {
 };
 
 ConstNodeView.prototype.ignoreMutation = function(record) {
-	// always ignore mutation
+	// always ignore mutation, even selection
 	return true;
 };
 
@@ -773,7 +773,7 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 ContainerNodeView.prototype.ignoreMutation = function(record) {
 	if (record.target == this.contentDOM && record.type == "childList") {
 		return false;
-	} else {
+	} else if (record.type != "selection") {
 		return true;
 	}
 };
