@@ -34,7 +34,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babelify": "^7.3.0",
     "browserify": "^14.5.0",
-    "diff-dom": "^2.3.0",
+    "diff-dom": "^4.1.6",
     "dom-template-strings": "^2.0.1",
     "domify": "^1.4.0",
     "esequal": "^0.1.15",

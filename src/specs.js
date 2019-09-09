@@ -1,6 +1,6 @@
 const commonAncestor = require('@kapouer/common-ancestor');
 const Model = require('prosemirror-model');
-const DiffDOM = require('diff-dom');
+const {DiffDOM} = require('diff-dom');
 
 const differ = new DiffDOM({
 	preDiffApply: function(info) {
