@@ -175,7 +175,7 @@ Blocks.prototype.to = function() {
 	var contentName = view.dom.getAttribute("block-content");
 	var copy = this.copy(this.store[id]);
 	var el = view.element(copy.type);
-	el.contents.set(copy, contentName, view.utils.getDom());
+	if (contentName) el.contents.set(copy, contentName, view.utils.getDom());
 	return this.serializeTo(copy, view.dom.getAttribute('block-type'));
 };
 
