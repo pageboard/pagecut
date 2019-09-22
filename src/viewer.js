@@ -64,6 +64,12 @@ Viewer.prototype.render = function(block, opts) {
 
 	var el = this.element(type);
 	dom.setAttribute('block-type', type);
+	if (block.expr && Object.keys(block.expr).length) {
+		dom.setAttribute('block-expr', JSON.stringify(block.expr));
+	} else {
+		dom.removeAttribute('block-expr');
+	}
+	if (opts.strip) return dom;
 	if (!el.inplace) {
 		if (block.id == null && this.blocks.set && opts.genId !== false) this.blocks.set(block);
 		if (block.id != null) dom.setAttribute('block-id', block.id);
@@ -76,12 +82,6 @@ Viewer.prototype.render = function(block, opts) {
 			dom.removeAttribute('block-data');
 		}
 	}
-	if (block.expr && Object.keys(block.expr).length) {
-		dom.setAttribute('block-expr', JSON.stringify(block.expr));
-	} else {
-		dom.removeAttribute('block-expr');
-	}
-
 	if (block.focused) dom.setAttribute('block-focused', block.focused);
 	else dom.removeAttribute('block-focused');
 
