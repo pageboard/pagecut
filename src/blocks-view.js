@@ -169,6 +169,7 @@ Blocks.prototype.renderFrom = function(block, blocks, store, opts) {
 			}
 			if (frag.attributes) {
 				for (var i=0, att; i < node.attributes.length, att = node.attributes[i]; i++) {
+					if (opts.strip && att.name == "block-id") continue;
 					if (!frag.hasAttribute(att.name)) frag.setAttribute(att.name, att.value);
 				}
 			}
