@@ -61,7 +61,6 @@ Blocks.prototype.toAttrs = function(block) {
 	if (block.lock) attrs.lock = JSON.stringify(block.lock);
 	if (block.focused) attrs.focused = block.focused;
 	if (block.standalone) attrs.standalone = "true";
-	if (attrs.data == "{}") delete attrs.data;
 	return attrs;
 };
 
