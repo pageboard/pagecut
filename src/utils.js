@@ -135,14 +135,15 @@ Utils.prototype.fill = function(frag) {
 		var content = node.content;
 		if (content.size) {
 			var before = node.type.contentMatch.fillBefore(content);
-			if (!before) return;
-			content = before.append(content);
+			if (before) {
+				content = before.append(content);
+			}
 		}
 		var match = node.type.contentMatch.matchFragment(content);
-		if (!match) return;
-		var after = match.fillBefore(Model.Fragment.empty, true);
-		if (!after) return;
-		content = content.append(after);
+		if (match) {
+			var after = match.fillBefore(Model.Fragment.empty, true);
+			if (after) content = content.append(after);
+		}
 		list.push(node.copy(this.fill(content)));
 	});
 	return Model.Fragment.from(list);
