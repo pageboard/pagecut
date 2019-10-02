@@ -8,7 +8,7 @@ function Utils(view) {
 	this.view = view;
 }
 
-Utils.prototype.equal = require("esequal");
+Utils.prototype.equal = require("fast-deep-equal");
 
 Utils.prototype.setDom = function(dom) {
 	if (dom.nodeType != Node.DOCUMENT_FRAGMENT_NODE) {

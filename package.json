@@ -37,7 +37,7 @@
     "diff-dom": "^4.1.6",
     "dom-template-strings": "^2.0.1",
     "domify": "^1.4.0",
-    "esequal": "^0.1.15",
+    "fast-deep-equal": "^2.0.1",
     "orderedmap": "^1.0.0",
     "postinstall": "^0.5.1",
     "prosemirror-commands": "^1.0.7",
