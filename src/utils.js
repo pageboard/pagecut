@@ -102,9 +102,9 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 	var to = sel.to;
 
 	var fromto = from;
-	if (slice.content.childCount == 1 && (from == to || sel.node && sel.node.type.name != "_")) {
-		if (slice.openStart || slice.openEnd) console.info("parsing node from open slice", slice);
-		var node = this.fill(slice.content).firstChild;
+	if (slice.content.childCount == 1 && (from == to || sel.node)) {
+		var frag = this.fill(slice.content);
+		var node = frag.firstChild;
 		var atStart = !sel.node && sel.$from.parentOffset == 0;
 		var insertPos;
 		if (atStart) {
@@ -121,7 +121,7 @@ Utils.prototype.insertTr = function(tr, dom, sel) {
 			tr.split(from);
 			fromto = from + 1;
 		}
-		slice = new Model.Slice(Model.Fragment.from(node), 0, 0);
+		slice = new Model.Slice(frag, 0, 0);
 		to = from = fromto;
 	}
 	tr.replaceRange(from, to, slice);
