@@ -48,6 +48,7 @@ InputPlugin.prototype.transformPasted = function(slice) {
 			delete block.focused;
 		}
 	});
+	// disabled because slice is already badly parsed
 	// slice.content = view.utils.fill(slice.content);
 	return slice;
 };
