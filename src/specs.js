@@ -918,7 +918,7 @@ function applyDiffClass(a, b) {
 }
 
 function mutateAttributes(dom, ndom) {
-	restoreDomAttrs(ndom.attributes, dom);
+	restoreDomAttrs(attrsObj(ndom.attributes), dom);
 }
 
 function saveDomAttrs(dom) {
@@ -947,12 +947,10 @@ function restoreDomAttrs(srcAtts, dom) {
 		uiAtts = dom.pcUiAttrs = {};
 	}
 	// pcUiAttrs: attributes set by ui processes
-	for (var k=0; k < srcAtts.length; k++) {
-		attr = srcAtts[k];
-		name = attr.name;
+	for (name in srcAtts) {
 		if (name == "contenteditable") continue;
 		dstVal = dom.getAttribute(name);
-		srcVal = attr.value;
+		srcVal = srcAtts[name];
 		// TODO style using dom.style map
 		if (name == "class") {
 			dom.setAttribute(name, applyDiffClass(srcVal, uiAtts[name]));
@@ -1010,6 +1008,14 @@ function specAttrs(atts) {
 		val = atts[k];
 		obj[k] = {};
 		obj[k].default = val && val.default || val;
+	}
+	return obj;
+}
+
+function attrsObj(atts) {
+	var obj = {};
+	for (var k=0; k < atts.length; k++) {
+		obj[atts[k].name] = atts[k].value;
 	}
 	return obj;
 }
