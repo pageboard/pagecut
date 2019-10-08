@@ -49,3 +49,7 @@ pagecut-placeholder.ProseMirror-selectednode:after {
 	color:white;
 	text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
 }
+
+.ProseMirror-dropcursor {
+	z-index: 2147483647; /* max z-index everywhere but Safari <= 3
+}

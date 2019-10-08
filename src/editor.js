@@ -166,7 +166,10 @@ function Editor(opts) {
 				preserveItems: true // or else cancel does not keep selected node
 			});
 		},
-		DropCursor({width: 2})
+		DropCursor({
+			width: 2,
+			class: 'ProseMirror-dropcursor'
+		})
 	);
 
 	var pluginKeys = {};
