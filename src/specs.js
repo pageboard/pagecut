@@ -660,7 +660,17 @@ RootNodeView.prototype.ignoreMutation = function(record) {
 		if (!obj) obj = dom.pcUiAttrs = {};
 		var name = record.attributeName;
 		var val = dom.getAttribute(name);
-		obj[name] = val;
+		if (name == "class") {
+			if (record.oldValue != val) {
+				var oldClass = mapOfClass(record.oldValue);
+				var newClass = mapOfClass(val);
+				var diffClass = {};
+				for (var k in newClass) if (newClass[k] && !oldClass[k]) diffClass[k] = true;
+				obj[name] = Object.keys(diffClass).join(' ');
+			}
+		} else {
+			obj[name] = val;
+		}
 		return true;
 	}	else if (record.type == "childList" && record.addedNodes.length > 0 && !Array.prototype.some.call(record.addedNodes, function(node) {
 		if (node.nodeType != Node.ELEMENT_NODE) return true;
