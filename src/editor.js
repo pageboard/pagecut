@@ -96,6 +96,8 @@ function Editor(opts) {
 
 	Viewer.call(this, opts);
 
+	this.cssChecked = true;
+
 	this.parseFromClipboard = (html, $pos) => {
 		if (typeof html != "string") {
 			html = this.utils.serializeHTML(html);

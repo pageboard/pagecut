@@ -1,5 +1,13 @@
 @import './prosemirror.css';
 
+.ProseMirror {
+	white-space: normal;
+}
+
+.ProseMirror [block-text] {
+	white-space: pre-wrap;
+}
+
 .ProseMirror-content {
 	outline:none;
 }

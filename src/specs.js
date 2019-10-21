@@ -614,6 +614,9 @@ RootNodeView.prototype.update = function(node, decorations) {
 		if (oldBlock && this.getPos && tr.docChanged) {
 			view.dispatch(tr);
 		}
+		if (this.contentDOM && node.isTextblock) {
+			this.contentDOM.setAttribute('block-text', 'true');
+		}
 		if (this.selected) {
 			this.selectNode();
 		}
@@ -753,6 +756,9 @@ ContainerNodeView.prototype.update = function(node, decorations) {
 
 	if (this.view.explicit) {
 		this.contentDOM.setAttribute('element-content', 'true');
+	}
+	if (node.isTextblock) {
+		this.contentDOM.setAttribute('block-text', 'true');
 	}
 
 	if (!this.id) this.id = node.attrs._id;
