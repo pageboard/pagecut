@@ -67,6 +67,7 @@ function define(view, elt, schema, views) {
 		}
 		if (obj.children && obj.children.length) {
 			// this type of node has content that is wrap or container type nodes
+			spec.wrapper = true;
 			spec.content = obj.children.map(function(child) {
 				if (!child.name) console.warn(obj, "has no name for child", child);
 				return child.name + (child.type == "const" ? "?" : "");
@@ -601,9 +602,6 @@ RootNodeView.prototype.update = function(node, decorations) {
 		mutateAttributes(this.dom, dom);
 		if (!sameData) {
 			var nobj = flagDom(this.element, dom);
-			if (view.explicit && !nobj.children.length && nobj.contentDOM && !this.element.inline) {
-				nobj.contentDOM.setAttribute('element-content', 'true');
-			}
 			try {
 				mutateNodeView(tr, this.getPos ? this.getPos() : null, node, this, nobj);
 			} catch(ex) {
@@ -613,6 +611,9 @@ RootNodeView.prototype.update = function(node, decorations) {
 		// pay attention to the risk of looping over and over
 		if (oldBlock && this.getPos && tr.docChanged) {
 			view.dispatch(tr);
+		}
+		if (view.explicit && !node.type.spec.wrapper && this.contentDOM && !this.element.inline) {
+			this.contentDOM.setAttribute('element-content', 'true');
 		}
 		if (this.contentDOM && node.isTextblock) {
 			this.contentDOM.setAttribute('block-text', 'true');
